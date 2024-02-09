@@ -35,8 +35,8 @@ void test_copy_n(Policy&& pol, std::size_t problem_size) {
                          dest_device.begin());
   std::copy_n(data.begin(), data.size(), dest_host.begin());
 
-  BOOST_CHECK(ret == dest_device.begin() + problem_size);
-  BOOST_CHECK(dest_device == dest_host);
+  BOOST_REQUIRE(ret == dest_device.begin() + problem_size);
+  BOOST_REQUIRE(dest_device == dest_host);
 }
 
 BOOST_AUTO_TEST_CASE(par_unseq_negative) {
@@ -45,7 +45,7 @@ BOOST_AUTO_TEST_CASE(par_unseq_negative) {
 
   auto ret =
       std::copy_n(std::execution::par_unseq, empty.begin(), -1, dest.begin());
-  BOOST_CHECK(ret == dest.begin());
+  BOOST_REQUIRE(ret == dest.begin());
 }
 
 using types = boost::mpl::list<int, non_trivial_copy>;

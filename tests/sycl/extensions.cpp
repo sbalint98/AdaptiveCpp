@@ -39,7 +39,7 @@ BOOST_AUTO_TEST_CASE(auto_placeholder_require_extension) {
   // This will call handler::require(acc) for each
   // subsequently launched command group
   auto automatic_requirement = s::vendor::hipsycl::automatic_require(q, acc);
-  BOOST_CHECK(automatic_requirement.is_required());
+  BOOST_REQUIRE(automatic_requirement.is_required());
 
   q.submit([&](s::handler &cgh) {
     cgh.single_task<class auto_require_kernel0>([=]() {
@@ -49,7 +49,7 @@ BOOST_AUTO_TEST_CASE(auto_placeholder_require_extension) {
 
   { 
     auto host_acc = buff.get_access<s::access::mode::read>(); 
-    BOOST_CHECK(host_acc[0] == 1);
+    BOOST_REQUIRE(host_acc[0] == 1);
   }
 
   q.submit([&] (s::handler& cgh) {
@@ -60,11 +60,11 @@ BOOST_AUTO_TEST_CASE(auto_placeholder_require_extension) {
 
   { 
     auto host_acc = buff.get_access<s::access::mode::read>(); 
-    BOOST_CHECK(host_acc[0] == 2);
+    BOOST_REQUIRE(host_acc[0] == 2);
   }
 
   automatic_requirement.release();
-  BOOST_CHECK(!automatic_requirement.is_required());
+  BOOST_REQUIRE(!automatic_requirement.is_required());
 
   { 
     auto host_acc = buff.get_access<s::access::mode::read_write>(); 
@@ -72,7 +72,7 @@ BOOST_AUTO_TEST_CASE(auto_placeholder_require_extension) {
   }
 
   automatic_requirement.reacquire();
-  BOOST_CHECK(automatic_requirement.is_required());
+  BOOST_REQUIRE(automatic_requirement.is_required());
 
   q.submit([&] (s::handler& cgh) {
     cgh.single_task<class auto_require_kernel2>([=] (){
@@ -82,7 +82,7 @@ BOOST_AUTO_TEST_CASE(auto_placeholder_require_extension) {
 
   { 
     auto host_acc = buff.get_access<s::access::mode::read>(); 
-    BOOST_CHECK(host_acc[0] == 4);
+    BOOST_REQUIRE(host_acc[0] == 4);
   }
 }
 #endif
@@ -151,7 +151,7 @@ BOOST_AUTO_TEST_CASE(custom_pfwi_synchronization_extension) {
   }
 
   for(size_t i = 0; i < global_size; ++i) {
-    BOOST_TEST(host_buf[i] == 2*i);
+    BOOST_TEST_REQUIRE(host_buf[i] == 2*i);
   }
 }
 #endif
@@ -205,7 +205,7 @@ void test_distribute_groups(){
     s::host_accessor hacc{output_buff};
     int* result_ptr = hacc.get_pointer();
     for(std::size_t i = 0; i < input_size.size(); ++i){
-      BOOST_CHECK(result_ptr[i] == static_cast<int>(i));
+      BOOST_REQUIRE(result_ptr[i] == static_cast<int>(i));
     }
   }
 
@@ -230,7 +230,7 @@ void test_distribute_groups(){
     s::host_accessor hacc{output_buff};
     int* result_ptr = hacc.get_pointer();
     for(std::size_t i = 0; i < input_size.size(); ++i){
-      BOOST_CHECK(result_ptr[i] == static_cast<int>(i));
+      BOOST_REQUIRE(result_ptr[i] == static_cast<int>(i));
     }
   }
   
@@ -301,7 +301,7 @@ BOOST_AUTO_TEST_CASE(scoped_parallelism_reduction) {
     for(int i = grp * Group_size; i < (grp+1) * Group_size; ++i)
       host_result += i;
     
-    BOOST_TEST(host_result == host_acc[grp * Group_size]);
+    BOOST_TEST_REQUIRE(host_result == host_acc[grp * Group_size]);
   }
 } 
 
@@ -373,17 +373,17 @@ BOOST_AUTO_TEST_CASE(scoped_parallelism_memory_environment) {
     for(int lid = 0; lid < Group_size; ++lid){
       const int gid = grp * Group_size + lid;
       if(grp == 0){
-        BOOST_CHECK(hacc[gid] == 3);
+        BOOST_REQUIRE(hacc[gid] == 3);
       } else if(grp == 1) {
-        BOOST_CHECK(hacc[gid] == 4);
+        BOOST_REQUIRE(hacc[gid] == 4);
       } else if(grp == 2) {
-        BOOST_CHECK(hacc[gid] == lid);
+        BOOST_REQUIRE(hacc[gid] == lid);
       } else if(grp == 4) {
         const s::vec<int,8> expected_v{0,2,4,6,8,10,12,14};
         int expected = 0; 
         for (int i = 0; i < expected_v.size(); ++i)
           expected += expected_v[i];
-        BOOST_CHECK(hacc[gid] == expected);
+        BOOST_REQUIRE(hacc[gid] == expected);
       }
     }
   }
@@ -411,7 +411,7 @@ BOOST_AUTO_TEST_CASE(scoped_parallelism_odd_group_size) {
   {
     sycl::host_accessor hacc{buff};
     for (int i = 0; i < test_size; ++i)
-      BOOST_CHECK(hacc[i] == i);
+      BOOST_REQUIRE(hacc[i] == i);
   }
 }
 
@@ -475,7 +475,7 @@ void test_interop(cl::sycl::queue& q) {
                     ACPP_LIBKERNEL_COMPILER_SUPPORTS_CUDA;
   if constexpr (has_hip_memcpy_test || has_cuda_memcpy_test) {
     for (std::size_t i = 0; i < test_size; ++i) {
-      BOOST_TEST(initial_data[i] == target_data[i]);
+      BOOST_TEST_REQUIRE(initial_data[i] == target_data[i]);
     }
   }
 }
@@ -534,7 +534,7 @@ BOOST_AUTO_TEST_CASE(cg_property_retarget) {
 
     q.wait();
 
-    BOOST_TEST(ptr[0] == 2);
+    BOOST_TEST_REQUIRE(ptr[0] == 2);
 
     sycl::free(ptr, q);
   }
@@ -635,17 +635,17 @@ BOOST_AUTO_TEST_CASE(cg_property_preferred_group_size) {
 
   if(q.get_device().get_backend() == sycl::backend::cuda || 
     q.get_device().get_backend() == sycl::backend::hip) {
-    BOOST_TEST(gsize[0] == group_size1d.size());
-    BOOST_TEST(gsize[1] == group_size2d.size());
-    BOOST_TEST(gsize[2] == group_size3d.size());
+    BOOST_TEST_REQUIRE(gsize[0] == group_size1d.size());
+    BOOST_TEST_REQUIRE(gsize[1] == group_size2d.size());
+    BOOST_TEST_REQUIRE(gsize[2] == group_size3d.size());
   } else {
     /* Don't test this - it's meaningless for the extension,
        and might not be true if the SSCP JIT executes the kernel
        on another target apart from CUDA or HIP.
 
-    BOOST_TEST(gsize[0] == 1);
-    BOOST_TEST(gsize[1] == 2);
-    BOOST_TEST(gsize[2] == 3);
+    BOOST_TEST_REQUIRE(gsize[0] == 1);
+    BOOST_TEST_REQUIRE(gsize[1] == 2);
+    BOOST_TEST_REQUIRE(gsize[2] == 3);
     */
   }
 
@@ -691,7 +691,7 @@ BOOST_AUTO_TEST_CASE(prefetch_host) {
   q.wait_and_throw();
 
   for (std::size_t i = 0; i < test_size; ++i)
-    BOOST_TEST(shared_mem[i] == i + 1);
+    BOOST_TEST_REQUIRE(shared_mem[i] == i + 1);
 
   sycl::free(shared_mem, q);
 }
@@ -715,16 +715,16 @@ BOOST_AUTO_TEST_CASE(buffer_introspection) {
 
     q.wait();
 
-    BOOST_TEST(buff.has_allocation(q.get_device()));
+    BOOST_TEST_REQUIRE(buff.has_allocation(q.get_device()));
     usm_ptr = buff.get_pointer(q.get_device());
-    BOOST_TEST(usm_ptr != nullptr);
+    BOOST_TEST_REQUIRE(usm_ptr != nullptr);
 
     // Query information
     sycl::buffer_allocation::descriptor<int> alloc =
         buff.get_allocation(usm_ptr);
-    BOOST_TEST(alloc.ptr == usm_ptr);
-    BOOST_CHECK(alloc.dev == q.get_device());
-    BOOST_TEST(alloc.is_owned == true);
+    BOOST_TEST_REQUIRE(alloc.ptr == usm_ptr);
+    BOOST_REQUIRE(alloc.dev == q.get_device());
+    BOOST_TEST_REQUIRE(alloc.is_owned == true);
 
     // This doesn't change anything as the allocation is already
     // owned because the buffer constructor was not provided a pointer.
@@ -732,14 +732,14 @@ BOOST_AUTO_TEST_CASE(buffer_introspection) {
     buff.own_allocation(usm_ptr);
     buff.own_allocation(q.get_device());
     alloc = buff.get_allocation(usm_ptr);
-    BOOST_TEST(alloc.is_owned == true);
+    BOOST_TEST_REQUIRE(alloc.is_owned == true);
 
     // Disown allocation so that we can use it outside the
     // buffer scope
     buff.disown_allocation(usm_ptr);
 
     alloc = buff.get_allocation(usm_ptr);
-    BOOST_TEST(alloc.is_owned == false);
+    BOOST_TEST_REQUIRE(alloc.is_owned == false);
 
     std::vector<int*> allocations;
     buff.for_each_allocation(
@@ -747,13 +747,13 @@ BOOST_AUTO_TEST_CASE(buffer_introspection) {
           allocations.push_back(a.ptr);
         });
 
-    BOOST_TEST(allocations.size() >= 1);
+    BOOST_TEST_REQUIRE(allocations.size() >= 1);
     bool found = false;
     for(std::size_t i = 0; i < allocations.size(); ++i) {
       if(allocations[i] == usm_ptr)
         found = true;
     }
-    BOOST_TEST(found);
+    BOOST_TEST_REQUIRE(found);
   }
 
   // Use extracted USM pointer directly
@@ -766,7 +766,7 @@ BOOST_AUTO_TEST_CASE(buffer_introspection) {
   q.wait();
 
   for(std::size_t i = 0; i < host_mem.size(); ++i) {
-    BOOST_CHECK(host_mem[i] == i);
+    BOOST_REQUIRE(host_mem[i] == i);
   }
 
   sycl::free(usm_ptr, q);
@@ -787,11 +787,11 @@ BOOST_AUTO_TEST_CASE(buffers_over_usm_pointers) {
     sycl::buffer<int> b1{
         {sycl::buffer_allocation::empty_view(alloc1, q.get_device())}, size};
 
-    BOOST_CHECK(b1.has_allocation(q.get_device()));
-    BOOST_CHECK(b1.get_pointer(q.get_device()) == alloc1);
+    BOOST_REQUIRE(b1.has_allocation(q.get_device()));
+    BOOST_REQUIRE(b1.get_pointer(q.get_device()) == alloc1);
     b1.for_each_allocation([&](const auto& alloc){
       if(alloc.ptr == alloc1){
-        BOOST_CHECK(!alloc.is_owned);
+        BOOST_REQUIRE(!alloc.is_owned);
       }
     });
 
@@ -805,7 +805,7 @@ BOOST_AUTO_TEST_CASE(buffers_over_usm_pointers) {
   }
   q.wait();
   for(int i = 0; i < size.get(0); ++i){
-    BOOST_CHECK(alloc1[i] == i);
+    BOOST_REQUIRE(alloc1[i] == i);
   }
   {
     sycl::buffer<int> b2{
@@ -822,12 +822,12 @@ BOOST_AUTO_TEST_CASE(buffers_over_usm_pointers) {
     // Check that data state tracking works and migrating back to host
     sycl::host_accessor<int> hacc{b2};
     for(int i = 0; i < size.get(0); ++i){
-      BOOST_CHECK(hacc[i] == i);
+      BOOST_REQUIRE(hacc[i] == i);
     }  
   }
   
   for(int i = 0; i < size.get(0); ++i){
-    BOOST_CHECK(alloc2[i] == i);
+    BOOST_REQUIRE(alloc2[i] == i);
   }
 
   sycl::free(alloc1, q);
@@ -876,7 +876,7 @@ BOOST_AUTO_TEST_CASE(buffer_page_size) {
       // TODO This does not really guarantee that the kernels run in-
       // dependently as access conflicts are typically added to the requirements
       // of the accessor, not the kernel.
-      BOOST_CHECK(event.get_wait_list().size() == 1);
+      BOOST_REQUIRE(event.get_wait_list().size() == 1);
     }
   }
 
@@ -916,7 +916,7 @@ BOOST_AUTO_TEST_CASE(explicit_buffer_policies) {
 
     sycl::host_accessor hacc{b1};
     for(int i = 0; i < size.size(); ++i) {
-      BOOST_CHECK(hacc[i] == i+1);
+      BOOST_REQUIRE(hacc[i] == i+1);
     }
 
     // Submit another operation before buffer goes out of
@@ -946,7 +946,7 @@ BOOST_AUTO_TEST_CASE(explicit_buffer_policies) {
       });
     }
     for(int i = 0; i < input_vec.size(); ++i) {
-      BOOST_CHECK(input_vec[i] == i+1);
+      BOOST_REQUIRE(input_vec[i] == i+1);
     }
   }
 
@@ -969,7 +969,7 @@ BOOST_AUTO_TEST_CASE(explicit_buffer_policies) {
     q.wait();
 
     for(int i = 0; i < input_vec.size(); ++i) {
-      BOOST_CHECK(input_vec[i] == i+1);
+      BOOST_REQUIRE(input_vec[i] == i+1);
     }
   }
 
@@ -997,44 +997,44 @@ BOOST_AUTO_TEST_CASE(accessor_variants) {
   sycl::accessor ranged_placeholder{buff, subrange, offset, sycl::read_write,
                                     sycl::no_init};
 
-  BOOST_CHECK(get_accessor_variant(unranged_placeholder) ==
+  BOOST_REQUIRE(get_accessor_variant(unranged_placeholder) ==
               sycl::accessor_variant::unranged_placeholder);
-  BOOST_CHECK(get_accessor_variant(ranged_placeholder) ==
+  BOOST_REQUIRE(get_accessor_variant(ranged_placeholder) ==
               sycl::accessor_variant::ranged_placeholder);
 
-  BOOST_CHECK(unranged_placeholder.get_offset() == sycl::id<1>{});
-  BOOST_CHECK(ranged_placeholder.get_offset() == offset);
-  BOOST_CHECK(unranged_placeholder.get_range() == size);
-  BOOST_CHECK(ranged_placeholder.get_range() == subrange);
-  BOOST_CHECK(unranged_placeholder.is_placeholder());
-  BOOST_CHECK(ranged_placeholder.is_placeholder());
+  BOOST_REQUIRE(unranged_placeholder.get_offset() == sycl::id<1>{});
+  BOOST_REQUIRE(ranged_placeholder.get_offset() == offset);
+  BOOST_REQUIRE(unranged_placeholder.get_range() == size);
+  BOOST_REQUIRE(ranged_placeholder.get_range() == subrange);
+  BOOST_REQUIRE(unranged_placeholder.is_placeholder());
+  BOOST_REQUIRE(ranged_placeholder.is_placeholder());
 
 
-  BOOST_CHECK(sizeof(ranged_placeholder) > sizeof(unranged_placeholder));
+  BOOST_REQUIRE(sizeof(ranged_placeholder) > sizeof(unranged_placeholder));
 
   q.submit([&](sycl::handler &cgh) {
     sycl::accessor unranged_acc{buff, cgh, sycl::read_write, sycl::no_init};
     sycl::accessor ranged_acc{
         buff, cgh, subrange, offset, sycl::read_write, sycl::no_init};
 
-    BOOST_CHECK(get_accessor_variant(unranged_acc) ==
+    BOOST_REQUIRE(get_accessor_variant(unranged_acc) ==
               sycl::accessor_variant::unranged);
-    BOOST_CHECK(get_accessor_variant(ranged_acc) ==
+    BOOST_REQUIRE(get_accessor_variant(ranged_acc) ==
               sycl::accessor_variant::ranged);
 
-    BOOST_CHECK(sizeof(ranged_acc) > sizeof(unranged_acc));
-    BOOST_CHECK(sizeof(ranged_placeholder) > sizeof(ranged_acc));
+    BOOST_REQUIRE(sizeof(ranged_acc) > sizeof(unranged_acc));
+    BOOST_REQUIRE(sizeof(ranged_placeholder) > sizeof(ranged_acc));
 
-    BOOST_CHECK(unranged_acc.get_offset() == sycl::id<1>{});
-    BOOST_CHECK(ranged_acc.get_offset() == offset);
-    BOOST_CHECK(unranged_acc.get_range() == size);
-    BOOST_CHECK(ranged_acc.get_range() == subrange);
-    BOOST_CHECK(!unranged_acc.is_placeholder());
-    BOOST_CHECK(!ranged_acc.is_placeholder());
+    BOOST_REQUIRE(unranged_acc.get_offset() == sycl::id<1>{});
+    BOOST_REQUIRE(ranged_acc.get_offset() == offset);
+    BOOST_REQUIRE(unranged_acc.get_range() == size);
+    BOOST_REQUIRE(ranged_acc.get_range() == subrange);
+    BOOST_REQUIRE(!unranged_acc.is_placeholder());
+    BOOST_REQUIRE(!ranged_acc.is_placeholder());
 
     sycl::accessor raw_acc{buff, cgh, sycl::read_write_raw, sycl::no_init};
 
-    BOOST_CHECK(sizeof(raw_acc) < sizeof(ranged_acc));
+    BOOST_REQUIRE(sizeof(raw_acc) < sizeof(ranged_acc));
 
     auto kernel = [=](sycl::id<1> idx){
       raw_acc[idx] = idx.get(0);
@@ -1045,7 +1045,7 @@ BOOST_AUTO_TEST_CASE(accessor_variants) {
 
   sycl::host_accessor hacc{buff};
   for(std::size_t i = 0; i < size[0]; ++i){
-    BOOST_CHECK(hacc[i] == static_cast<int>(i));
+    BOOST_REQUIRE(hacc[i] == static_cast<int>(i));
   }
 }
 
@@ -1078,12 +1078,12 @@ BOOST_AUTO_TEST_CASE(update_device) {
   // or the udpate() that updated the data if we use
   // handler::copy()
   int* dev_ptr = buff.get_pointer(q.get_device());
-  BOOST_CHECK(dev_ptr != nullptr);
+  BOOST_REQUIRE(dev_ptr != nullptr);
 
   q.memcpy(target_buff.data(), dev_ptr, size[0] * sizeof(int)).wait();
 
   for(std::size_t i = 0; i < size[0]; ++i)
-    BOOST_CHECK(target_buff[i] == static_cast<int>(i));
+    BOOST_REQUIRE(target_buff[i] == static_cast<int>(i));
 }
 #endif
 #ifdef ACPP_EXT_QUEUE_WAIT_LIST
@@ -1104,7 +1104,7 @@ BOOST_AUTO_TEST_CASE(queue_wait_list) {
     
     q.single_task(wait_list, [=](){}).wait();
     for(sycl::event e : evts) {
-      BOOST_CHECK(e.get_info<sycl::info::event::command_execution_status>() ==
+      BOOST_REQUIRE(e.get_info<sycl::info::event::command_execution_status>() ==
                   sycl::info::event_command_status::complete);
     }
   };
@@ -1142,7 +1142,7 @@ BOOST_AUTO_TEST_CASE(multi_device_queue) {
   });
 
   sycl::host_accessor hacc{buff};
-  BOOST_CHECK(hacc[0] == 102);
+  BOOST_REQUIRE(hacc[0] == 102);
 }
 #endif
 #ifdef ACPP_EXT_COARSE_GRAINED_EVENTS
@@ -1165,7 +1165,7 @@ BOOST_AUTO_TEST_CASE(coarse_grained_events) {
   }
   for(auto& e : events) {
     e.wait();
-    BOOST_CHECK(e.get_info<sycl::info::event::command_execution_status>() ==
+    BOOST_REQUIRE(e.get_info<sycl::info::event::command_execution_status>() ==
                 sycl::info::event_command_status::complete);
   }
 }

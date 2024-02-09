@@ -74,7 +74,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(load_store_exchange, Type,
   });
   sycl::host_accessor hacc{b};
 
-  BOOST_CHECK(t_to_int(hacc[0]) == 1);
+  BOOST_REQUIRE(t_to_int(hacc[0]) == 1);
 }
 
 
@@ -117,7 +117,7 @@ void atomic_device_reduction_test(AtomicTester t, Verifier v,
         v(expected, int_to_t<T>(init(i)));
       }
     }
-    BOOST_CHECK(expected == hacc[0]);
+    BOOST_REQUIRE(expected == hacc[0]);
   }
 }
 

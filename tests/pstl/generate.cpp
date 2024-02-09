@@ -33,7 +33,7 @@ void test_generate(Policy&& pol, std::size_t problem_size) {
   std::generate(pol, data_host.begin(), data_host.end(),
                 []() { return 42; });
 
-  BOOST_CHECK(data == data_host);
+  BOOST_REQUIRE(data == data_host);
 }
 
 BOOST_AUTO_TEST_CASE(par_unseq_empty) {

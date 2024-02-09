@@ -43,7 +43,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(group_exclusive_scan_mul, T, test_types) {
 
         for (size_t j = i * local_size; j < (i + 1) * local_size; ++j) {
           T computed = vIn[j];
-          BOOST_TEST(detail::compare_type(expected[j], computed),
+          BOOST_TEST_REQUIRE(detail::compare_type(expected[j], computed),
                      detail::type_to_string(computed)
                          << " at position " << j << " instead of "
                          << detail::type_to_string(expected[j])
@@ -89,7 +89,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(group_exclusive_scan, T, test_types) {
 
         for (size_t j = i * local_size; j < (i + 1) * local_size; ++j) {
           T computed = vIn[j];
-          BOOST_TEST(detail::compare_type(expected[j], computed),
+          BOOST_TEST_REQUIRE(detail::compare_type(expected[j], computed),
                      detail::type_to_string(computed)
                          << " at position " << j << " instead of "
                          << detail::type_to_string(expected[j])
@@ -127,7 +127,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(group_exclusive_scan, T, test_types) {
 
         for (size_t j = i * local_size; j < (i + 1) * local_size; ++j) {
           T computed = vIn[j];
-          BOOST_TEST(detail::compare_type(expected[j], computed),
+          BOOST_TEST_REQUIRE(detail::compare_type(expected[j], computed),
                      detail::type_to_string(computed)
                          << " at position " << j << " instead of "
                          << detail::type_to_string(expected[j])
@@ -179,7 +179,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(group_exclusive_scan_ptr, T, test_types) {
 
         for (size_t j = i * 2 * local_size; j < (i + 1) * local_size * 2; ++j) {
           T computed = vIn[j + global_size * 2];
-          BOOST_TEST(detail::compare_type(expected[j], computed),
+          BOOST_TEST_REQUIRE(detail::compare_type(expected[j], computed),
                      detail::type_to_string(computed)
                          << " at position " << j << " instead of "
                          << detail::type_to_string(expected[j])
@@ -223,7 +223,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(group_exclusive_scan_ptr, T, test_types) {
 
         for (size_t j = i * 2 * local_size; j < (i + 1) * local_size * 2; ++j) {
           T computed = vIn[j + global_size * 2];
-          BOOST_TEST(detail::compare_type(expected[j], computed),
+          BOOST_TEST_REQUIRE(detail::compare_type(expected[j], computed),
                      detail::type_to_string(computed)
                          << " at position " << j << " instead of "
                          << detail::type_to_string(expected[j])
@@ -271,7 +271,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(sub_group_exclusive_scan, T, test_types) {
 
           for (size_t j = i * local_size; j < (i + 1) * actual_warp_size; ++j) {
             T computed = vIn[j];
-            BOOST_TEST(detail::compare_type(expected[j], computed),
+            BOOST_TEST_REQUIRE(detail::compare_type(expected[j], computed),
                       detail::type_to_string(computed)
                           << " at position " << j << " instead of "
                           << detail::type_to_string(expected[j]) << " for local_size "
@@ -308,7 +308,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(sub_group_exclusive_scan, T, test_types) {
 
           for (size_t j = i * local_size; j < (i + 1) * actual_warp_size; ++j) {
             T computed = vIn[j];
-            BOOST_TEST(detail::compare_type(expected[j], computed),
+            BOOST_TEST_REQUIRE(detail::compare_type(expected[j], computed),
                       detail::type_to_string(computed)
                           << " at position " << j << " instead of "
                           << detail::type_to_string(expected[j]) << " for local_size "
@@ -352,7 +352,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(group_inclusive_scan_mul, T, test_types) {
 
         for (size_t j = i * local_size; j < (i + 1) * local_size; ++j) {
           T computed = vIn[j];
-          BOOST_TEST(detail::compare_type(expected[j], computed),
+          BOOST_TEST_REQUIRE(detail::compare_type(expected[j], computed),
                      detail::type_to_string(computed)
                          << " at position " << j << " instead of "
                          << detail::type_to_string(expected[j])
@@ -398,7 +398,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(group_inclusive_scan, T, test_types) {
 
         for (size_t j = i * local_size; j < (i + 1) * local_size; ++j) {
           T computed = vIn[j];
-          BOOST_TEST(detail::compare_type(expected[j], computed),
+          BOOST_TEST_REQUIRE(detail::compare_type(expected[j], computed),
                      detail::type_to_string(computed)
                          << " at position " << j << " instead of "
                          << detail::type_to_string(expected[j])
@@ -435,7 +435,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(group_inclusive_scan, T, test_types) {
 
         for (size_t j = i * local_size; j < (i + 1) * local_size; ++j) {
           T computed = vIn[j];
-          BOOST_TEST(detail::compare_type(expected[j], computed),
+          BOOST_TEST_REQUIRE(detail::compare_type(expected[j], computed),
                      detail::type_to_string(computed)
                          << " at position " << j << " instead of "
                          << detail::type_to_string(expected[j])
@@ -487,7 +487,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(group_inclusive_scan_ptr, T, test_types) {
 
         for (size_t j = i * 2 * local_size; j < (i + 1) * local_size * 2; ++j) {
           T computed = vIn[j + 2 * global_size];
-          BOOST_TEST(detail::compare_type(expected[j], computed),
+          BOOST_TEST_REQUIRE(detail::compare_type(expected[j], computed),
                      detail::type_to_string(computed)
                          << " at position " << j << " instead of "
                          << detail::type_to_string(expected[j]) << " for local_size "
@@ -531,7 +531,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(group_inclusive_scan_ptr, T, test_types) {
 
         for (size_t j = i * 2 * local_size; j < (i + 1) * local_size * 2; ++j) {
           T computed = vIn[j + 2 * global_size];
-          BOOST_TEST(detail::compare_type(expected[j], computed),
+          BOOST_TEST_REQUIRE(detail::compare_type(expected[j], computed),
                      detail::type_to_string(computed)
                          << " at position " << j << " instead of "
                          << detail::type_to_string(expected[j]) << " for local_size "
@@ -581,7 +581,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(sub_group_inclusive_scan, T, test_types) {
 
           for (size_t j = i * local_size; j < (i + 1) * actual_warp_size; ++j) {
             T computed = vIn[j];
-            BOOST_TEST(detail::compare_type(expected[j], computed),
+            BOOST_TEST_REQUIRE(detail::compare_type(expected[j], computed),
                       detail::type_to_string(computed)
                           << " at position " << j << " instead of "
                           << detail::type_to_string(expected[j]) << " for local_size "
@@ -617,7 +617,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(sub_group_inclusive_scan, T, test_types) {
 
           for (size_t j = i * local_size; j < (i + 1) * actual_warp_size; ++j) {
             T computed = vIn[j];
-            BOOST_TEST(detail::compare_type(expected[j], computed),
+            BOOST_TEST_REQUIRE(detail::compare_type(expected[j], computed),
                       detail::type_to_string(computed)
                           << " at position " << j << " instead of "
                           << detail::type_to_string(expected[j]) << " for local_size "

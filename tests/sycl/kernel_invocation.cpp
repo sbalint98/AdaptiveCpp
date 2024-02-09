@@ -24,7 +24,7 @@ BOOST_AUTO_TEST_CASE(basic_single_task) {
     });
   });
   auto acc = buf.get_access<cl::sycl::access::mode::read>();
-  BOOST_TEST(acc[0] == 321);
+  BOOST_TEST_REQUIRE(acc[0] == 321);
 }
 
 BOOST_AUTO_TEST_CASE(basic_parallel_for) {
@@ -127,7 +127,7 @@ BOOST_AUTO_TEST_CASE(hierarchical_dispatch) {
     size_t expected = 0;
     for(size_t j = 0; j < local_size; ++j) expected += i * local_size + j;
     size_t computed = host_buf[i * local_size];
-    BOOST_TEST(computed == expected);
+    BOOST_TEST_REQUIRE(computed == expected);
   }
 }
 
@@ -163,7 +163,7 @@ BOOST_AUTO_TEST_CASE(hierarchical_private_memory) {
 
   auto host_acc = buf.get_access<cl::sycl::access::mode::read>();
   for (int i = 0; i < global_size; ++i)
-    BOOST_TEST(host_acc[i] == i);
+    BOOST_TEST_REQUIRE(host_acc[i] == i);
 }
 #endif // ACPP_LIBKERNEL_CUDA_NVCXX
 #endif // __ACPP_ENABLE_LLVM_SSCP_TARGET__

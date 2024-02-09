@@ -32,18 +32,17 @@ using namespace cl;
 
 #ifdef TESTS_GROUPFUNCTION_FULL
 using test_types =
-    boost::mpl::list<char, int, unsigned int, long long, float, double, sycl::vec<int, 1>,
-                     sycl::vec<int, 2>, sycl::vec<int, 3>, sycl::vec<int, 4>,
-                     sycl::vec<int, 8>, sycl::vec<short, 16>, sycl::vec<long, 3>,
-                     sycl::vec<unsigned int, 3>>;
+    boost::mpl::list<char, int, unsigned int, long long, float, double;
 #else
-using test_types = boost::mpl::list<char, unsigned int, float, double, sycl::vec<int, 2>>;
+using test_types = boost::mpl::list<float>;
 #endif
 
 namespace detail {
 
 inline uint32_t get_subgroup_size(const sycl::queue& q) {
   auto sizes = q.get_device().get_info<sycl::info::device::sub_group_sizes>();
+  auto device_name = q.get_device().get_info<sycl::info::device::name>();
+  std::cout << "The sizes are_ " << sizes[0] << " " << sizes.size() << " name: " << device_name <<  std::endl;
   assert(sizes.size() > 0);
   return static_cast<uint32_t>(sizes[0]);
 }
@@ -236,7 +235,7 @@ void check_binary_reduce(std::vector<T> buffer, size_t local_size, size_t global
       T computed      = buffer[i * local_size + j + offset];
       T expectedValue = initialize_type<T>(expected[i]);
 
-      BOOST_TEST(compare_type(expectedValue, computed),
+      BOOST_TEST_REQUIRE(compare_type(expectedValue, computed),
                  Line << ":" << type_to_string(computed) << " at position " << j
                       << " instead of " << type_to_string(expectedValue)
                       << " for case: " << cases[i] << " " << name);

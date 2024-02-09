@@ -39,9 +39,9 @@ void test_scalar_reduction(sycl::queue &q, const T& identity,
       std::accumulate(test_data, test_data + num_elements, identity, op);
   
   if constexpr(std::is_floating_point_v<T>) {
-    BOOST_TEST(expected_result == *output_data, tolerance);
+    BOOST_TEST_REQUIRE(expected_result == *output_data, tolerance);
   } else {
-    BOOST_TEST(expected_result == *output_data);
+    BOOST_TEST_REQUIRE(expected_result == *output_data);
   }
 
   sycl::free(test_data, q);
@@ -149,11 +149,11 @@ void test_two_reductions(std::size_t input_size, std::size_t local_size){
       std::accumulate(input1, input1 + input_size, T{1}, std::multiplies<T>{});
 
     if constexpr(std::is_floating_point_v<T>) {
-      BOOST_TEST(expected_add_result == *output0, tolerance);
-      BOOST_TEST(expected_mul_result == *output1, tolerance);
+      BOOST_TEST_REQUIRE(expected_add_result == *output0, tolerance);
+      BOOST_TEST_REQUIRE(expected_mul_result == *output1, tolerance);
     } else {
-      BOOST_TEST(expected_add_result == *output0);
-      BOOST_TEST(expected_mul_result == *output1);
+      BOOST_TEST_REQUIRE(expected_add_result == *output0);
+      BOOST_TEST_REQUIRE(expected_mul_result == *output1);
     }
     *output0 = T{};
     *output1 = T{};

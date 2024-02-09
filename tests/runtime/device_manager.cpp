@@ -94,14 +94,14 @@ void run_device_manager_multithreaded_test() {
     using mngr = typename backend_device_manager<Backend>::type;
 
     mngr::get().activate_device(1);
-    BOOST_CHECK(mngr::get().get_active_device() == 1);
+    BOOST_REQUIRE(mngr::get().get_active_device() == 1);
 
     std::async(std::launch::async, [] {
-      BOOST_CHECK(mngr::get().get_active_device() == 0);
+      BOOST_REQUIRE(mngr::get().get_active_device() == 0);
       mngr::get().activate_device(0);
     }).wait();
 
-    BOOST_CHECK(mngr::get().get_active_device() == 1);
+    BOOST_REQUIRE(mngr::get().get_active_device() == 1);
   }
 }
 

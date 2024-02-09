@@ -50,7 +50,7 @@ BOOST_AUTO_TEST_CASE(half_arithmetic) {
   for(int i = 0; i < num_tests; ++i){
     float current_reference = reference[i];
     float current_computed = hacc[i];
-    BOOST_TEST(current_reference == current_computed, tolerance);
+    BOOST_TEST_REQUIRE(current_reference == current_computed, tolerance);
   }
 }
 
@@ -110,8 +110,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(half_operators, T, half_test_types) {
     float current_computed_half = hacc_half[i];
     float current_computed_T = hacc_T[i];
     
-    BOOST_TEST(current_reference_half == current_computed_half, tolerance);
-    BOOST_TEST(current_reference_T == current_computed_T, tolerance);
+    BOOST_TEST_REQUIRE(current_reference_half == current_computed_half, tolerance);
+    BOOST_TEST_REQUIRE(current_reference_T == current_computed_T, tolerance);
   }
 }
 
@@ -150,7 +150,7 @@ BOOST_AUTO_TEST_CASE(half_unary_operators){
   for(int i = 0; i < NUM_OPS; ++i){
     float current_reference = reference[i];
     float current_computed_half = hacc_half[i];
-    BOOST_TEST(current_reference == current_computed_half, tt::tolerance(1e-4));
+    BOOST_TEST_REQUIRE(current_reference == current_computed_half, tt::tolerance(1e-4));
   }
 }
 

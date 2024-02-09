@@ -31,11 +31,11 @@ void test_basic_reduction(Policy&& pol, T init, std::size_t size) {
       data.begin(), data.end(), init, std::plus<>{});
   T res = std::reduce(pol,
       data.begin(), data.end(), init, std::plus<>{});
-  BOOST_CHECK(res == reference_result);
+  BOOST_REQUIRE(res == reference_result);
 
   T res2 = std::reduce(pol,
       data.begin(), data.end(), init);
-  BOOST_CHECK(res2 == res);
+  BOOST_REQUIRE(res2 == res);
 
   T reference_result2 = std::reduce(
       data.begin(), data.end());

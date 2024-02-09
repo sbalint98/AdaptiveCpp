@@ -36,8 +36,8 @@ void test_copy(Policy&& pol, std::size_t problem_size) {
                        dest_device.begin());
   std::copy(data.begin(), data.end(), dest_host.begin());
 
-  BOOST_CHECK(ret == dest_device.begin() + problem_size);
-  BOOST_CHECK(dest_device == dest_host);
+  BOOST_REQUIRE(ret == dest_device.begin() + problem_size);
+  BOOST_REQUIRE(dest_device == dest_host);
 }
 
 using types = boost::mpl::list<int, non_trivial_copy>;

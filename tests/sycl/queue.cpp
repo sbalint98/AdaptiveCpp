@@ -28,10 +28,10 @@ BOOST_AUTO_TEST_CASE(queue_wait) {
               q2.get_info<sycl::info::queue::AdaptiveCpp_node_group>());
 
   q1.wait();
-  BOOST_CHECK(evt1.get_info<sycl::info::event::command_execution_status>() ==
+  BOOST_REQUIRE(evt1.get_info<sycl::info::event::command_execution_status>() ==
               sycl::info::event_command_status::complete);
   q2.wait();
-  BOOST_CHECK(evt2.get_info<sycl::info::event::command_execution_status>() ==
+  BOOST_REQUIRE(evt2.get_info<sycl::info::event::command_execution_status>() ==
               sycl::info::event_command_status::complete);
 }
 

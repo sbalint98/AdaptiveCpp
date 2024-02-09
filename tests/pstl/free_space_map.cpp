@@ -52,13 +52,13 @@ BOOST_AUTO_TEST_CASE(insert) {
     std::size_t size = dist(gen);
     bool res = fmap.claim(size, addr);
 
-    BOOST_CHECK(res);
+    BOOST_REQUIRE(res);
 
     if(res) {
       uint64_t root_addr = 0;
-      BOOST_CHECK(!amap.get_entry(addr, root_addr));
-      BOOST_CHECK(!amap.get_entry(addr+size-1, root_addr));
-      BOOST_CHECK(addr+size < alloc_space_size);
+      BOOST_REQUIRE(!amap.get_entry(addr, root_addr));
+      BOOST_REQUIRE(!amap.get_entry(addr+size-1, root_addr));
+      BOOST_REQUIRE(addr+size < alloc_space_size);
 
       amap_t::value_type v;
       v.allocation_size = size;
@@ -82,9 +82,9 @@ BOOST_AUTO_TEST_CASE(insert_erase_reclaim) {
     std::size_t size1 = dist(gen);
     std::size_t size2 = dist(gen);
     bool res1 = fmap.claim(size1, addr1);
-    BOOST_CHECK(res1);
+    BOOST_REQUIRE(res1);
     bool res2 = fmap.claim(size2, addr2);
-    BOOST_CHECK(res2);
+    BOOST_REQUIRE(res2);
 
     if(res1)
       alloced_size += next_pow2(size1);
@@ -92,10 +92,10 @@ BOOST_AUTO_TEST_CASE(insert_erase_reclaim) {
       alloced_size += next_pow2(size2);
     
     if(res2) {
-      BOOST_CHECK(fmap.release(addr2, size2));
+      BOOST_REQUIRE(fmap.release(addr2, size2));
       uint64_t addr3 = 0;
-      BOOST_CHECK(fmap.claim(size2, addr3));
-      BOOST_CHECK(addr3 == addr2);
+      BOOST_REQUIRE(fmap.claim(size2, addr3));
+      BOOST_REQUIRE(addr3 == addr2);
     }
   }
 }
@@ -118,23 +118,23 @@ BOOST_AUTO_TEST_CASE(hybrid_insert_erase) {
     std::size_t size1 = dist(gen);
     std::size_t size2 = dist(gen);
     bool res1 = fmap.claim(size1, addr1);
-    BOOST_CHECK(res1);
+    BOOST_REQUIRE(res1);
     bool res2 = fmap.claim(size2, addr2);
-    BOOST_CHECK(res2);
+    BOOST_REQUIRE(res2);
 
     uint64_t root_addr = 0;
     amap_t::value_type v;
     if(res1) {
-      BOOST_CHECK(!amap.get_entry(addr1, root_addr));
-      BOOST_CHECK(!amap.get_entry(addr1+size1-1, root_addr));
+      BOOST_REQUIRE(!amap.get_entry(addr1, root_addr));
+      BOOST_REQUIRE(!amap.get_entry(addr1+size1-1, root_addr));
       v.allocation_size = size1;
       amap.insert(addr1, v);
       allocs.push_back(std::make_pair(addr1, size1));
       alloced_size += next_pow2(size1);
     }
     if(res2) {
-      BOOST_CHECK(!amap.get_entry(addr2, root_addr));
-      BOOST_CHECK(!amap.get_entry(addr2+size2-1, root_addr));
+      BOOST_REQUIRE(!amap.get_entry(addr2, root_addr));
+      BOOST_REQUIRE(!amap.get_entry(addr2+size2-1, root_addr));
       v.allocation_size = size2;
       amap.insert(addr2, v);
       allocs.push_back(std::make_pair(addr2, size2));
@@ -144,7 +144,7 @@ BOOST_AUTO_TEST_CASE(hybrid_insert_erase) {
     int erase_pos = i - erase_delay;
     if(erase_pos >= 0) {
       auto alloc = allocs[erase_pos];
-      BOOST_CHECK(fmap.release(alloc.first, alloc.second));
+      BOOST_REQUIRE(fmap.release(alloc.first, alloc.second));
       amap.erase(alloc.first);
       alloced_size -= next_pow2(alloc.second);
     }

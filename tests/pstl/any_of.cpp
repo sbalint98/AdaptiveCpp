@@ -32,7 +32,7 @@ void test_any_of(Policy&& pol, std::size_t problem_size, Generator gen, Predicat
   auto ret_host =
       std::any_of(data.begin(), data.end(), p);
 
-  BOOST_CHECK(ret == ret_host);
+  BOOST_REQUIRE(ret == ret_host);
 }
 
 template<class Policy>

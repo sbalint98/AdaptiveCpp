@@ -74,6 +74,7 @@ void test(sycl::queue& q) {
     
     T expected_div = a[i] / (b[i] + static_cast<T>(1));
     BOOST_TEST(results[3][i] == expected_div, get_div_tolerance());
+
   }
 
 }
@@ -102,11 +103,11 @@ BOOST_AUTO_TEST_CASE(marray_constructor) {
   sycl::marray<int, 4> v4 {v1, v2};
   sycl::marray<int, 8> v5{v2, v1, 0, v2};
 
-  BOOST_TEST(verify_marray_content(v1, {3}));
-  BOOST_TEST(verify_marray_content(v2, {1, 1, 1}));
-  BOOST_TEST(verify_marray_content(v3, {5, 1, 1, 1}));
-  BOOST_TEST(verify_marray_content(v4, {3, 1, 1, 1}));
-  BOOST_TEST(verify_marray_content(v5, {1, 1, 1, 3, 0, 1, 1, 1}));
+  BOOST_TEST_REQUIRE(verify_marray_content(v1, {3}));
+  BOOST_TEST_REQUIRE(verify_marray_content(v2, {1, 1, 1}));
+  BOOST_TEST_REQUIRE(verify_marray_content(v3, {5, 1, 1, 1}));
+  BOOST_TEST_REQUIRE(verify_marray_content(v4, {3, 1, 1, 1}));
+  BOOST_TEST_REQUIRE(verify_marray_content(v5, {1, 1, 1, 3, 0, 1, 1, 1}));
 }
 
 #define MARRAY_ALIAS_SAME(type, storage_type, elements)                 \
@@ -120,24 +121,24 @@ BOOST_AUTO_TEST_CASE(marray_constructor) {
   MARRAY_ALIAS_SAME(type, storage_type, 16)
 
 BOOST_AUTO_TEST_CASE(marray_aliases) {
-  BOOST_CHECK(MARRAY_ALIAS_CHECK(char, int8_t));
-  BOOST_CHECK(MARRAY_ALIAS_CHECK(uchar, uint8_t));
-  BOOST_CHECK(MARRAY_ALIAS_CHECK(short, int16_t));
-  BOOST_CHECK(MARRAY_ALIAS_CHECK(ushort, uint16_t));
-  BOOST_CHECK(MARRAY_ALIAS_CHECK(int, int32_t));
-  BOOST_CHECK(MARRAY_ALIAS_CHECK(uint, uint32_t));
-  BOOST_CHECK(MARRAY_ALIAS_CHECK(long, int64_t));
-  BOOST_CHECK(MARRAY_ALIAS_CHECK(ulong, uint64_t));
-  BOOST_CHECK(MARRAY_ALIAS_CHECK(half, sycl::half));
-  BOOST_CHECK(MARRAY_ALIAS_CHECK(float, float));
-  BOOST_CHECK(MARRAY_ALIAS_CHECK(double, double));
+  BOOST_REQUIRE(MARRAY_ALIAS_CHECK(char, int8_t));
+  BOOST_REQUIRE(MARRAY_ALIAS_CHECK(uchar, uint8_t));
+  BOOST_REQUIRE(MARRAY_ALIAS_CHECK(short, int16_t));
+  BOOST_REQUIRE(MARRAY_ALIAS_CHECK(ushort, uint16_t));
+  BOOST_REQUIRE(MARRAY_ALIAS_CHECK(int, int32_t));
+  BOOST_REQUIRE(MARRAY_ALIAS_CHECK(uint, uint32_t));
+  BOOST_REQUIRE(MARRAY_ALIAS_CHECK(long, int64_t));
+  BOOST_REQUIRE(MARRAY_ALIAS_CHECK(ulong, uint64_t));
+  BOOST_REQUIRE(MARRAY_ALIAS_CHECK(half, sycl::half));
+  BOOST_REQUIRE(MARRAY_ALIAS_CHECK(float, float));
+  BOOST_REQUIRE(MARRAY_ALIAS_CHECK(double, double));
 }
 
 BOOST_AUTO_TEST_CASE(marray_implicit_conversion) {
   constexpr int val = 42;
 
   const auto f = [val](int x) {
-    BOOST_CHECK_EQUAL(x, val);
+    BOOST_REQUIRE_EQUAL(x, val);
   };
 
   sycl::marray<int, 1> arr(val);

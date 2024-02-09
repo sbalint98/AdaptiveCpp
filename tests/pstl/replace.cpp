@@ -33,7 +33,7 @@ void test_replace(Policy&& pol, std::size_t problem_size, Generator gen, int old
                new_val);
   std::replace(host_data.begin(), host_data.end(), old_val,
                new_val);               
-  BOOST_CHECK(data == host_data);
+  BOOST_REQUIRE(data == host_data);
 }
 
 

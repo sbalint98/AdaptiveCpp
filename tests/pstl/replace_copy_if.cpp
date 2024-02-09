@@ -33,8 +33,8 @@ void test_replace_copy_if(std::size_t problem_size, Generator gen, Pred p, int n
   auto ret = std::replace_copy_if(std::execution::par_unseq, data.begin(),
                                   data.end(), dest.begin(), p, new_val);
   std::replace_copy_if(data.begin(), data.end(), host_dest.begin(), p, new_val);
-  BOOST_CHECK(dest == host_dest);
-  BOOST_CHECK(ret == dest.begin() + problem_size);
+  BOOST_REQUIRE(dest == host_dest);
+  BOOST_REQUIRE(ret == dest.begin() + problem_size);
 }
 
 

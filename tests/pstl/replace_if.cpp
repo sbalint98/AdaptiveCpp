@@ -32,7 +32,7 @@ void test_replace_if(Policy &&pol, std::size_t problem_size, Generator gen,
   std::replace_if(pol, data.begin(), data.end(), p,
                   new_val);
   std::replace_if(host_data.begin(), host_data.end(), p, new_val);
-  BOOST_CHECK(data == host_data);
+  BOOST_REQUIRE(data == host_data);
 }
 
 BOOST_AUTO_TEST_CASE(par_unseq_empty) {

@@ -22,7 +22,7 @@ BOOST_AUTO_TEST_CASE(pstl_std_malloc_free) {
   std::fill(host_data.begin(), host_data.end(), value);
 
   for (std::size_t i = 0; i < size; ++i)
-    BOOST_CHECK_EQUAL(host_data[i], p1[i]);
+    BOOST_REQUIRE_EQUAL(host_data[i], p1[i]);
 
   std::free(p1);
 }
@@ -40,7 +40,7 @@ BOOST_AUTO_TEST_CASE(pstl_global_malloc_free) {
   std::fill(host_data.begin(), host_data.end(), value);
 
   for (std::size_t i = 0; i < size; ++i)
-    BOOST_CHECK_EQUAL(host_data[i], p1[i]);
+    BOOST_REQUIRE_EQUAL(host_data[i], p1[i]);
 
   free(p1);
 }
@@ -58,7 +58,7 @@ BOOST_AUTO_TEST_CASE(pstl_aligned_alloc) {
   std::fill(host_data.begin(), host_data.end(), value);
 
   for(std::size_t i = 0; i < size; ++i)
-    BOOST_CHECK_EQUAL(host_data[i], p1[i]);
+    BOOST_REQUIRE_EQUAL(host_data[i], p1[i]);
 
   std::free(p1);
 }

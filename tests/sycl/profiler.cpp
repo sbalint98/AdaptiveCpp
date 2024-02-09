@@ -34,7 +34,7 @@ BOOST_AUTO_TEST_CASE(queue_no_profiling_exception)
       acc[0] = 42;
     });
   });
-  BOOST_CHECK_EXCEPTION(evt1.get_profiling_info<cl::sycl::info::event_profiling::command_submit>(),
+  BOOST_REQUIRE_EXCEPTION(evt1.get_profiling_info<cl::sycl::info::event_profiling::command_submit>(),
                         cl::sycl::exception,
                         is_invalid);
 
@@ -51,10 +51,10 @@ BOOST_AUTO_TEST_CASE(queue_no_profiling_exception)
              buf2.get_access<cl::sycl::access::mode::discard_write>(cgh));
   });
 
-  BOOST_CHECK_EXCEPTION(evt3.get_profiling_info<cl::sycl::info::event_profiling::command_end>(),
+  BOOST_REQUIRE_EXCEPTION(evt3.get_profiling_info<cl::sycl::info::event_profiling::command_end>(),
                         cl::sycl::exception,
                         is_invalid);
-  BOOST_CHECK_EXCEPTION(evt2.get_profiling_info<cl::sycl::info::event_profiling::command_start>(),
+  BOOST_REQUIRE_EXCEPTION(evt2.get_profiling_info<cl::sycl::info::event_profiling::command_start>(),
                         cl::sycl::exception,
                         is_invalid);
 
@@ -69,9 +69,10 @@ BOOST_AUTO_TEST_CASE(queue_no_profiling_exception)
   });
   
   BOOST_CHECK_EXCEPTION(evt4.get_profiling_info<cl::sycl::info::event_profiling::command_submit>(),
+
                         cl::sycl::exception,
                         is_invalid);
-  BOOST_CHECK_EXCEPTION(evt5.get_profiling_info<cl::sycl::info::event_profiling::command_submit>(),
+  BOOST_REQUIRE_EXCEPTION(evt5.get_profiling_info<cl::sycl::info::event_profiling::command_submit>(),
                         cl::sycl::exception,
                         is_invalid);
   queue.wait();

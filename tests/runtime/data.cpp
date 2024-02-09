@@ -55,26 +55,26 @@ BOOST_AUTO_TEST_CASE(page_table) {
 
     rt::range_store pt(full_range.second);
 
-    BOOST_CHECK(
+    BOOST_REQUIRE(
         pt.entire_range_equals(full_range, rt::range_store::data_state::empty));
-    BOOST_CHECK(pt.entire_range_empty(full_range));
-    BOOST_CHECK(!pt.entire_range_filled(full_range));
-    BOOST_CHECK(pt.get_size() == full_range.second);
+    BOOST_REQUIRE(pt.entire_range_empty(full_range));
+    BOOST_REQUIRE(!pt.entire_range_filled(full_range));
+    BOOST_REQUIRE(pt.get_size() == full_range.second);
 
     pt.add(fill_subrange);
-    BOOST_CHECK(!pt.entire_range_filled(full_range));
-    BOOST_CHECK(!pt.entire_range_empty(full_range));
-    BOOST_CHECK(pt.entire_range_filled(fill_subrange));
+    BOOST_REQUIRE(!pt.entire_range_filled(full_range));
+    BOOST_REQUIRE(!pt.entire_range_empty(full_range));
+    BOOST_REQUIRE(pt.entire_range_filled(fill_subrange));
 
     std::vector<rt::range_store::rect> intersections;
     pt.intersections_with(intersection_subrange, intersections);
     // We require that the set of returned subranges is the same, but not
     // necessarily the order in which the subranges are returned
-    BOOST_CHECK(intersections.size() == config.expected_intersections.size());
+    BOOST_REQUIRE(intersections.size() == config.expected_intersections.size());
     for (auto sub_range : intersections) {
       auto it = std::find(config.expected_intersections.begin(),
                           config.expected_intersections.end(), sub_range);
-      BOOST_CHECK(it != config.expected_intersections.end());
+      BOOST_REQUIRE(it != config.expected_intersections.end());
     }
   }
 }
