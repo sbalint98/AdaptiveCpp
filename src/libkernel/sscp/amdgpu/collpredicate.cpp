@@ -1,7 +1,7 @@
 /*
  * This file is part of hipSYCL, a SYCL implementation based on CUDA/HIP
  *
- * Copyright (c) 2023 Aksel Alpay
+ * Copyright (c) 2024 Aksel Alpay
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -25,45 +25,28 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <algorithm>
-#include <execution>
-#include <utility>
-#include <vector>
-
-#include <boost/test/unit_test.hpp>
-#include <boost/mpl/list.hpp>
-
-#include "pstl_test_suite.hpp"
-
-BOOST_FIXTURE_TEST_SUITE(pstl_generate, enable_unified_shared_memory)
+ #include "hipSYCL/sycl/libkernel/sscp/builtins/collpredicate.hpp"
+ #include "hipSYCL/sycl/libkernel/sscp/builtins/amdgpu/ockl.hpp"
 
 
-void test_generate(std::size_t problem_size) {
-  std::vector<int> data(problem_size);
+// HIPSYCL_SSCP_CONVERGENT_BUILTIN
+// bool __hipsycl_sscp_work_group_any(bool pred);
 
-  std::generate(std::execution::par_unseq, data.begin(), data.end(),
-                []() { return 42; });
-
-  std::vector<int> data_host(problem_size);
-
-  std::generate(data_host.begin(), data_host.end(),
-                []() { return 42; });
-
-  BOOST_REQUIRE(data == data_host);
-}
-
-BOOST_AUTO_TEST_CASE(par_unseq_empty) {
-  test_generate(0);
-}
-
-BOOST_AUTO_TEST_CASE(par_unseq_single_element) {
-  test_generate(1);
-}
-
-BOOST_AUTO_TEST_CASE(par_unseq_medium_size) {
-  test_generate(1000);
+HIPSYCL_SSCP_CONVERGENT_BUILTIN
+bool __hipsycl_sscp_sub_group_any(bool pred){
+    return __ockl_wfany_i32(pred);
 }
 
 
+// HIPSYCL_SSCP_CONVERGENT_BUILTIN
+// bool __hipsycl_sscp_work_group_all(bool pred);
 
-BOOST_AUTO_TEST_SUITE_END()
+// HIPSYCL_SSCP_CONVERGENT_BUILTIN
+// bool __hipsycl_sscp_sub_group_all(bool pred);
+
+
+// HIPSYCL_SSCP_CONVERGENT_BUILTIN
+// bool __hipsycl_sscp_work_group_none(bool pred);
+
+// HIPSYCL_SSCP_CONVERGENT_BUILTIN
+// bool __hipsycl_sscp_sub_group_none(bool pred);

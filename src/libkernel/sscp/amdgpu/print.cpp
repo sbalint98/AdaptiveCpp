@@ -28,6 +28,8 @@
 
 #include "hipSYCL/sycl/libkernel/sscp/builtins/print.hpp"
 
+
+
 extern "C" __hipsycl_uint64 __ockl_fprintf_stdout_begin();
 extern "C" __hipsycl_uint64
 __ockl_fprintf_append_string_n(__hipsycl_uint64 msg_desc, const char *data,

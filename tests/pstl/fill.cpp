@@ -54,7 +54,7 @@ void test_fill(std::size_t problem_size) {
 
   std::fill(host_data.begin(), host_data.end(), T(42));
 
-  BOOST_CHECK(host_data == data);
+  BOOST_REQUIRE(host_data == data);
 }
 
 using types = boost::mpl::list<int, non_trivial_copy>;

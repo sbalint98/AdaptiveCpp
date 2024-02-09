@@ -83,23 +83,23 @@ BOOST_AUTO_TEST_CASE(sub_group) {
   const s::device dev = q.get_device();
   const std::vector<size_t> supported_subgroup_sizes =
       dev.get_info<cl::sycl::info::device::sub_group_sizes>();
-  BOOST_CHECK(supported_subgroup_sizes.size() >= 1);
+  BOOST_REQUIRE(supported_subgroup_sizes.size() >= 1);
   const unsigned int max_num_subgroups =
       dev.get_info<cl::sycl::info::device::max_num_sub_groups>();
-  BOOST_CHECK(max_num_subgroups >= 1U);
+  BOOST_REQUIRE(max_num_subgroups >= 1U);
 
   uint32_t subgroup_size = supported_subgroup_sizes[0];
 
   for (size_t i = 0; i < size1d[0]; ++i) {
     size_t lid = i % local_size1d[0];
     BOOST_TEST_INFO("i: " << i);
-    BOOST_CHECK_EQUAL(host_acc1[i], lid % subgroup_size);
+    BOOST_REQUIRE_EQUAL(host_acc1[i], lid % subgroup_size);
   }
   for (size_t i = 0; i < size2d[0]; ++i) {
     for (size_t j = 0; j < size2d[1]; ++j) {
       auto id = s::id<2>{i, j};
       auto lid = id % local_size2d;
-      BOOST_CHECK_EQUAL(host_acc2[id], (lid[1] + lid[0]*local_size2d[1]) % subgroup_size);
+      BOOST_REQUIRE_EQUAL(host_acc2[id], (lid[1] + lid[0]*local_size2d[1]) % subgroup_size);
     }
   }
   for (size_t i = 0; i < size3d[0]; ++i) {
@@ -107,7 +107,7 @@ BOOST_AUTO_TEST_CASE(sub_group) {
       for (size_t k = 0; k < size3d[2]; ++k) {
         auto id = s::id<3>{i, j, k};
         auto lid = id % local_size3d;
-        BOOST_CHECK_EQUAL(host_acc3[id],
+        BOOST_REQUIRE_EQUAL(host_acc3[id],
                     (lid[2] + lid[1] * local_size3d[2] +
                      lid[0] * local_size3d[1] * local_size3d[2]) %
                         subgroup_size);

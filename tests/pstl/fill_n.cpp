@@ -48,7 +48,7 @@ void test_fill_n(std::size_t problem_size) {
   auto ret =
       std::fill_n(std::execution::par_unseq, data.begin(), data.size(), T(42));
 
-  BOOST_CHECK(ret == data.begin() + problem_size);
+  BOOST_REQUIRE(ret == data.begin() + problem_size);
 
   std::vector<T> host_data(problem_size);
   for(int i = 0; i < problem_size; ++i) {
@@ -57,7 +57,7 @@ void test_fill_n(std::size_t problem_size) {
 
   std::fill_n(host_data.begin(), host_data.size(), T(42));
 
-  BOOST_CHECK(host_data == data);
+  BOOST_REQUIRE(host_data == data);
 }
 
 BOOST_AUTO_TEST_CASE(par_unseq_negative) {
@@ -65,7 +65,7 @@ BOOST_AUTO_TEST_CASE(par_unseq_negative) {
 
   auto ret =
       std::fill_n(std::execution::par_unseq, empty.begin(), -1, 42);
-  BOOST_CHECK(ret == empty.begin());
+  BOOST_REQUIRE(ret == empty.begin());
 }
 
 using types = boost::mpl::list<int, non_trivial_copy>;

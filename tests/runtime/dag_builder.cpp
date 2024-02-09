@@ -58,8 +58,8 @@ BOOST_AUTO_TEST_CASE(default_hints) {
       std::move(dummy_kernel_op), reqs, hints);
 
   rt::execution_hints& node_hints = node->get_execution_hints();
-  BOOST_CHECK(node_hints.has_hint<rt::hints::bind_to_device>());
-  BOOST_CHECK(
+  BOOST_REQUIRE(node_hints.has_hint<rt::hints::bind_to_device>());
+  BOOST_REQUIRE(
       node_hints.get_hint<rt::hints::bind_to_device>()->get_device_id() == id);
 
   node->cancel();

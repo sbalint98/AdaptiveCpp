@@ -52,7 +52,7 @@ void test_call(F f) {
     output_host[i] = f(data[i]);
   }
 
-  BOOST_CHECK(output_pstl == output_host);
+  BOOST_REQUIRE(output_pstl == output_host);
 }
 
 
