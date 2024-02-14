@@ -47,7 +47,7 @@ void test_all_of(std::size_t problem_size, Generator gen, Predicate p) {
   auto ret_host =
       std::all_of(data.begin(), data.end(), p);
 
-  BOOST_CHECK(ret == ret_host);
+  BOOST_REQUIRE(ret == ret_host);
 }
 
 BOOST_AUTO_TEST_CASE(par_unseq_empty) {

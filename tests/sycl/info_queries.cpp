@@ -37,7 +37,7 @@ BOOST_AUTO_TEST_CASE(device_queries) {
   sycl::queue q{d};
 
   std::string device = d.get_info<sycl::info::device::name>();
-  BOOST_TEST(device.length() > 0);
+  BOOST_TEST_REQUIRE(device.length() > 0);
   std::cout << "Default-selected queue runs on device: " << device << std::endl;
   
   // TODO Add tests for more queries
@@ -52,17 +52,17 @@ BOOST_AUTO_TEST_CASE(kernel_specific_queries) {
   auto wg_size =
       k.get_info<sycl::info::kernel_device_specific::work_group_size>(
           q.get_device());
-  BOOST_TEST(wg_size > 0);
+  BOOST_TEST_REQUIRE(wg_size > 0);
 
   auto max_sgs =
       k.get_info<sycl::info::kernel_device_specific::max_num_sub_groups>(
           q.get_device());
-  BOOST_TEST(max_sgs > 0);
+  BOOST_TEST_REQUIRE(max_sgs > 0);
 
   auto max_sg_size =
       k.get_info<sycl::info::kernel_device_specific::max_sub_group_size>(
           q.get_device());
-  BOOST_TEST(max_sg_size > 0);
+  BOOST_TEST_REQUIRE(max_sg_size > 0);
   
   // TODO Add tests for more queries
 }

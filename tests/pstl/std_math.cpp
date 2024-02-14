@@ -56,7 +56,7 @@ BOOST_AUTO_TEST_CASE(par_unseq) {
     float x = static_cast<float>(i);
     float reference_result = std::sin(x) + std::pow(x, 0.01f);
 
-    BOOST_TEST(reference_result == data[i], tolerance);
+    BOOST_TEST_REQUIRE(reference_result == data[i], tolerance);
   }
 }
 

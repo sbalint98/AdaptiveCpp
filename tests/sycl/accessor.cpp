@@ -75,7 +75,7 @@ BOOST_AUTO_TEST_CASE(local_accessors) {
     size_t expected = 0;
     for(size_t j = 0; j < local_size; ++j) expected += i * local_size + j;
     size_t computed = host_buf[i * local_size];
-    BOOST_TEST(computed == expected);
+    BOOST_TEST_REQUIRE(computed == expected);
   }
 }
 
@@ -287,14 +287,14 @@ BOOST_AUTO_TEST_CASE(nested_subscript) {
        
       size_t linear_id2d = static_cast<int>(x*buff_size2d[1] + y);
       s::id<2> id2d{x,y};
-      BOOST_CHECK(host_acc2d[id2d] == linear_id2d);
-      BOOST_CHECK(host_acc2d.get_pointer()[linear_id2d] == linear_id2d);
+      BOOST_REQUIRE(host_acc2d[id2d] == linear_id2d);
+      BOOST_REQUIRE(host_acc2d.get_pointer()[linear_id2d] == linear_id2d);
         
       for(size_t z = 0; z < buff_size3d[2]; ++z) {
         size_t linear_id3d = x*buff_size3d[1]*buff_size3d[2] + y*buff_size3d[2] + z;
         s::id<3> id3d{x,y,z};
-        BOOST_CHECK(host_acc3d[id3d] == linear_id3d);
-        BOOST_CHECK(host_acc3d.get_pointer()[linear_id3d] == linear_id3d);
+        BOOST_REQUIRE(host_acc3d[id3d] == linear_id3d);
+        BOOST_REQUIRE(host_acc3d.get_pointer()[linear_id3d] == linear_id3d);
       }
     }
 }
@@ -322,14 +322,14 @@ get_access_target(cl::sycl::accessor<T, Dim, M, Tgt, P>) {
 template <class Acc>
 void validate_accessor_deduction(Acc acc, cl::sycl::access_mode expected_mode,
                                  cl::sycl::target expected_target) {
-  BOOST_CHECK(get_access_mode(acc) == expected_mode);
-  BOOST_CHECK(get_access_target(acc) == expected_target);
+  BOOST_REQUIRE(get_access_mode(acc) == expected_mode);
+  BOOST_REQUIRE(get_access_target(acc) == expected_target);
 }
 
 template <class Acc>
 void validate_host_accessor_deduction(Acc acc,
                                       cl::sycl::access_mode expected_mode) {
-  BOOST_CHECK(get_access_mode(acc) == expected_mode);
+  BOOST_REQUIRE(get_access_mode(acc) == expected_mode);
 }
 
 BOOST_AUTO_TEST_CASE(accessor_simplifications) {
@@ -339,15 +339,15 @@ BOOST_AUTO_TEST_CASE(accessor_simplifications) {
   s::range size{1024};
   s::buffer<int> buff{size};
   s::accessor non_tagged_placeholder{buff};
-  BOOST_CHECK(get_access_mode(non_tagged_placeholder)
+  BOOST_REQUIRE(get_access_mode(non_tagged_placeholder)
     == s::access_mode::read_write);
 
   s::accessor placeholder{buff, s::read_only};
-  BOOST_CHECK(placeholder.is_placeholder());
+  BOOST_REQUIRE(placeholder.is_placeholder());
 
   q.submit([&](s::handler& cgh){
     s::accessor acc1{buff, cgh, s::read_only};
-    BOOST_CHECK(!acc1.is_placeholder());
+    BOOST_REQUIRE(!acc1.is_placeholder());
     
 #ifdef HIPSYCL_EXT_ACCESSOR_VARIANT_DEDUCTION
     // Conversion rw accessor<int> -> accessor<const int>, read-only
@@ -362,7 +362,7 @@ BOOST_AUTO_TEST_CASE(accessor_simplifications) {
     // Conversion read-write to non-const read-only accessor
     acc3 = s::accessor<int>{buff, cgh};
 #endif
-    BOOST_CHECK(!acc3.is_placeholder());
+    BOOST_REQUIRE(!acc3.is_placeholder());
 
     // Deduction based on constness of argument
     // First employ implicit conversion to const int buff -
@@ -370,9 +370,9 @@ BOOST_AUTO_TEST_CASE(accessor_simplifications) {
     // on non-const buffer, and if so, how.
     s::buffer<const int> buff2 = buff;
     s::accessor<const int> acc4{buff2, cgh};
-    BOOST_CHECK(get_access_mode(acc4) == s::access_mode::read);
+    BOOST_REQUIRE(get_access_mode(acc4) == s::access_mode::read);
     s::accessor<int> acc5{buff, cgh};
-    BOOST_CHECK(get_access_mode(acc5) == s::access_mode::read_write);
+    BOOST_REQUIRE(get_access_mode(acc5) == s::access_mode::read_write);
 
     // Deduction Tags
     validate_accessor_deduction(s::accessor{buff, cgh, s::read_only},
@@ -452,7 +452,7 @@ BOOST_AUTO_TEST_CASE(unranged_accessor_1d_iterator) {
   }
 
   for (int i=0; i<host_data.size(); ++i)
-    BOOST_CHECK_EQUAL(host_data[i], i+1);
+    BOOST_REQUIRE_EQUAL(host_data[i], i+1);
 }
 
 BOOST_AUTO_TEST_CASE(unranged_accessor_2d_iterator) {
@@ -476,7 +476,7 @@ BOOST_AUTO_TEST_CASE(unranged_accessor_2d_iterator) {
   }
 
   for (int i=0; i<host_data.size(); ++i)
-    BOOST_CHECK_EQUAL(host_data[i], i+1);
+    BOOST_REQUIRE_EQUAL(host_data[i], i+1);
 }
 
 BOOST_AUTO_TEST_CASE(unranged_accessor_3d_iterator) {
@@ -506,9 +506,9 @@ BOOST_AUTO_TEST_CASE(unranged_accessor_3d_iterator) {
   }
 
   for (int i=0; i<host_data.size(); ++i)
-    BOOST_CHECK_EQUAL(host_data[i], i+1);
+    BOOST_REQUIRE_EQUAL(host_data[i], i+1);
 
-  BOOST_CHECK_EQUAL(it_counter, N*N*N);
+  BOOST_REQUIRE_EQUAL(it_counter, N*N*N);
 }
 
 BOOST_AUTO_TEST_CASE(ranged_accessor_1d_iterator) {
@@ -535,11 +535,11 @@ BOOST_AUTO_TEST_CASE(ranged_accessor_1d_iterator) {
   }
 
   for (int i=0; i < offset[0]; ++i)
-    BOOST_CHECK_EQUAL(host_data[i], i);
+    BOOST_REQUIRE_EQUAL(host_data[i], i);
   for (int i = offset[0]; i < offset[0] + range[0]; ++i)
-    BOOST_CHECK_EQUAL(host_data[i], -1);
+    BOOST_REQUIRE_EQUAL(host_data[i], -1);
   for (int i = offset[0] + range[0]; i<N; ++i)
-    BOOST_CHECK_EQUAL(host_data[i], i);
+    BOOST_REQUIRE_EQUAL(host_data[i], i);
 }
 
 BOOST_AUTO_TEST_CASE(ranged_accessor_2d_iterator) {
@@ -572,9 +572,9 @@ BOOST_AUTO_TEST_CASE(ranged_accessor_2d_iterator) {
           (i < offset[0] + range[0]) &&
           (j >= offset[1]) &&
           (j < offset[1] + range[1]))
-        BOOST_CHECK_EQUAL(host_data[i*N2+j], 1);
+        BOOST_REQUIRE_EQUAL(host_data[i*N2+j], 1);
       else
-        BOOST_CHECK_EQUAL(host_data[i*N2+j], 0);
+        BOOST_REQUIRE_EQUAL(host_data[i*N2+j], 0);
     }
   }
 }
@@ -614,9 +614,9 @@ BOOST_AUTO_TEST_CASE(ranged_accessor_3d_iterator) {
             (j < offset[1] + range[1]) &&
             (k >= offset[2]) &&
             (k < offset[2] + range[2]))
-          BOOST_CHECK_EQUAL(host_data[i*N2*N3 + j*N3 + k], 1);
+          BOOST_REQUIRE_EQUAL(host_data[i*N2*N3 + j*N3 + k], 1);
         else
-          BOOST_CHECK_EQUAL(host_data[i*N2*N3 + j*N3 + k], 0);
+          BOOST_REQUIRE_EQUAL(host_data[i*N2*N3 + j*N3 + k], 0);
       }
     }
   }
@@ -642,7 +642,7 @@ BOOST_AUTO_TEST_CASE(reverse_iterator) {
   }
 
   for (int i=0; i<host_data.size(); ++i)
-    BOOST_CHECK_EQUAL(host_data[i], i+1);
+    BOOST_REQUIRE_EQUAL(host_data[i], i+1);
 }
 
 BOOST_AUTO_TEST_CASE(host_accessor_iterator) {
@@ -657,11 +657,11 @@ BOOST_AUTO_TEST_CASE(host_accessor_iterator) {
   std::iota(ha.begin(), ha.end(), 0);
 
   for(int i=0; i<N; ++i)
-    BOOST_CHECK_EQUAL(data[i], i);
+    BOOST_REQUIRE_EQUAL(data[i], i);
 
   std::iota(ha.rbegin(), ha.rend(), 0);
   for(int i=0; i<N; ++i)
-    BOOST_CHECK_EQUAL(data[i], N-i-1);
+    BOOST_REQUIRE_EQUAL(data[i], N-i-1);
 }
 
 BOOST_AUTO_TEST_CASE(accessor_iterator_api) {
@@ -680,7 +680,7 @@ BOOST_AUTO_TEST_CASE(accessor_iterator_api) {
       *it = 2;
 
     for(const auto& entry : data)
-      BOOST_CHECK_EQUAL(entry, 2);
+      BOOST_REQUIRE_EQUAL(entry, 2);
   }
 
   /*** Test operator+= ***/
@@ -691,9 +691,9 @@ BOOST_AUTO_TEST_CASE(accessor_iterator_api) {
 
     for(int i=0; i<N; ++i) {
       if (i % 2 != 0)
-        BOOST_CHECK_EQUAL(data[i], 0);
+        BOOST_REQUIRE_EQUAL(data[i], 0);
       else
-        BOOST_CHECK_EQUAL(data[i], 1);
+        BOOST_REQUIRE_EQUAL(data[i], 1);
     }
   }
 
@@ -704,7 +704,7 @@ BOOST_AUTO_TEST_CASE(accessor_iterator_api) {
       *it = 1;
 
     for(const auto& entry : data)
-      BOOST_CHECK_EQUAL(entry, 1);
+      BOOST_REQUIRE_EQUAL(entry, 1);
   }
 
   /*** Test postfix -- ***/
@@ -714,13 +714,13 @@ BOOST_AUTO_TEST_CASE(accessor_iterator_api) {
       *it = 1;
 
     for(const auto& entry : data)
-      BOOST_CHECK_EQUAL(entry, 1);
+      BOOST_REQUIRE_EQUAL(entry, 1);
   }
 
   /*** Check that operator+ is commutative -- ***/
   {
     auto it = ha.begin();
-    BOOST_CHECK((it + 2) == (2 + it));
+    BOOST_REQUIRE((it + 2) == (2 + it));
   }
 
   /*** Test operator[] ***/
@@ -733,9 +733,9 @@ BOOST_AUTO_TEST_CASE(accessor_iterator_api) {
 
     for(int i=0; i<N; ++i) {
       if (i % 2 != 0)
-        BOOST_CHECK_EQUAL(data[i], 0);
+        BOOST_REQUIRE_EQUAL(data[i], 0);
       else
-        BOOST_CHECK_EQUAL(data[i], 1);
+        BOOST_REQUIRE_EQUAL(data[i], 1);
     }
   }
 }
@@ -766,7 +766,7 @@ BOOST_AUTO_TEST_CASE(offset_1d) {
   expected[0] = 1;
   expected[1] = 1;
 
-  BOOST_CHECK(expected == data);
+  BOOST_REQUIRE(expected == data);
 }
 
 BOOST_AUTO_TEST_CASE(offset_2d) {
@@ -807,7 +807,7 @@ BOOST_AUTO_TEST_CASE(offset_2d) {
       if ((i < 2) or (j < 2))
         expected[i*N+j] = 1;
 
-  BOOST_CHECK(data == expected);
+  BOOST_REQUIRE(data == expected);
 }
 
 BOOST_AUTO_TEST_CASE(offset_nested_subscript) {
@@ -849,7 +849,7 @@ BOOST_AUTO_TEST_CASE(offset_nested_subscript) {
       if ((i < 2) or (j < 2))
         expected[i*N+j] = 1;
 
-  BOOST_CHECK(data == expected);
+  BOOST_REQUIRE(data == expected);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

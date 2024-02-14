@@ -28,6 +28,7 @@
 
  #include "hipSYCL/sycl/libkernel/sscp/builtins/shuffle.hpp"
  #include "hipSYCL/sycl/libkernel/sscp/builtins/subgroup.hpp"
+ #include "hipSYCL/sycl/libkernel/sscp/builtins/core.hpp"
 
 namespace detail {
 static inline unsigned int __lane_id(){
@@ -52,10 +53,11 @@ HIPSYCL_SSCP_CONVERGENT_BUILTIN
 __hipsycl_int32 __hipsycl_sscp_sub_group_shl_i32(__hipsycl_int32 value,
                                                   __hipsycl_uint32 delta){
     auto sg_size = __hipsycl_sscp_get_subgroup_max_size();
-    int self = detail::__lane_id();
-    int index = self + delta;
-    index = (int)((self&(sg_size-1))+delta) >= sg_size ? self : index;
-    return __builtin_amdgcn_ds_bpermute(index<<2, value);
+    __hipsycl_uint32 self = detail::__lane_id();
+    //int index = (self + delta);
+    //index = (int)((self&(sg_size-1))+delta);  //>= sg_size ? self : index;
+
+    return self;
                                                   }
 
 HIPSYCL_SSCP_CONVERGENT_BUILTIN

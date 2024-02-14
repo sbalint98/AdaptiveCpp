@@ -116,7 +116,7 @@ BOOST_AUTO_TEST_CASE(vec_api) {
   size_t offset = 0;
   const auto verify_results = [&](const std::initializer_list<float>& expected) {
     for(auto e : expected) {
-      BOOST_TEST(acc[offset++] == e);
+      BOOST_TEST_REQUIRE(acc[offset++] == e);
     }
   };
 
@@ -143,10 +143,10 @@ BOOST_AUTO_TEST_CASE(vec_convert) {
   auto floats_in = cl::sycl::float4{1.f, 2.f, 3.f, 4.f};
   auto ints = floats_in.convert<int>();
   auto floats_out = ints.convert<float>();
-  BOOST_TEST(floats_in.x() == floats_out.x());
-  BOOST_TEST(floats_in.y() == floats_out.y());
-  BOOST_TEST(floats_in.z() == floats_out.z());
-  BOOST_TEST(floats_in.w() == floats_out.w());
+  BOOST_TEST_REQUIRE(floats_in.x() == floats_out.x());
+  BOOST_TEST_REQUIRE(floats_in.y() == floats_out.y());
+  BOOST_TEST_REQUIRE(floats_in.z() == floats_out.z());
+  BOOST_TEST_REQUIRE(floats_in.w() == floats_out.w());
 }
 
 

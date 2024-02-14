@@ -40,14 +40,14 @@ BOOST_AUTO_TEST_CASE(queue_wait) {
   auto evt1 = q1.single_task([=](){});
   auto evt2 = q2.single_task([=](){});
 
-  BOOST_CHECK(q1.get_info<sycl::info::queue::hipSYCL_node_group>() !=
+  BOOST_REQUIRE(q1.get_info<sycl::info::queue::hipSYCL_node_group>() !=
               q2.get_info<sycl::info::queue::hipSYCL_node_group>());
 
   q1.wait();
-  BOOST_CHECK(evt1.get_info<sycl::info::event::command_execution_status>() ==
+  BOOST_REQUIRE(evt1.get_info<sycl::info::event::command_execution_status>() ==
               sycl::info::event_command_status::complete);
   q2.wait();
-  BOOST_CHECK(evt2.get_info<sycl::info::event::command_execution_status>() ==
+  BOOST_REQUIRE(evt2.get_info<sycl::info::event::command_execution_status>() ==
               sycl::info::event_command_status::complete);
 }
 

@@ -55,7 +55,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(group_reduce_mul, T, test_types) {
 
         for (size_t j = 0; j < local_size; ++j) {
           T computed = vIn[i * local_size + j];
-          BOOST_TEST(detail::compare_type(expected, computed),
+          BOOST_TEST_REQUIRE(detail::compare_type(expected, computed),
                      detail::type_to_string(computed)
                          << " at position " << j << " instead of "
                          << detail::type_to_string(expected) << " for group " << i
@@ -99,7 +99,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(group_reduce, T, test_types) {
 
         for (size_t j = 0; j < local_size; ++j) {
           T computed = vIn[i * local_size + j];
-          BOOST_TEST(detail::compare_type(expected, computed),
+          BOOST_TEST_REQUIRE(detail::compare_type(expected, computed),
                      detail::type_to_string(computed)
                          << " at position " << j << " instead of "
                          << detail::type_to_string(expected) << " for group " << i
@@ -133,7 +133,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(group_reduce, T, test_types) {
 
         for (size_t j = 0; j < local_size; ++j) {
           T computed = vIn[i * local_size + j];
-          BOOST_TEST(detail::compare_type(expected, computed),
+          BOOST_TEST_REQUIRE(detail::compare_type(expected, computed),
                      detail::type_to_string(computed)
                          << " at position " << j << " instead of "
                          << detail::type_to_string(expected) << " for group " << i
@@ -182,7 +182,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(group_reduce_ptr, T, test_types) {
           expected = expected + vOrig[i * 2 * local_size + j];
 
         T computed = vIn[2 * global_size + i * local_size];
-        BOOST_TEST(detail::compare_type(expected, computed),
+        BOOST_TEST_REQUIRE(detail::compare_type(expected, computed),
                    detail::type_to_string(computed)
                        << " at position " << i << " instead of "
                        << detail::type_to_string(expected) << " for local_size "
@@ -221,7 +221,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(group_reduce_ptr, T, test_types) {
           expected = expected + vOrig[i * 2 * local_size + j];
 
         T computed = vIn[i * local_size + 2 * global_size];
-        BOOST_TEST(detail::compare_type(expected, computed),
+        BOOST_TEST_REQUIRE(detail::compare_type(expected, computed),
                    detail::type_to_string(computed)
                        << " at position " << i << " instead of "
                        << detail::type_to_string(expected) << " for local_size "
@@ -265,7 +265,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(sub_group_reduce, T, test_types) {
             expected = expected + vOrig[i * local_size + j];
 
           T computed = vIn[i * local_size];
-          BOOST_TEST(detail::compare_type(expected, computed),
+          BOOST_TEST_REQUIRE(detail::compare_type(expected, computed),
                     detail::type_to_string(computed)
                         << " at position " << i << " instead of "
                         << detail::type_to_string(expected) << " for local_size "
@@ -296,7 +296,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(sub_group_reduce, T, test_types) {
             expected = expected + vOrig[i * local_size + j];
 
           T computed = vIn[i * local_size];
-          BOOST_TEST(detail::compare_type(expected, computed),
+          BOOST_TEST_REQUIRE(detail::compare_type(expected, computed),
                     detail::type_to_string(computed)
                         << " at position " << i << " instead of "
                         << detail::type_to_string(expected) << " for local_size "

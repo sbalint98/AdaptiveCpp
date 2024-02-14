@@ -49,7 +49,7 @@ void test_replace(std::size_t problem_size, Generator gen, int old_val,
                new_val);
   std::replace(host_data.begin(), host_data.end(), old_val,
                new_val);               
-  BOOST_CHECK(data == host_data);
+  BOOST_REQUIRE(data == host_data);
 }
 
 

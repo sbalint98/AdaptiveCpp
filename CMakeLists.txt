@@ -295,8 +295,6 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-add_subdirectory(src)
-
 set(ACPP_CONFIG_FILE_PATH "${PROJECT_BINARY_DIR}")
 set(ACPP_CONFIG_FILE_GLOBAL_INSTALLATION false CACHE BOOL 
   "Whether to install the AdaptiveCpp configuration files into a global directory (typically, /etc/AdaptiveCpp). This is generally not recommended.")
@@ -351,6 +349,9 @@ else()
   get_filename_component(Boost_CONTEXT_LIBRARY_NAME "${Boost_CONTEXT_LIBRARY_RELEASE}" NAME)
   get_filename_component(Boost_FIBER_LIBRARY_NAME "${Boost_FIBER_LIBRARY_RELEASE}" NAME)
 endif()
+
+add_subdirectory(src)
+
 set(DEFAULT_WIN32_OMP_LINK_LINE "-L${Boost_LIBRARY_DIR} ${DEFAULT_LINK_PREFIX}${Boost_CONTEXT_LIBRARY_NAME} ${DEFAULT_LINK_PREFIX}${Boost_FIBER_LIBRARY_NAME} ${DEFAULT_OMP_FLAG}")
 set(DEFAULT_WIN32_SEQUENTIAL_LINK_LINE "-L${Boost_LIBRARY_DIR} ${DEFAULT_LINK_PREFIX}${Boost_CONTEXT_LIBRARY_NAME} ${DEFAULT_LINK_PREFIX}${Boost_FIBER_LIBRARY_NAME} -llibomp")
 

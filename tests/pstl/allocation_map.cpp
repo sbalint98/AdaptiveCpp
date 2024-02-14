@@ -67,16 +67,16 @@ BOOST_AUTO_TEST_CASE(insert) {
   for(const auto& x : addresses) {
     amap_t::value_type v;
     v.allocation_size = 1;
-    BOOST_CHECK(amap.insert(x, v));
+    BOOST_REQUIRE(amap.insert(x, v));
   }
 
   for(const auto& x : addresses) {
     uint64_t root_address = 0;
     auto* ret = amap.get_entry(x, root_address);
-    BOOST_CHECK(ret != nullptr);
+    BOOST_REQUIRE(ret != nullptr);
     if(ret) {
-      BOOST_CHECK(root_address == x);
-      BOOST_CHECK(ret->allocation_size == 1);
+      BOOST_REQUIRE(root_address == x);
+      BOOST_REQUIRE(ret->allocation_size == 1);
     }
   }
 
@@ -88,7 +88,7 @@ BOOST_AUTO_TEST_CASE(insert) {
     if(addresses.find(addr) == addresses.end()) {
       uint64_t root_address = 0;
       auto* ret = amap.get_entry(addr, root_address);
-      BOOST_CHECK(!ret);
+      BOOST_REQUIRE(!ret);
       ++num_foreign_addresses_found;
     }
   }
@@ -105,7 +105,7 @@ BOOST_AUTO_TEST_CASE(get_entry) {
     amap_t::value_type v;
     v.allocation_size = i;
 
-    BOOST_CHECK(amap.insert(current_address, v));
+    BOOST_REQUIRE(amap.insert(current_address, v));
     reference_entries[current_address] = i;
 
     current_address += i;
@@ -114,27 +114,27 @@ BOOST_AUTO_TEST_CASE(get_entry) {
   for(const auto& entry : reference_entries) {
     uint64_t root_address = 0;
     auto* ret = amap.get_entry(entry.first, root_address);
-    BOOST_CHECK(ret);
+    BOOST_REQUIRE(ret);
     if(ret) {
-      BOOST_CHECK(root_address == entry.first);
-      BOOST_CHECK(ret->allocation_size == entry.second);
+      BOOST_REQUIRE(root_address == entry.first);
+      BOOST_REQUIRE(ret->allocation_size == entry.second);
     }
     root_address = 0;
     ret = amap.get_entry(entry.first + entry.second / 2, root_address);
 
-    BOOST_CHECK(ret);
+    BOOST_REQUIRE(ret);
     if(ret) {
-      BOOST_CHECK(root_address == entry.first);
-      BOOST_CHECK(ret->allocation_size == entry.second);
+      BOOST_REQUIRE(root_address == entry.first);
+      BOOST_REQUIRE(ret->allocation_size == entry.second);
     }
 
     root_address = 0;
     ret = amap.get_entry(entry.first + entry.second - 1, root_address);
 
-    BOOST_CHECK(ret);
+    BOOST_REQUIRE(ret);
     if(ret) {
-      BOOST_CHECK(root_address == entry.first);
-      BOOST_CHECK(ret->allocation_size == entry.second);
+      BOOST_REQUIRE(root_address == entry.first);
+      BOOST_REQUIRE(ret->allocation_size == entry.second);
     }
   }
 }
@@ -155,14 +155,14 @@ BOOST_AUTO_TEST_CASE(erase) {
   for(const auto& x : addresses) {
     amap_t::value_type v;
     v.allocation_size = 1;
-    BOOST_CHECK(amap.insert(x, v));
+    BOOST_REQUIRE(amap.insert(x, v));
   }
 
   for(const auto& x : addresses) {
     uint64_t root_address = 0;
-    BOOST_CHECK(amap.get_entry(x, root_address));
-    BOOST_CHECK(amap.erase(x));
-    BOOST_CHECK(!amap.get_entry(x, root_address));
+    BOOST_REQUIRE(amap.get_entry(x, root_address));
+    BOOST_REQUIRE(amap.erase(x));
+    BOOST_REQUIRE(!amap.get_entry(x, root_address));
   }
 }
 
@@ -253,7 +253,7 @@ BOOST_AUTO_TEST_CASE(multi_threaded) {
     threads[i].join();
 
   for(int i = 0; i < num_threads; ++i) {
-    BOOST_TEST(per_thread_num_successes[i] == 3);
+    BOOST_TEST_REQUIRE(per_thread_num_successes[i] == 3);
   }
 }
 
