@@ -46,7 +46,7 @@ BOOST_AUTO_TEST_CASE(queue_no_profiling_exception)
       acc[0] = 42;
     });
   });
-  BOOST_CHECK_EXCEPTION(evt1.get_profiling_info<cl::sycl::info::event_profiling::command_submit>(),
+  BOOST_REQUIRE_EXCEPTION(evt1.get_profiling_info<cl::sycl::info::event_profiling::command_submit>(),
                         cl::sycl::exception,
                         is_invalid);
 
@@ -63,10 +63,10 @@ BOOST_AUTO_TEST_CASE(queue_no_profiling_exception)
              buf2.get_access<cl::sycl::access::mode::discard_write>(cgh));
   });
 
-  BOOST_CHECK_EXCEPTION(evt3.get_profiling_info<cl::sycl::info::event_profiling::command_end>(),
+  BOOST_REQUIRE_EXCEPTION(evt3.get_profiling_info<cl::sycl::info::event_profiling::command_end>(),
                         cl::sycl::exception,
                         is_invalid);
-  BOOST_CHECK_EXCEPTION(evt2.get_profiling_info<cl::sycl::info::event_profiling::command_start>(),
+  BOOST_REQUIRE_EXCEPTION(evt2.get_profiling_info<cl::sycl::info::event_profiling::command_start>(),
                         cl::sycl::exception,
                         is_invalid);
 
@@ -80,10 +80,10 @@ BOOST_AUTO_TEST_CASE(queue_no_profiling_exception)
     cgh.copy(buf2.get_access<cl::sycl::access::mode::read>(cgh), host_array);
   });
 
-  BOOST_CHECK_EXCEPTION(evt4.get_profiling_info<cl::sycl::info::event_profiling::command_submit>(),
+  BOOST_REQUIRE_EXCEPTION(evt4.get_profiling_info<cl::sycl::info::event_profiling::command_submit>(),
                         cl::sycl::exception,
                         is_invalid);
-  BOOST_CHECK_EXCEPTION(evt5.get_profiling_info<cl::sycl::info::event_profiling::command_submit>(),
+  BOOST_REQUIRE_EXCEPTION(evt5.get_profiling_info<cl::sycl::info::event_profiling::command_submit>(),
                         cl::sycl::exception,
                         is_invalid);
 }
@@ -104,7 +104,7 @@ BOOST_AUTO_TEST_CASE(queue_profiling)
   auto t12 = evt1.get_profiling_info<cl::sycl::info::event_profiling::command_start>();
   auto t11 = evt1.get_profiling_info<cl::sycl::info::event_profiling::command_submit>();
   auto t13 = evt1.get_profiling_info<cl::sycl::info::event_profiling::command_end>();
-  BOOST_CHECK(t11 <= t12 && t12 <= t13);
+  BOOST_REQUIRE(t11 <= t12 && t12 <= t13);
   
   auto evt2 = queue.submit([&](cl::sycl::handler &cgh) {
     auto acc = buf1.get_access<cl::sycl::access::mode::discard_write>(cgh);
@@ -122,13 +122,13 @@ BOOST_AUTO_TEST_CASE(queue_profiling)
   auto t21 = evt2.get_profiling_info<cl::sycl::info::event_profiling::command_submit>();
   auto t22 = evt2.get_profiling_info<cl::sycl::info::event_profiling::command_start>();
   auto t23 = evt2.get_profiling_info<cl::sycl::info::event_profiling::command_end>();
-  BOOST_CHECK(t21 <= t22 && t22 <= t23);
+  BOOST_REQUIRE(t21 <= t22 && t22 <= t23);
 
   auto t31 = evt3.get_profiling_info<cl::sycl::info::event_profiling::command_submit>();
   auto t32 = evt3.get_profiling_info<cl::sycl::info::event_profiling::command_start>();
   auto t33 = evt3.get_profiling_info<cl::sycl::info::event_profiling::command_end>();
-  BOOST_CHECK(t31 <= t32 && t32 <= t33);
-  BOOST_CHECK(t21 <= t31 && t23 <= t32);
+  BOOST_REQUIRE(t31 <= t32 && t32 <= t33);
+  BOOST_REQUIRE(t21 <= t31 && t23 <= t32);
 
   auto evt4 = queue.submit([&](cl::sycl::handler &cgh) {
     cgh.fill(buf1.get_access<cl::sycl::access::mode::discard_write>(cgh), 1);
@@ -143,13 +143,13 @@ BOOST_AUTO_TEST_CASE(queue_profiling)
   auto t51 = evt5.get_profiling_info<cl::sycl::info::event_profiling::command_submit>();
   auto t52 = evt5.get_profiling_info<cl::sycl::info::event_profiling::command_start>();
   auto t53 = evt5.get_profiling_info<cl::sycl::info::event_profiling::command_end>();
-  BOOST_CHECK(t51 <= t52 && t52 <= t53);
+  BOOST_REQUIRE(t51 <= t52 && t52 <= t53);
 
   // re-ordered
   auto t41 = evt4.get_profiling_info<cl::sycl::info::event_profiling::command_submit>();
   auto t42 = evt4.get_profiling_info<cl::sycl::info::event_profiling::command_start>();
   auto t43 = evt4.get_profiling_info<cl::sycl::info::event_profiling::command_end>();
-  BOOST_CHECK(t41 <= t42 && t42 <= t43);
+  BOOST_REQUIRE(t41 <= t42 && t42 <= t43);
 
   // usm
   auto *src = cl::sycl::malloc_shared<int>(n, queue);
@@ -161,7 +161,7 @@ BOOST_AUTO_TEST_CASE(queue_profiling)
   auto t61 = evt6.get_profiling_info<cl::sycl::info::event_profiling::command_submit>();
   auto t62 = evt6.get_profiling_info<cl::sycl::info::event_profiling::command_start>();
   auto t63 = evt6.get_profiling_info<cl::sycl::info::event_profiling::command_end>();
-  BOOST_CHECK(t61 <= t62 && t62 <= t63);
+  BOOST_REQUIRE(t61 <= t62 && t62 <= t63);
 
   auto evt7 = queue.submit([&](cl::sycl::handler &cgh) {
     cgh.memcpy(dest, src, sizeof src);
@@ -169,7 +169,7 @@ BOOST_AUTO_TEST_CASE(queue_profiling)
   auto t71 = evt7.get_profiling_info<cl::sycl::info::event_profiling::command_submit>();
   auto t72 = evt7.get_profiling_info<cl::sycl::info::event_profiling::command_start>();
   auto t73 = evt7.get_profiling_info<cl::sycl::info::event_profiling::command_end>();
-  BOOST_CHECK(t71 <= t72 && t72 <= t73);
+  BOOST_REQUIRE(t71 <= t72 && t72 <= t73);
 
   auto evt8 = queue.submit([&](cl::sycl::handler &cgh) {
     cgh.prefetch(dest, sizeof src);
@@ -178,7 +178,7 @@ BOOST_AUTO_TEST_CASE(queue_profiling)
   auto t82 = evt8.get_profiling_info<cl::sycl::info::event_profiling::command_start>();
   auto t83 = evt8.get_profiling_info<cl::sycl::info::event_profiling::command_end>();
   // run time may be zero if prefetching is a no-op
-  BOOST_CHECK(t81 <= t82 && t82 <= t83);
+  BOOST_REQUIRE(t81 <= t82 && t82 <= t83);
 
   cl::sycl::free(src, queue);
   cl::sycl::free(dest, queue);

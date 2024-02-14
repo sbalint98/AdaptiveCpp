@@ -53,8 +53,8 @@ void run_unary_transform_test(std::size_t problem_size) {
   auto host_ret = std::transform(data.begin(), data.end(), host_out.begin(),
                                  transformation);
 
-  BOOST_CHECK(device_out == host_out);
-  BOOST_CHECK(ret == device_out.begin() + problem_size);
+  BOOST_REQUIRE(device_out == host_out);
+  BOOST_REQUIRE(ret == device_out.begin() + problem_size);
 }
 
 
@@ -96,8 +96,8 @@ void run_binary_transform_test(std::size_t problem_size) {
   auto host_ret = std::transform(data1.begin(), data1.end(), data2.begin(),
                                  host_out.begin(), transformation);
 
-  BOOST_CHECK(device_out == host_out);
-  BOOST_CHECK(ret == device_out.begin() + problem_size);
+  BOOST_REQUIRE(device_out == host_out);
+  BOOST_REQUIRE(ret == device_out.begin() + problem_size);
 }
 
 BOOST_AUTO_TEST_CASE(par_unseq_binary_zero_size) {

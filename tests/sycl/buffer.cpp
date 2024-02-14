@@ -90,8 +90,8 @@ BOOST_AUTO_TEST_CASE(buffer_api) {
   auto host_f = buf_f.get_host_access();
   auto host_a = buf_a.get_host_access();
   for(size_t i = 0; i < host_a.size(); ++i) {
-    BOOST_CHECK_EQUAL(host_a[i], static_cast<int>(host_e[i * 2]));
-    BOOST_CHECK_EQUAL(host_a[i], static_cast<int>(host_f[i]));
+    BOOST_REQUIRE_EQUAL(host_a[i], static_cast<int>(host_e[i * 2]));
+    BOOST_REQUIRE_EQUAL(host_a[i], static_cast<int>(host_f[i]));
   }
 }
 
@@ -136,12 +136,12 @@ BOOST_AUTO_TEST_CASE(buffer_api_2d) {
   auto host_a = buf_a.get_host_access();
   for(size_t i = 0; i < host_a.get_range()[0]; ++i) {
     for(size_t j = 0; j < host_a.get_range()[1]; ++j) {
-      BOOST_CHECK_EQUAL(host_a[i][j], 
+      BOOST_REQUIRE_EQUAL(host_a[i][j], 
         static_cast<int>(host_d[i * host_a.get_range()[1] * 2 + j * 2]));
-      BOOST_CHECK_EQUAL(host_a[i][j], 
+      BOOST_REQUIRE_EQUAL(host_a[i][j], 
         static_cast<int>(host_e[i * host_a.get_range()[1] + j]));
-      BOOST_CHECK_EQUAL(host_a[i][j], static_cast<int>(host_f[i][j * 2]));
-      BOOST_CHECK_EQUAL(host_a[i][j], static_cast<int>(host_g[i][j]));
+      BOOST_REQUIRE_EQUAL(host_a[i][j], static_cast<int>(host_f[i][j * 2]));
+      BOOST_REQUIRE_EQUAL(host_a[i][j], static_cast<int>(host_g[i][j]));
     }
   }
 }
@@ -162,7 +162,7 @@ BOOST_AUTO_TEST_CASE(buffer_update_host) {
     cgh.update_host(sycl_buf.get_access<cl::sycl::access::mode::read>(cgh));
   }).wait();
 
-  BOOST_CHECK(host_buf == (std::vector{0, 1, 2, 3}));
+  BOOST_REQUIRE(host_buf == (std::vector{0, 1, 2, 3}));
 }
 
 BOOST_AUTO_TEST_CASE(buffer_external_writeback) {
@@ -187,7 +187,7 @@ BOOST_AUTO_TEST_CASE(buffer_external_writeback) {
   }
 
   for(int i = 0; i < host_buff.size(); ++i) {
-    BOOST_CHECK(host_buff[i] == i);
+    BOOST_REQUIRE(host_buff[i] == i);
   }
 }
 
@@ -213,7 +213,7 @@ BOOST_AUTO_TEST_CASE(buffer_external_writeback_nullptr) {
   }
 
   for(int i = 0; i < host_buff.size(); ++i) {
-    BOOST_CHECK(host_buff[i] == 0);
+    BOOST_REQUIRE(host_buff[i] == 0);
   }
 }
 
@@ -238,7 +238,7 @@ BOOST_AUTO_TEST_CASE(buffer_container_constructor) {
   }
 
   for(int i = 0; i < host_buff.size(); ++i) {
-    BOOST_CHECK(host_buff[i] == testVal);
+    BOOST_REQUIRE(host_buff[i] == testVal);
   }
 }
 
@@ -273,9 +273,9 @@ BOOST_AUTO_TEST_CASE(buffer_container_constructor_no_def_constr) {
   }
 
   for(int i = 0; i < data1.size(); ++i)
-    BOOST_CHECK(data1[i].val == testVal.val);
+    BOOST_REQUIRE(data1[i].val == testVal.val);
   for(int i = 0; i < data2.size(); ++i)
-    BOOST_CHECK(data2[i].val == testVal.val);
+    BOOST_REQUIRE(data2[i].val == testVal.val);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

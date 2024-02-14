@@ -252,7 +252,7 @@ void check_binary_reduce(std::vector<T> buffer, size_t local_size, size_t global
       T computed      = buffer[i * local_size + j + offset];
       T expectedValue = initialize_type<T>(expected[i]);
 
-      BOOST_TEST(compare_type(expectedValue, computed),
+      BOOST_TEST_REQUIRE(compare_type(expectedValue, computed),
                  Line << ":" << type_to_string(computed) << " at position " << j
                       << " instead of " << type_to_string(expectedValue)
                       << " for case: " << cases[i] << " " << name);

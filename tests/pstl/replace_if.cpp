@@ -47,7 +47,7 @@ void test_replace_if(std::size_t problem_size, Generator gen, Pred p, int new_va
   std::replace_if(std::execution::par_unseq, data.begin(), data.end(), p,
                   new_val);
   std::replace_if(host_data.begin(), host_data.end(), p, new_val);
-  BOOST_CHECK(data == host_data);
+  BOOST_REQUIRE(data == host_data);
 }
 
 

@@ -40,7 +40,7 @@ BOOST_AUTO_TEST_CASE(par_unseq_zero_size) {
   std::vector<int> data{24};
   std::for_each(std::execution::par_unseq, data.begin(), data.begin(),
                 [=](auto &x) { x = 12; });
-  BOOST_CHECK(data[0] == 24);
+  BOOST_REQUIRE(data[0] == 24);
 }
 
 BOOST_AUTO_TEST_CASE(par_unseq_incomplete_work_group) {
@@ -50,7 +50,7 @@ BOOST_AUTO_TEST_CASE(par_unseq_incomplete_work_group) {
   std::for_each(std::execution::par_unseq, data.begin(), data.end(),
                 [=](auto &x) { x *= 2; });
   for(int i = 0; i < data.size(); ++i) {
-    BOOST_CHECK(data[i] == 2*i);
+    BOOST_REQUIRE(data[i] == 2*i);
   }
 }
 

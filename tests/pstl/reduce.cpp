@@ -47,17 +47,17 @@ void test_basic_reduction(T init, std::size_t size) {
       data.begin(), data.end(), init, std::plus<>{});
   T res = std::reduce(std::execution::par_unseq,
       data.begin(), data.end(), init, std::plus<>{});
-  BOOST_CHECK(res == reference_result);
+  BOOST_REQUIRE(res == reference_result);
 
   T res2 = std::reduce(std::execution::par_unseq,
       data.begin(), data.end(), init);
-  BOOST_CHECK(res2 == res);
+  BOOST_REQUIRE(res2 == res);
 
   T reference_result2 = std::reduce(
       data.begin(), data.end());
   T res3 = std::reduce(std::execution::par_unseq,
       data.begin(), data.end());
-  BOOST_CHECK(reference_result2 == res3);
+  BOOST_REQUIRE(reference_result2 == res3);
 }
 
 BOOST_AUTO_TEST_CASE(par_unseq_empty_offset) {
