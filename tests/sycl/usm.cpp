@@ -55,16 +55,16 @@ BOOST_AUTO_TEST_CASE(allocation_functions) {
   std::vector<int> unregistered_data(100);
   
   
-  BOOST_TEST(device_mem_ptr != nullptr);
-  BOOST_TEST(aligned_device_mem_ptr != nullptr);
-  BOOST_TEST(host_ptr != nullptr);
-  BOOST_TEST(aligned_host_ptr != nullptr);
-  BOOST_TEST(shared_ptr != nullptr);
-  BOOST_TEST(aligned_shared_ptr != nullptr);
+  BOOST_TEST_REQUIRE(device_mem_ptr != nullptr);
+  BOOST_TEST_REQUIRE(aligned_device_mem_ptr != nullptr);
+  BOOST_TEST_REQUIRE(host_ptr != nullptr);
+  BOOST_TEST_REQUIRE(aligned_host_ptr != nullptr);
+  BOOST_TEST_REQUIRE(shared_ptr != nullptr);
+  BOOST_TEST_REQUIRE(aligned_shared_ptr != nullptr);
 
   auto verify_allocation_type = [&](void *ptr, sycl::usm::alloc expected) {
     sycl::usm::alloc type = sycl::get_pointer_type(ptr, q.get_context());
-    BOOST_CHECK(type == expected);
+    BOOST_REQUIRE(type == expected);
   };
 
   if (q.get_context().is_host()) {
@@ -97,7 +97,7 @@ BOOST_AUTO_TEST_CASE(allocation_functions) {
     // they are all retrieved correctly, instead of
     // just working on a default queue
     sycl::device dev = sycl::get_pointer_device(ptr, q.get_context());
-    BOOST_CHECK(dev == q.get_device());
+    BOOST_REQUIRE(dev == q.get_device());
   };
 
   verify_device(device_mem_ptr);
@@ -121,7 +121,7 @@ BOOST_AUTO_TEST_CASE(explicit_queue_dependencies) {
   sycl::queue q;
 
   // By default, we should have an out-of-order queue
-  BOOST_CHECK(!q.is_in_order());
+  BOOST_REQUIRE(!q.is_in_order());
 
   // Make sure that there are no dependencies between tasks
   // by default
@@ -129,13 +129,13 @@ BOOST_AUTO_TEST_CASE(explicit_queue_dependencies) {
     cgh.single_task<class Queue_deps_kernel1>([](){});
   });
 
-  BOOST_CHECK(evt1.get_wait_list().empty());
+  BOOST_REQUIRE(evt1.get_wait_list().empty());
 
   sycl::event evt2 = q.submit([&](sycl::handler &cgh) {
     cgh.single_task<class Queue_deps_kernel2>([](){});
   });
 
-  BOOST_CHECK(evt2.get_wait_list().empty());
+  BOOST_REQUIRE(evt2.get_wait_list().empty());
 
   // Make sure that we depend on previous tasks once we use
   // depends_on()
@@ -144,43 +144,43 @@ BOOST_AUTO_TEST_CASE(explicit_queue_dependencies) {
     cgh.single_task<class Queue_deps_kernel3>([](){});
   });
 
-  BOOST_CHECK(evt3.get_wait_list().size() == 1);
-  BOOST_CHECK(evt3.get_wait_list()[0] == evt2);
+  BOOST_REQUIRE(evt3.get_wait_list().size() == 1);
+  BOOST_REQUIRE(evt3.get_wait_list()[0] == evt2);
 
   sycl::event evt4 = q.submit([&](sycl::handler &cgh) {
     cgh.depends_on(evt3);
     cgh.single_task<class Queue_deps_kernel4>([](){});
   });
 
-  BOOST_CHECK(evt4.get_wait_list().size() == 1);
-  BOOST_CHECK(evt4.get_wait_list()[0] == evt3);
+  BOOST_REQUIRE(evt4.get_wait_list().size() == 1);
+  BOOST_REQUIRE(evt4.get_wait_list()[0] == evt3);
 }
 
 
 BOOST_AUTO_TEST_CASE(in_order_queue) {
   sycl::queue q{sycl::property_list{sycl::property::queue::in_order{}}};
 
-  BOOST_CHECK(q.is_in_order());
+  BOOST_REQUIRE(q.is_in_order());
 
   sycl::event evt1 = q.submit([&](sycl::handler &cgh) {
     cgh.single_task<class In_order_queue_kernel1>([](){});
   });
 
-  BOOST_CHECK(evt1.get_wait_list().empty());
+  BOOST_REQUIRE(evt1.get_wait_list().empty());
 
   sycl::event evt2 = q.submit([&](sycl::handler &cgh) {
     cgh.single_task<class In_order_queue_kernel2>([](){});
   });
 
-  BOOST_CHECK(evt2.get_wait_list().size() == 1);
-  BOOST_CHECK(evt2.get_wait_list()[0] == evt1);
+  BOOST_REQUIRE(evt2.get_wait_list().size() == 1);
+  BOOST_REQUIRE(evt2.get_wait_list()[0] == evt1);
 
   sycl::event evt3 = q.submit([&](sycl::handler &cgh) {
     cgh.single_task<class In_order_queue_kernel3>([](){});
   });
 
-  BOOST_CHECK(evt3.get_wait_list().size() == 1);
-  BOOST_CHECK(evt3.get_wait_list()[0] == evt2);
+  BOOST_REQUIRE(evt3.get_wait_list().size() == 1);
+  BOOST_REQUIRE(evt3.get_wait_list()[0] == evt2);
 }
 
 BOOST_AUTO_TEST_CASE(allocations_in_kernels) {
@@ -233,9 +233,9 @@ BOOST_AUTO_TEST_CASE(allocations_in_kernels) {
   q.wait();
 
   for (int i = 0; i < test_size; ++i){
-    BOOST_TEST(shared_allocation[i] == i + 3);
-    BOOST_TEST(host_explicit_allocation[i] == i + 3);
-    BOOST_TEST(mapped_host_allocation[i] == i + 3);
+    BOOST_TEST_REQUIRE(shared_allocation[i] == i + 3);
+    BOOST_TEST_REQUIRE(host_explicit_allocation[i] == i + 3);
+    BOOST_TEST_REQUIRE(mapped_host_allocation[i] == i + 3);
   }
 
   sycl::free(shared_allocation, q);
@@ -259,7 +259,7 @@ BOOST_AUTO_TEST_CASE(memcpy) {
     q.wait();
 
     for (std::size_t i = 0; i < test_size; ++i) {
-      BOOST_TEST(host_data[i] == initial_data[i]);
+      BOOST_TEST_REQUIRE(host_data[i] == initial_data[i]);
     }
   };
 
@@ -291,7 +291,7 @@ BOOST_AUTO_TEST_CASE(memcpy) {
     q.wait();
 
     for (std::size_t i = 0; i < test_size; ++i)
-      BOOST_TEST(shared_mem[i] == initial_data[i]);
+      BOOST_TEST_REQUIRE(shared_mem[i] == initial_data[i]);
 
     int *device_mem2 = sycl::malloc_device<int>(test_size, q);
     std::vector<int> host_data(test_size);
@@ -302,7 +302,7 @@ BOOST_AUTO_TEST_CASE(memcpy) {
     q.wait();
 
     for (std::size_t i = 0; i < test_size; ++i)
-      BOOST_TEST(host_data[i] == initial_data[i]);
+      BOOST_TEST_REQUIRE(host_data[i] == initial_data[i]);
     
     sycl::free(device_mem, q);
     sycl::free(device_mem2, q);
@@ -321,7 +321,7 @@ BOOST_AUTO_TEST_CASE(memcpy) {
     q.wait();
 
     for (std::size_t i = 0; i < test_size; ++i)
-      BOOST_TEST(host_mem2[i] == initial_data[i]);
+      BOOST_TEST_REQUIRE(host_mem2[i] == initial_data[i]);
 
     sycl::free(host_mem, q);
     sycl::free(host_mem2, q);
@@ -339,7 +339,7 @@ BOOST_AUTO_TEST_CASE(memcpy) {
     q.wait();
 
     for (std::size_t i = 0; i < test_size; ++i)
-      BOOST_TEST(host_data[i] == initial_data[i]);
+      BOOST_TEST_REQUIRE(host_data[i] == initial_data[i]);
 
     sycl::free(device_mem,  q);
     sycl::free(device_mem2, q);
@@ -356,7 +356,7 @@ BOOST_AUTO_TEST_CASE(memcpy) {
     q.wait();
 
     for (std::size_t i = 0; i < test_size; ++i)
-      BOOST_TEST(shared_mem2[i] == initial_data[i]);
+      BOOST_TEST_REQUIRE(shared_mem2[i] == initial_data[i]);
 
     sycl::free(shared_mem, q);
     sycl::free(shared_mem2, q);
@@ -376,9 +376,9 @@ BOOST_AUTO_TEST_CASE(usm_fill) {
 
   for (int i = 0; i < test_size; ++i) {
     if (i == 0 || i == test_size - 1)
-      BOOST_TEST(shared_mem[i] == 0);
+      BOOST_TEST_REQUIRE(shared_mem[i] == 0);
     else
-      BOOST_TEST(shared_mem[i] == fill_value);
+      BOOST_TEST_REQUIRE(shared_mem[i] == fill_value);
   }
 
   sycl::free(shared_mem, q);
@@ -398,9 +398,9 @@ BOOST_AUTO_TEST_CASE(memset) {
 
   for (int i = 0; i < test_size; ++i) {
     if (i == 0 || i == test_size - 1)
-      BOOST_TEST(host_mem[i] == 0);
+      BOOST_TEST_REQUIRE(host_mem[i] == 0);
     else
-      BOOST_TEST(host_mem[i] == 12);
+      BOOST_TEST_REQUIRE(host_mem[i] == 12);
   }
 
   sycl::free(mem, q);
@@ -428,7 +428,7 @@ BOOST_AUTO_TEST_CASE(prefetch) {
     host_queue.wait();
   }
   for (std::size_t i = 0; i < test_size; ++i)
-    BOOST_TEST(shared_mem[i] == i + 1);
+    BOOST_TEST_REQUIRE(shared_mem[i] == i + 1);
   
   sycl::free(shared_mem, q);
 }

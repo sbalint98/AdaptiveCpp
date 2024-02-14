@@ -43,14 +43,14 @@ void test_generate_n(std::size_t problem_size) {
 
   auto ret = std::generate_n(std::execution::par_unseq, data.begin(), data.size(),
                 []() { return 42; });
-  BOOST_CHECK(ret == data.begin() + problem_size);
+  BOOST_REQUIRE(ret == data.begin() + problem_size);
 
   std::vector<int> data_host(problem_size);
 
   std::generate_n(data_host.begin(), data.size(),
                 []() { return 42; });
 
-  BOOST_CHECK(data == data_host);
+  BOOST_REQUIRE(data == data_host);
 }
 
 BOOST_AUTO_TEST_CASE(par_unseq_negative) {
@@ -58,7 +58,7 @@ BOOST_AUTO_TEST_CASE(par_unseq_negative) {
 
   auto ret = std::generate_n(std::execution::par_unseq, empty.begin(), -1,
                              []() { return 42; });
-  BOOST_CHECK(ret == empty.begin());
+  BOOST_REQUIRE(ret == empty.begin());
 }
 
 BOOST_AUTO_TEST_CASE(par_unseq_empty) {

@@ -42,7 +42,7 @@ BOOST_AUTO_TEST_CASE(interop_handle_api) {
   s::interop_handle ih{assigned_device, executor};
   s::backend b = ih.get_backend();
 
-  BOOST_CHECK(b == s::backend::omp);
+  BOOST_REQUIRE(b == s::backend::omp);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

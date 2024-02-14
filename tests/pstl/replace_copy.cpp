@@ -51,8 +51,8 @@ void test_replace_copy(std::size_t problem_size, Generator gen, int old_val,
                                data.end(), dest.begin(), old_val, new_val);
   std::replace_copy(data.begin(), data.end(), host_dest.begin(), old_val,
                     new_val);
-  BOOST_CHECK(ret == dest.begin() + problem_size);
-  BOOST_CHECK(dest == host_dest);
+  BOOST_REQUIRE(ret == dest.begin() + problem_size);
+  BOOST_REQUIRE(dest == host_dest);
 }
 
 BOOST_AUTO_TEST_CASE(par_unseq_empty) {

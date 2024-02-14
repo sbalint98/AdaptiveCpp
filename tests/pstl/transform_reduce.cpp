@@ -47,7 +47,7 @@ void test_basic_reduction(T init, std::size_t size) {
   T res = std::transform_reduce(std::execution::par_unseq,
       data.begin(), data.end(), init, std::plus<>{}, [](auto x) { return x; });
   
-  BOOST_CHECK(res == reference_result);
+  BOOST_REQUIRE(res == reference_result);
 }
 
 BOOST_AUTO_TEST_CASE(par_unseq_empty) {
@@ -81,7 +81,7 @@ BOOST_AUTO_TEST_CASE(par_unseq_int_unknown_identity) {
   int res = std::transform_reduce(
       std::execution::par_unseq, data.begin(), data.end(), 0,
       [](auto a, auto b) { return a + b; }, [](auto x) { return x; });
-  BOOST_CHECK(res == reference_result);
+  BOOST_REQUIRE(res == reference_result);
 }
 
 template<class T>
@@ -109,8 +109,8 @@ BOOST_AUTO_TEST_CASE(par_unseq_aggregate) {
   auto res =
       std::transform_reduce(std::execution::par_unseq, data.begin(), data.end(),
                             aggregate<int>{0, 0}, std::plus<>{}, transform);
-  BOOST_CHECK(res.a == reference_result.a);
-  BOOST_CHECK(res.b == reference_result.b);
+  BOOST_REQUIRE(res.a == reference_result.a);
+  BOOST_REQUIRE(res.b == reference_result.b);
 }
 
 template<class T>
@@ -138,10 +138,10 @@ BOOST_AUTO_TEST_CASE(par_unseq_aggregate_4_double) {
       std::transform_reduce(std::execution::par_unseq, data.begin(), data.end(),
                             aggregate_4<double>{ }, std::plus<>{}, transform);
 
-  BOOST_CHECK_EQUAL(res.a,  reference_result.a);
-  BOOST_CHECK_EQUAL(res.b,  reference_result.b);
-  BOOST_CHECK_EQUAL(res.c,  reference_result.c);
-  BOOST_CHECK_EQUAL(res.d,  reference_result.d);
+  BOOST_REQUIRE_EQUAL(res.a,  reference_result.a);
+  BOOST_REQUIRE_EQUAL(res.b,  reference_result.b);
+  BOOST_REQUIRE_EQUAL(res.c,  reference_result.c);
+  BOOST_REQUIRE_EQUAL(res.d,  reference_result.d);
 }
 
 
