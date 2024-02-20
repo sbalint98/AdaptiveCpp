@@ -28,7 +28,6 @@
 
  #include "hipSYCL/sycl/libkernel/sscp/builtins/shuffle.hpp"
  #include "hipSYCL/sycl/libkernel/sscp/builtins/subgroup.hpp"
- #include "hipSYCL/sycl/libkernel/sscp/builtins/core.hpp"
 
 namespace detail {
 static inline unsigned int __lane_id(){
@@ -53,11 +52,11 @@ HIPSYCL_SSCP_CONVERGENT_BUILTIN
 __hipsycl_int32 __hipsycl_sscp_sub_group_shl_i32(__hipsycl_int32 value,
                                                   __hipsycl_uint32 delta){
     auto sg_size = __hipsycl_sscp_get_subgroup_max_size();
-    __hipsycl_uint32 self = detail::__lane_id();
-    //int index = (self + delta);
-    //index = (int)((self&(sg_size-1))+delta);  //>= sg_size ? self : index;
+    int self = detail::__lane_id();
+    int index = (self + delta);
+    //index = (int)((self&(sg_size-1))+delta) >= sg_size ? self : index;
 
-    return self;
+    return __builtin_amdgcn_ds_bpermute(index<<2, value);
                                                   }
 
 HIPSYCL_SSCP_CONVERGENT_BUILTIN
@@ -112,7 +111,6 @@ __hipsycl_int32 __hipsycl_sscp_sub_group_shr_i32(__hipsycl_int32 value,
                                                   __hipsycl_uint32 delta){
     int self = detail::__lane_id();
     int index = self - delta;
-    index = index < 0 ? self : index; // Maybe we can skip this since the returned value is unspecified?
     return __builtin_amdgcn_ds_bpermute(index<<2, value);
                                                   }
 
@@ -204,29 +202,36 @@ __hipsycl_int64 __hipsycl_sscp_sub_group_shr_i64(__hipsycl_int64 value,
 //                                                   }
 
 
-// HIPSYCL_SSCP_CONVERGENT_BUILTIN
-// __hipsycl_int8 __hipsycl_sscp_sub_group_select_i8(__hipsycl_int8 value,
-//                                                    __hipsycl_int32 id){
-//                                                     static_assert(false, "Unimplemented");
-//                                                   }
+HIPSYCL_SSCP_CONVERGENT_BUILTIN
+__hipsycl_int8 __hipsycl_sscp_sub_group_select_i8(__hipsycl_int8 value,
+                                                   __hipsycl_int32 id){
+    return __hipsycl_sscp_sub_group_select_i32(value, id);
+                                                  }
 
-// HIPSYCL_SSCP_CONVERGENT_BUILTIN
-// __hipsycl_int16 __hipsycl_sscp_sub_group_select_i16(__hipsycl_int16 value,
-//                                                      __hipsycl_int32 id){
-//                                                     static_assert(false, "Unimplemented");
-//                                                   }
+HIPSYCL_SSCP_CONVERGENT_BUILTIN
+__hipsycl_int16 __hipsycl_sscp_sub_group_select_i16(__hipsycl_int16 value,
+                                                     __hipsycl_int32 id){
+    return __hipsycl_sscp_sub_group_select_i32(value, id);
+                                                  }
 
-// HIPSYCL_SSCP_CONVERGENT_BUILTIN
-// __hipsycl_int32 __hipsycl_sscp_sub_group_select_i32(__hipsycl_int32 value,
-//                                                      __hipsycl_int32 id){
-//                                                     static_assert(false, "Unimplemented");
-//                                                   }
+HIPSYCL_SSCP_CONVERGENT_BUILTIN
+__hipsycl_int32 __hipsycl_sscp_sub_group_select_i32(__hipsycl_int32 value,
+                                                     __hipsycl_int32 id){
+    int max_subgroup_size = __hipsycl_sscp_get_subgroup_max_size();
+    int index = id%max_subgroup_size;
+    return __builtin_amdgcn_ds_bpermute(index<<2, value);
+                                                  }
 
-// HIPSYCL_SSCP_CONVERGENT_BUILTIN
-// __hipsycl_int64 __hipsycl_sscp_sub_group_select_i64(__hipsycl_int64 value,
-//                                                      __hipsycl_int32 id){
-//                                                     static_assert(false, "Unimplemented");
-//                                                   }
+HIPSYCL_SSCP_CONVERGENT_BUILTIN
+__hipsycl_int64 __hipsycl_sscp_sub_group_select_i64(__hipsycl_int64 value,
+                                                     __hipsycl_int32 id){
+    int tmp[2];
+    __builtin_memcpy(tmp, &value, sizeof(tmp));
+    __hipsycl_sscp_sub_group_select_i32(tmp[0], id);
+    __hipsycl_sscp_sub_group_select_i32(tmp[1], id);
+    __hipsycl_int64 result = (static_cast<__hipsycl_int64>(tmp[1]) << 32ull) | (static_cast<__hipsycl_uint32>(tmp[0]));
+    return result;
+                                                  }
 
 
 

@@ -60,6 +60,8 @@ namespace detail {
 
 inline uint32_t get_subgroup_size(const sycl::queue& q) {
   auto sizes = q.get_device().get_info<sycl::info::device::sub_group_sizes>();
+  auto device_name = q.get_device().get_info<sycl::info::device::name>();
+  std::cout << "The sizes are_ " << sizes[0] << " " << sizes.size() << " name: " << device_name <<  std::endl;
   assert(sizes.size() > 0);
   return static_cast<uint32_t>(sizes[0]);
 }
