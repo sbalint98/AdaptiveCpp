@@ -472,21 +472,22 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(subgroup_shuffle_like, T, test_types) {
             for (size_t k = 0; k < subgroup_size; ++k) {
               size_t local_index  = j * subgroup_size + k;
               size_t global_index = i * local_size + local_index;
-              std::cout << "local_index: " << local_index << std::endl; 
+              std::cout << "local_index:asdf " << local_index << " " << local_size << std::endl; 
               if (local_index >= local_size) // keep to work group size
                 break;
 
               T expected = detail::initialize_type<T>(global_index + 1) +
                           detail::get_offset<T>(global_size, 1);
-
+              std::cout << "naext" << std::endl;
               if (local_index == local_size - 1 ||
                   k == subgroup_size - 1) // not defined for last work item
                 continue;
-
+                
+              std::cout << "hasdf" << std::endl;
               T computed = vIn[global_index];
               std::cout << "passed one" << " i: " << i << " j: " << j << " k: " << k<< std::endl;
               std::cout << detail::type_to_string(computed) << " gidx: " << global_index << std::endl;
-              BOOST_TEST_WARN(detail::compare_type(expected, computed),
+              BOOST_TEST(detail::compare_type(expected, computed),
                         detail::type_to_string(computed)
                             << " at position " << global_index << " instead of "
                             << detail::type_to_string(expected)
