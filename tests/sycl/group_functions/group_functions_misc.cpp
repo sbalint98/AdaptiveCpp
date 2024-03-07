@@ -464,29 +464,22 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(subgroup_shuffle_like, T, test_types) {
       const auto validation_function = [](const std::vector<T> &vIn,
                                           const std::vector<T> &vOrig, size_t local_size,
                                           size_t global_size) {
-        std::cout << "gs: " << global_size << " ls: " << local_size << std::endl;
         auto subgroup_size = detail::get_subgroup_size();
-        std::cout << subgroup_size << std::endl;
         for (size_t i = 0; i < global_size / local_size; ++i) {
           for (size_t j = 0; j < (local_size + subgroup_size - 1) / subgroup_size; ++j) {
             for (size_t k = 0; k < subgroup_size; ++k) {
               size_t local_index  = j * subgroup_size + k;
               size_t global_index = i * local_size + local_index;
-              std::cout << "local_index:asdf " << local_index << " " << local_size << std::endl; 
               if (local_index >= local_size) // keep to work group size
                 break;
 
               T expected = detail::initialize_type<T>(global_index + 1) +
                           detail::get_offset<T>(global_size, 1);
-              std::cout << "naext" << std::endl;
               if (local_index == local_size - 1 ||
                   k == subgroup_size - 1) // not defined for last work item
                 continue;
                 
-              std::cout << "hasdf" << std::endl;
               T computed = vIn[global_index];
-              std::cout << "passed one" << " i: " << i << " j: " << j << " k: " << k<< std::endl;
-              std::cout << detail::type_to_string(computed) << " gidx: " << global_index << std::endl;
               BOOST_TEST(detail::compare_type(expected, computed),
                         detail::type_to_string(computed)
                             << " at position " << global_index << " instead of "
@@ -537,14 +530,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(subgroup_shuffle_like, T, test_types) {
                             << detail::type_to_string(expected)
                             << " for case: sub_group, shift right, local size: "
                             << local_size);
-
+ 
               if (!detail::compare_type(expected, computed))
                 return;
             }
           }
         }
       };
-      std::cout<< "shuffle right" << std::endl;
       test_nd_group_function_1d<__LINE__, T>(elements_per_thread, data_generator,
                                             tested_function, validation_function);
     }
@@ -594,46 +586,46 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(subgroup_shuffle_like, T, test_types) {
     //                                         tested_function, validation_function);
     // }
     
-    // {
-    //   const auto tested_function = [=](auto acc, size_t global_linear_id, sycl::sub_group sg,
-    //                                   auto g, T local_value) {
-    //     acc[global_linear_id] = sycl::select_from_group(sg, local_value, sycl::id<1>());
-    //   };
-    //   const auto validation_function = [](const std::vector<T> &vIn,
-    //                                       const std::vector<T> &vOrig, size_t local_size,
-    //                                       size_t global_size) {
-    //       auto subgroup_size = detail::get_subgroup_size();
-    //       for (size_t i = 0; i < global_size / local_size; ++i) {
-    //         for (size_t j = 0; j < (local_size + subgroup_size - 1) / subgroup_size; ++j) {
-    //           for (size_t k = 0; k < subgroup_size; ++k) {
-    //             size_t local_index  = j * subgroup_size + k;
-    //             size_t global_index = i * local_size + local_index;
+    {
+      const auto tested_function = [=](auto acc, size_t global_linear_id, sycl::sub_group sg,
+                                      auto g, T local_value) {
+        acc[global_linear_id] = sycl::select_from_group(sg, local_value, sycl::id<1>());
+      };
+      const auto validation_function = [](const std::vector<T> &vIn,
+                                          const std::vector<T> &vOrig, size_t local_size,
+                                          size_t global_size) {
+          auto subgroup_size = detail::get_subgroup_size();
+          for (size_t i = 0; i < global_size / local_size; ++i) {
+            for (size_t j = 0; j < (local_size + subgroup_size - 1) / subgroup_size; ++j) {
+              for (size_t k = 0; k < subgroup_size; ++k) {
+                size_t local_index  = j * subgroup_size + k;
+                size_t global_index = i * local_size + local_index;
 
-    //             if (local_index >= local_size) // keep to work group size
-    //               break;
+                if (local_index >= local_size) // keep to work group size
+                  break;
 
-    //             T expected = detail::initialize_type<T>(i*local_size + j*subgroup_size) +
-    //                         detail::get_offset<T>(global_size, 1);
+                T expected = detail::initialize_type<T>(i*local_size + j*subgroup_size) +
+                            detail::get_offset<T>(global_size, 1);
 
-    //             T computed = vIn[global_index];
+                T computed = vIn[global_index];
 
-    //             BOOST_TEST_REQUIRE(detail::compare_type(expected, computed),
-    //                       detail::type_to_string(computed)
-    //                           << " at position " << global_index << " instead of "
-    //                           << detail::type_to_string(expected)
-    //                           << " for case: sub_group, select, local size: "
-    //                           << local_size);
+                BOOST_TEST_REQUIRE(detail::compare_type(expected, computed),
+                          detail::type_to_string(computed)
+                              << " at position " << global_index << " instead of "
+                              << detail::type_to_string(expected)
+                              << " for case: sub_group, select, local size: "
+                              << local_size);
 
-    //             if (!detail::compare_type(expected, computed))
-    //               return;
-    //           }
-    //         }
-    //       }
-    //     };
-
-    //   test_nd_group_function_1d<__LINE__, T>(elements_per_thread, data_generator,
-    //                                         tested_function, validation_function);
-    // }
+                if (!detail::compare_type(expected, computed))
+                  return;
+              }
+            }
+          }
+        };
+      std::cout << "select_from_group_test" << std::endl; 
+      test_nd_group_function_1d<__LINE__, T>(elements_per_thread, data_generator,
+                                            tested_function, validation_function);
+    }
   }
 }
 
