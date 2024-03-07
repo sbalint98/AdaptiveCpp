@@ -34,7 +34,7 @@
 
 HIPSYCL_SSCP_CONVERGENT_BUILTIN
 bool __hipsycl_sscp_sub_group_any(bool pred){
-    __ockl_wfany_i32(pred);
+    return __ockl_wfany_i32(pred);
 }
 
 

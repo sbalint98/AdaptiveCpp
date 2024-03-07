@@ -54,8 +54,7 @@ __hipsycl_int32 __hipsycl_sscp_sub_group_shl_i32(__hipsycl_int32 value,
     auto sg_size = __hipsycl_sscp_get_subgroup_max_size();
     int self = detail::__lane_id();
     int index = (self + delta);
-    //index = (int)((self&(sg_size-1))+delta) >= sg_size ? self : index;
-
+    index = (int)((self&(sg_size-1))+delta) >= sg_size ? self : index;
     return __builtin_amdgcn_ds_bpermute(index<<2, value);
                                                   }
 
@@ -110,7 +109,9 @@ HIPSYCL_SSCP_CONVERGENT_BUILTIN
 __hipsycl_int32 __hipsycl_sscp_sub_group_shr_i32(__hipsycl_int32 value,
                                                   __hipsycl_uint32 delta){
     int self = detail::__lane_id();
+    int width = __hipsycl_sscp_get_subgroup_max_size();
     int index = self - delta;
+    index = (index < (self & ~(width-1)))?self:index;
     return __builtin_amdgcn_ds_bpermute(index<<2, value);
                                                   }
 
