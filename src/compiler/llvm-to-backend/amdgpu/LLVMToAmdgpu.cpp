@@ -263,12 +263,18 @@ bool LLVMToAmdgpuTranslator::toBackendFlavor(llvm::Module &M, PassHandler& PH) {
   }
   llvm::AlwaysInlinerPass AIP;
   AIP.run(M, *PH.ModuleAnalysisManager);
+  for(auto& F: M) {
+    F.addFnAttr("target-cpu", "gfx906");
+    F.addFnAttr("target-features", "+16-bit-insts,+ci-insts,+dl-insts,+dot1-insts,+dot10-insts,+dot2-insts,+dot7-insts,+dpp,+gfx8-insts,+gfx9-insts,+s-memrealtime,+s-memtime-inst,+wavefrontsize64");
+    F.addFnAttr("uniform-work-group-size", "true");
 
+  }
   return true;
 }
 
 
 bool LLVMToAmdgpuTranslator::translateToBackendFormat(llvm::Module &FlavoredModule, std::string &Out) {
+  FlavoredModule.print(llvm::outs(), nullptr);
 #ifdef ACPP_HIPRTC_LINK
   HIPSYCL_DEBUG_INFO << "LLVMToAmdgpu: Invoking hipRTC...\n";
 
