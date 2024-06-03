@@ -84,7 +84,7 @@ void setFastMathFunctionAttribs(llvm::Module& M) {
   for(auto& F : M) {
     if(!F.isIntrinsic()) {
       forceAttr(F, "approx-func-fp-math","true");
-      //forceAttr(F, "denormal-fp-math","preserve-sign,preserve-sign");
+      forceAttr(F, "denormal-fp-math","dynamic,dynamic");
       forceAttr(F, "no-infs-fp-math","true");
       forceAttr(F, "no-nans-fp-math","true");
       forceAttr(F, "no-signed-zeros-fp-math","true");
@@ -309,7 +309,6 @@ bool LLVMToBackendTranslator::optimizeFlavoredIR(llvm::Module& M, PassHandler& P
           DI.print(DP);
           llvm::errs() << "\n";
         }
-        std::cout << "I am aan LLVM diagnosticHandlerCall back yeeeaaaah ********* " << std::endl;
       });
 
   llvm::ModulePassManager MPM =

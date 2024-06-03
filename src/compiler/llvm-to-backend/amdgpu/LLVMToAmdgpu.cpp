@@ -291,14 +291,14 @@ bool LLVMToAmdgpuTranslator::translateToBackendFormat(llvm::Module &FlavoredModu
   llvm::WriteBitcodeToFile(FlavoredModule, StrOstream);
 
   for(auto& F: FlavoredModule) {
-    if(F.hasFnAttribute("denormal-fp-math")){
-      std::cout << "REMOVING DENORMAL_FP_MATH ATTRIBUTE NOW FOR REAL!!" << std::endl;
-      F.removeFnAttr("denormal-fp-math");
-    }
+    // if(F.hasFnAttribute("denormal-fp-math")){
+    //   std::cout << "REMOVING DENORMAL_FP_MATH ATTRIBUTE NOW FOR REAL!!" << std::endl;
+    //   F.removeFnAttr("denormal-fp-math");
+    // }
 
-    if(F.hasFnAttribute("denormal-fp-math")){
-      std::cout << "I did not manage to REMOVE function attribute" << std::endl;
-    }
+    // if(F.hasFnAttribute("denormal-fp-math")){
+    //   std::cout << "I did not manage to REMOVE function attribute" << std::endl;
+    // }
   }
   return hiprtcJitLink(ModuleString, Out);
 #else
