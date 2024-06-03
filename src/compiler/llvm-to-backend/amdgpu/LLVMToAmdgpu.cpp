@@ -273,7 +273,9 @@ bool LLVMToAmdgpuTranslator::toBackendFlavor(llvm::Module &M, PassHandler& PH) {
     F.addFnAttr("target-features", "+16-bit-insts,+ci-insts,+dl-insts,+dot1-insts,+dot10-insts,+dot2-insts,+dot7-insts,+dpp,+gfx8-insts,+gfx9-insts,+s-memrealtime,+s-memtime-inst,+wavefrontsize64");
     F.addFnAttr("uniform-work-group-size", "true");
     F.addFnAttr(llvm::Attribute::NoFree);
-    F.addFnAttr(llvm::Attribute::MustProgress);
+    // Unfortunately causes a segmentation fault in the O3 pipeline
+    // ./bin/mdrun-io-test --gtest_filter=NormalIntegratorsWithFEP/MdrunNoAppendContinuationIsExact.WithinTolerances/1
+    // F.addFnAttr(llvm::Attribute::MustProgress);
     F.addFnAttr(llvm::Attribute::NoRecurse);
     F.addFnAttr(llvm::Attribute::Convergent);
   }
