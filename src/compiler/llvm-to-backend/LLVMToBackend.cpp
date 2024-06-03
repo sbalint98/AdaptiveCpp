@@ -84,7 +84,7 @@ void setFastMathFunctionAttribs(llvm::Module& M) {
   for(auto& F : M) {
     if(!F.isIntrinsic()) {
       forceAttr(F, "approx-func-fp-math","true");
-      forceAttr(F, "denormal-fp-math","preserve-sign,preserve-sign");
+      //forceAttr(F, "denormal-fp-math","preserve-sign,preserve-sign");
       forceAttr(F, "no-infs-fp-math","true");
       forceAttr(F, "no-nans-fp-math","true");
       forceAttr(F, "no-signed-zeros-fp-math","true");
@@ -304,13 +304,21 @@ bool LLVMToBackendTranslator::optimizeFlavoredIR(llvm::Module& M, PassHandler& P
           llvm::errs() << "LLVMToBackend: Error: ";
           DI.print(DP);
           llvm::errs() << "\n";
+        }else {
+          llvm::errs() << "LLVMToBackend: Optimization Remarks: ";
+          DI.print(DP);
+          llvm::errs() << "\n";
         }
+        std::cout << "I am aan LLVM diagnosticHandlerCall back yeeeaaaah ********* " << std::endl;
       });
 
   llvm::ModulePassManager MPM =
       PH.PassBuilder->buildPerModuleDefaultPipeline(llvm::OptimizationLevel::O3);
+  HIPSYCL_DEBUG_INFO << "Before optimization\n";
+  //M.dump();
   MPM.run(M, *PH.ModuleAnalysisManager);
-
+  HIPSYCL_DEBUG_INFO << "After optimization\n";
+  M.dump();
   return true;
 }
 

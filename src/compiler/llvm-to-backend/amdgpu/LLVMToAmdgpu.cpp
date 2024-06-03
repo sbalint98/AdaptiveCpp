@@ -265,6 +265,11 @@ bool LLVMToAmdgpuTranslator::toBackendFlavor(llvm::Module &M, PassHandler& PH) {
   AIP.run(M, *PH.ModuleAnalysisManager);
   for(auto& F: M) {
     F.addFnAttr("target-cpu", "gfx906");
+    // if(F.hasFnAttribute("denormal-fp-math")){
+    //   std::cout << "REMOVING DENORMAL_FP_MATH ATTRIBUTE" << std::endl;
+    //   F.removeFnAttr("denormal-fp-math");
+    // }
+    F.addFnAttr("stack-protector-buffer-size","8");
     F.addFnAttr("target-features", "+16-bit-insts,+ci-insts,+dl-insts,+dot1-insts,+dot10-insts,+dot2-insts,+dot7-insts,+dpp,+gfx8-insts,+gfx9-insts,+s-memrealtime,+s-memtime-inst,+wavefrontsize64");
     F.addFnAttr("uniform-work-group-size", "true");
     F.addFnAttr(llvm::Attribute::NoFree);
@@ -285,6 +290,16 @@ bool LLVMToAmdgpuTranslator::translateToBackendFormat(llvm::Module &FlavoredModu
   llvm::raw_string_ostream StrOstream{ModuleString};
   llvm::WriteBitcodeToFile(FlavoredModule, StrOstream);
 
+  for(auto& F: FlavoredModule) {
+    if(F.hasFnAttribute("denormal-fp-math")){
+      std::cout << "REMOVING DENORMAL_FP_MATH ATTRIBUTE NOW FOR REAL!!" << std::endl;
+      F.removeFnAttr("denormal-fp-math");
+    }
+
+    if(F.hasFnAttribute("denormal-fp-math")){
+      std::cout << "I did not manage to REMOVE function attribute" << std::endl;
+    }
+  }
   return hiprtcJitLink(ModuleString, Out);
 #else
   return clangJitLink(FlavoredModule, Out);
@@ -443,8 +458,8 @@ bool LLVMToAmdgpuTranslator::clangJitLink(llvm::Module& FlavoredModule, std::str
   std::string ClangPath = ACPP_CLANG_PATH;
 
   llvm::SmallVector<std::string> Invocation = {
-      ClangPath, "-x", "hip", "-O3", "-nogpuinc", OffloadArchFlag, "--cuda-device-only",
-        "-Xclang", "-mlink-bitcode-file", "-Xclang", InputFile->TmpName,
+      ClangPath, "-x", "hip", "-O3", "-fgpu-flush-denormals-to-zero", "-nogpuinc", OffloadArchFlag, "--cuda-device-only",
+        "-Xclang", "-mlink-bitcode-file", "-emit-llvm", "-Xclang", InputFile->TmpName,
         "-o",  OutputFilename, DummyFile->TmpName
   };
 
