@@ -201,8 +201,9 @@ LLVMToAmdgpuTranslator::LLVMToAmdgpuTranslator(const std::vector<std::string> &K
 
 
 bool LLVMToAmdgpuTranslator::toBackendFlavor(llvm::Module &M, PassHandler& PH) {
-  
   M.setTargetTriple(TargetTriple);
+  HIPSYCL_DEBUG_INFO << "********- The target tripple is " << M.getTargetTriple ();
+
 #if LLVM_VERSION_MAJOR >= 17
   M.setDataLayout(
       "e-p:64:64-p1:64:64-p2:32:32-p3:32:32-p4:64:64-p5:32:32-p6:32:32-p7:160:256:256:32-p8:128:128-"
@@ -236,7 +237,9 @@ bool LLVMToAmdgpuTranslator::toBackendFlavor(llvm::Module &M, PassHandler& PH) {
         
         if(!F->hasFnAttribute("amdgpu-flat-work-group-size"))
           F->addFnAttr("amdgpu-flat-work-group-size",
-                     std::to_string(FlatGroupSize) + "," + std::to_string(FlatGroupSize));
+                       std::to_string(FlatGroupSize) + "," + std::to_string(FlatGroupSize));
+          // F->addFnAttr("target-features",
+          //              "+16-bit-insts,+ci-insts,+dl-insts,+dot1-insts,+dot10-insts,+dot2-insts,+dot7-insts,+dpp,+gfx8-insts,+gfx9-insts,+s-memrealtime,+s-memtime-inst,+wavefrontsize64");
       }
     }
   }
@@ -275,7 +278,7 @@ bool LLVMToAmdgpuTranslator::translateToBackendFormat(llvm::Module &FlavoredModu
   std::string ModuleString;
   llvm::raw_string_ostream StrOstream{ModuleString};
   llvm::WriteBitcodeToFile(FlavoredModule, StrOstream);
-
+  FlavoredModule.print(llvm::outs(), nullptr);
   return hiprtcJitLink(ModuleString, Out);
 #else
   return clangJitLink(FlavoredModule, Out);
@@ -306,12 +309,19 @@ bool LLVMToAmdgpuTranslator::hiprtcJitLink(const std::string &Bitcode, std::stri
 #ifdef ACPP_HIPRTC_LINK
   // Currently hipRTC link does not take into account options anyway.
   // It just compiles for the currently active HIP device.
-  std::vector<hiprtcJIT_option> options {};
+
+  const char* isaopts[] = {"-mllvm", "-inlinehint-threshold=0", "-Rpass-analysis=.*", "-ffast-math", "-gline-tables-only", "-save-temps"};
+  size_t isaoptssize = 6;
+  const void* lopts[] = {(void*)isaopts, (void*)(isaoptssize)};
+
+  std::vector<hiprtcJIT_option> options {hiprtcJIT_option::HIPRTC_JIT_IR_TO_ISA_OPT_EXT,
+                                         hiprtcJIT_option::HIPRTC_JIT_IR_TO_ISA_OPT_COUNT_EXT};
   std::vector<void*> option_vals {};
     
   hiprtcLinkState LS;
   auto err = hiprtcLinkCreate(options.size(), options.data(),
-                              option_vals.data(), &LS);
+                              (void**)lopts, &LS);
+
   if(err != HIPRTC_SUCCESS) {
     this->registerError("LLVMToAmdgpu: Could not create hipRTC link state");
     return false;
@@ -355,9 +365,18 @@ bool LLVMToAmdgpuTranslator::hiprtcJitLink(const std::string &Bitcode, std::stri
   std::size_t Size = 0;
   err = hiprtcLinkComplete(LS, &Binary, &Size);
   if(err != HIPRTC_SUCCESS) {
+    this->registerError(hiprtcGetErrorString(err));
     this->registerError("LLVMToAmdgpu: hiprtcLinkComplete() failed. Setting the environment "
                         "variables AMD_COMGR_SAVE_TEMPS=1 AMD_COMGR_REDIRECT_LOGS=stdout "
                         "AMD_COMGR_EMIT_VERBOSE_LOGS=1 might reveal more information.");
+    
+    size_t size_log = 0;
+    auto LS_program = reinterpret_cast<hiprtcProgram*>(&LS);
+    err = hiprtcGetProgramLogSize(*LS_program, &size_log);
+    if(err != HIPRTC_SUCCESS){
+      this->registerError("Couldn't get log size");
+    }
+    this->registerError(std::to_string(size_log));
     return false;
   }
     

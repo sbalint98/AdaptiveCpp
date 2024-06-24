@@ -293,7 +293,7 @@ bool LLVMToBackendTranslator::translatePreparedIR(llvm::Module &FlavoredModule, 
 }
 
 bool LLVMToBackendTranslator::optimizeFlavoredIR(llvm::Module& M, PassHandler& PH) {
-  assert(PH.PassBuilder);
+  assert(PH.PassBuPassBuilderilder);
   assert(PH.ModuleAnalysisManager);
 
   // silence optimization remarks,..
@@ -307,10 +307,14 @@ bool LLVMToBackendTranslator::optimizeFlavoredIR(llvm::Module& M, PassHandler& P
         }
       });
 
+  HIPSYCL_DEBUG_INFO << "********- The target tripple is " << M.getTargetTriple () << "\n";
   llvm::ModulePassManager MPM =
       PH.PassBuilder->buildPerModuleDefaultPipeline(llvm::OptimizationLevel::O3);
+  MPM.printPipeline(llvm::outs(), [](llvm::StringRef ClassName) {
+      return ClassName;
+    });
+  llvm::outs() << "\n";
   MPM.run(M, *PH.ModuleAnalysisManager);
-
   return true;
 }
 
@@ -371,7 +375,7 @@ void LLVMToBackendTranslator::resolveExternalSymbols(llvm::Module& M) {
 
   if(HasExternalSymbolResolver) {
 
-    // TODO We can not rely on LinkedIRIds being reliable, since
+    // TODO We can not rely on LinkedIRIds being reliable, sincef
     // we only link needed symbols. Therefore, just because we have linked one module once
     // we may have to do it again.
     llvm::SmallSet<std::string, 32> AllAttemptedSymbolResolutions;
