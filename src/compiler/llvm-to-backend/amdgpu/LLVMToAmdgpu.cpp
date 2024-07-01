@@ -238,8 +238,16 @@ bool LLVMToAmdgpuTranslator::toBackendFlavor(llvm::Module &M, PassHandler& PH) {
         if(!F->hasFnAttribute("amdgpu-flat-work-group-size"))
           F->addFnAttr("amdgpu-flat-work-group-size",
                        std::to_string(FlatGroupSize) + "," + std::to_string(FlatGroupSize));
-          // F->addFnAttr("target-features",
-          //              "+16-bit-insts,+ci-insts,+dl-insts,+dot1-insts,+dot10-insts,+dot2-insts,+dot7-insts,+dpp,+gfx8-insts,+gfx9-insts,+s-memrealtime,+s-memtime-inst,+wavefrontsize64");
+          F->addFnAttr("target-features",
+                       "+16-bit-insts,+ci-insts,+dl-insts,+dot1-insts,+dot10-insts,+dot2-insts,+dot7-insts,+dpp,+gfx8-insts,+gfx9-insts,+s-memrealtime,+s-memtime-inst,+wavefrontsize64");
+          F->addFnAttr("target-cpu", "gfx906");
+          F->addFnAttr("stack-protector-buffer-size","8");
+          F->addFnAttr("frame-pointer","all");
+          F->addFnAttr("uniform-work-group-size","true");
+          F->addFnAttr(llvm::Attribute::NoRecurse);
+          F->addFnAttr(llvm::Attribute::MustProgress);
+          F->addFnAttr(llvm::Attribute::NoRecurse);
+          //F->addFnAttr(llvm::Attribute::NoInline);
       }
     }
   }
@@ -278,7 +286,7 @@ bool LLVMToAmdgpuTranslator::translateToBackendFormat(llvm::Module &FlavoredModu
   std::string ModuleString;
   llvm::raw_string_ostream StrOstream{ModuleString};
   llvm::WriteBitcodeToFile(FlavoredModule, StrOstream);
-  FlavoredModule.print(llvm::outs(), nullptr);
+  //FlavoredModule.print(llvm::outs(), nullptr);
   return hiprtcJitLink(ModuleString, Out);
 #else
   return clangJitLink(FlavoredModule, Out);
@@ -310,8 +318,8 @@ bool LLVMToAmdgpuTranslator::hiprtcJitLink(const std::string &Bitcode, std::stri
   // Currently hipRTC link does not take into account options anyway.
   // It just compiles for the currently active HIP device.
 
-  const char* isaopts[] = {"-mllvm", "-inlinehint-threshold=0", "-Rpass-analysis=.*", "-ffast-math", "-gline-tables-only", "-save-temps"};
-  size_t isaoptssize = 6;
+  const char* isaopts[] = {"-mllvm", "-inline-threshold=1", "-mllvm", "-inlinehint-threshold=1", "-Rpass-analysis=.*", "-ffast-math", "-gline-tables-only", "-save-temps"};
+  size_t isaoptssize = 8;
   const void* lopts[] = {(void*)isaopts, (void*)(isaoptssize)};
 
   std::vector<hiprtcJIT_option> options {hiprtcJIT_option::HIPRTC_JIT_IR_TO_ISA_OPT_EXT,

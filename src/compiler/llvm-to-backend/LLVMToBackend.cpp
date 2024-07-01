@@ -217,16 +217,18 @@ bool LLVMToBackendTranslator::prepareIR(llvm::Module &M) {
 
   constructPassBuilderAndMAM([&](llvm::PassBuilder &PB, llvm::ModuleAnalysisManager &MAM) {
     PassHandler PH {&PB, &MAM};
-
+    if(IsFastMath)
+      setFastMathFunctionAttribs(M);
+    OptimizationSuccessful = optimizeFlavoredIR(M, PH);
     // Optimize away unnecessary branches due to backend-specific S2IR constants
     // This is what allows us to specialize code for different backends.
     HIPSYCL_DEBUG_INFO << "LLVMToBackend: Optimizing branches post S2 IR constant application...\n";
-    IRConstant::optimizeCodeAfterConstantModification(M, MAM);
+    // IRConstant::optimizeCodeAfterConstantModification(M, MAM);
     // Rerun kernel outlining pass so that we don't include unneeded functions
     // that are specific to other backends.
     HIPSYCL_DEBUG_INFO << "LLVMToBackend: Reoutlining kernels...\n";
-    KernelOutliningPass KP{OutliningEntrypoints};
-    KP.run(M, MAM);
+    // KernelOutliningPass KP{OutliningEntrypoints};
+    // KP.run(M, MAM);
 
     // These optimizations should be run before __hipsycl_sscp_* builtins
     // are resolved, so before backend bitcode libraries are linked. We thus
@@ -261,10 +263,6 @@ bool LLVMToBackendTranslator::prepareIR(llvm::Module &M) {
     if(FlavoringSuccessful) {
       // Run optimizations
       HIPSYCL_DEBUG_INFO << "LLVMToBackend: Optimizing flavored IR...\n";
-
-      if(IsFastMath)
-        setFastMathFunctionAttribs(M);
-      OptimizationSuccessful = optimizeFlavoredIR(M, PH);
 
       if(!OptimizationSuccessful) {
         this->registerError("LLVMToBackend: Optimization failed");
