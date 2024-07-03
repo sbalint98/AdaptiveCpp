@@ -327,7 +327,7 @@ bool LLVMToAmdgpuTranslator::hiprtcJitLink(const std::string &Bitcode, std::stri
     
   hiprtcLinkState LS;
   auto err = hiprtcLinkCreate(options.size(), options.data(),
-                              option_vals.data(), &LS);
+                              (void**)lopts, &LS);
   if(err != HIPRTC_SUCCESS) {
     this->registerError("LLVMToAmdgpu: Could not create hipRTC link state");
     return false;
