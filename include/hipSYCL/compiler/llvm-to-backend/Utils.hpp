@@ -29,10 +29,10 @@
 #define HIPSYCL_LLVM_TO_BACKEND_UTILS_HPP
 
 #include <atomic>
-#include <optional>
 
 #include "hipSYCL/compiler/llvm-to-backend/LLVMToBackend.hpp"
 #include "hipSYCL/common/debug.hpp"
+#include <llvm/ADT/DenseMap.h>
 #include <llvm/IR/Attributes.h>
 #include <llvm/ADT/SmallSet.h>
 #include <llvm/IR/Function.h>
@@ -50,12 +50,7 @@
 #include <llvm/Support/Error.h>
 #include <llvm/Support/MemoryBuffer.h>
 #include <llvm/Support/raw_ostream.h>
-#include <llvm/Support/TargetSelect.h>
 #include <llvm/Passes/PassBuilder.h>
-#include <llvm/Target/TargetMachine.h>
-#include <llvm/Target/TargetOptions.h>
-#include <llvm/MC/TargetRegistry.h>
-
 
 namespace hipsycl {
 namespace compiler {
@@ -109,36 +104,11 @@ inline void constructPassBuilder(F&& handler) {
 
 template<class F>
 inline void constructPassBuilderAndMAM(F&& handler) {
-  llvm::InitializeAllTargetInfos();
-  llvm::InitializeAllTargets();
-  llvm::InitializeAllTargetMCs();
-  llvm::InitializeAllAsmParsers();
-  llvm::InitializeAllAsmPrinters();
-
-  std::string Error;
-  const llvm::Target* Target = llvm::TargetRegistry::lookupTarget("amdgcn-amd-amdhsa--gfx906", Error);
-  if (!Target) {
-    HIPSYCL_DEBUG_INFO << Error;
-  }
-  HIPSYCL_DEBUG_INFO << "************* Target INFO\n";
-  HIPSYCL_DEBUG_INFO << Target->getName() << "\n";
-  HIPSYCL_DEBUG_INFO << Target->getShortDescription() << "\n";
-  HIPSYCL_DEBUG_INFO << Target->getBackendName() << "\n";
-
-  llvm::TargetOptions opt;
-  auto RM = std::optional<llvm::Reloc::Model>();
-  auto target_machine = Target->createTargetMachine("amdgcn-amd-amdhsa--gfx906", "gfx906", "", opt, RM);
-
-  HIPSYCL_DEBUG_INFO << target_machine->getTargetCPU() << "\n";
-  HIPSYCL_DEBUG_INFO << target_machine->getTargetFeatureString() << "\n";
-  target_machine->setOptLevel(llvm::CodeGenOpt::Aggressive);
-
   llvm::LoopAnalysisManager LAM;
   llvm::FunctionAnalysisManager FAM;
   llvm::CGSCCAnalysisManager CGAM;
   llvm::ModuleAnalysisManager MAM;
-
-  llvm::PassBuilder PB(target_machine);
+  llvm::PassBuilder PB;
   PB.registerModuleAnalyses(MAM);
   PB.registerCGSCCAnalyses(CGAM);
   PB.registerFunctionAnalyses(FAM);

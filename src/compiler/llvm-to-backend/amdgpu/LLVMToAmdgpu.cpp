@@ -201,9 +201,8 @@ LLVMToAmdgpuTranslator::LLVMToAmdgpuTranslator(const std::vector<std::string> &K
 
 
 bool LLVMToAmdgpuTranslator::toBackendFlavor(llvm::Module &M, PassHandler& PH) {
+  
   M.setTargetTriple(TargetTriple);
-  HIPSYCL_DEBUG_INFO << "********- The target tripple is " << M.getTargetTriple ();
-
 #if LLVM_VERSION_MAJOR >= 17
   M.setDataLayout(
       "e-p:64:64-p1:64:64-p2:32:32-p3:32:32-p4:64:64-p5:32:32-p6:32:32-p7:160:256:256:32-p8:128:128-"
@@ -328,8 +327,7 @@ bool LLVMToAmdgpuTranslator::hiprtcJitLink(const std::string &Bitcode, std::stri
     
   hiprtcLinkState LS;
   auto err = hiprtcLinkCreate(options.size(), options.data(),
-                              (void**)lopts, &LS);
-
+                              option_vals.data(), &LS);
   if(err != HIPRTC_SUCCESS) {
     this->registerError("LLVMToAmdgpu: Could not create hipRTC link state");
     return false;
@@ -373,18 +371,9 @@ bool LLVMToAmdgpuTranslator::hiprtcJitLink(const std::string &Bitcode, std::stri
   std::size_t Size = 0;
   err = hiprtcLinkComplete(LS, &Binary, &Size);
   if(err != HIPRTC_SUCCESS) {
-    this->registerError(hiprtcGetErrorString(err));
     this->registerError("LLVMToAmdgpu: hiprtcLinkComplete() failed. Setting the environment "
                         "variables AMD_COMGR_SAVE_TEMPS=1 AMD_COMGR_REDIRECT_LOGS=stdout "
                         "AMD_COMGR_EMIT_VERBOSE_LOGS=1 might reveal more information.");
-    
-    size_t size_log = 0;
-    auto LS_program = reinterpret_cast<hiprtcProgram*>(&LS);
-    err = hiprtcGetProgramLogSize(*LS_program, &size_log);
-    if(err != HIPRTC_SUCCESS){
-      this->registerError("Couldn't get log size");
-    }
-    this->registerError(std::to_string(size_log));
     return false;
   }
     
