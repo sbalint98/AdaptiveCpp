@@ -70,29 +70,6 @@ __hipsycl_int64 __hipsycl_sscp_sub_group_shl_i64(__hipsycl_int64 value,
                                                   }
 
 
-// HIPSYCL_SSCP_CONVERGENT_BUILTIN
-// __hipsycl_int8 __hipsycl_sscp_work_group_shl_i8(__hipsycl_int8 value,
-//                                                 __hipsycl_uint32 delta){
-//                                                     static_assert(false, "Unimplemented");
-//                                                 }
-// HIPSYCL_SSCP_CONVERGENT_BUILTIN
-// __hipsycl_int16 __hipsycl_sscp_work_group_shl_i16(__hipsycl_int16 value,
-//                                                   __hipsycl_uint32 delta){
-//                                                     static_assert(false, "Unimplemented");
-//                                                   }
-
-// HIPSYCL_SSCP_CONVERGENT_BUILTIN
-// __hipsycl_int32 __hipsycl_sscp_work_group_shl_i32(__hipsycl_int32 value,
-//                                                   __hipsycl_uint32 delta){
-//                                                     static_assert(false, "Unimplemented");
-//                                                   }
-
-// HIPSYCL_SSCP_CONVERGENT_BUILTIN
-// __hipsycl_int64 __hipsycl_sscp_work_group_shl_i64(__hipsycl_int64 value,
-//                                                   __hipsycl_uint32 delta){
-//                                                     static_assert(false, "Unimplemented");
-//                                                   }
-
 
 HIPSYCL_SSCP_CONVERGENT_BUILTIN
 __hipsycl_int8 __hipsycl_sscp_sub_group_shr_i8(__hipsycl_int8 value,
@@ -127,80 +104,39 @@ __hipsycl_int64 __hipsycl_sscp_sub_group_shr_i64(__hipsycl_int64 value,
                                                   }
 
 
-// HIPSYCL_SSCP_CONVERGENT_BUILTIN
-// __hipsycl_int8 __hipsycl_sscp_work_group_shr_i8(__hipsycl_int8 value,
-//                                                 __hipsycl_uint32 delta){
-//                                                     static_assert(false, "Unimplemented");
-//                                                   }
-// HIPSYCL_SSCP_CONVERGENT_BUILTIN
-// __hipsycl_int16 __hipsycl_sscp_work_group_shr_i16(__hipsycl_int16 value,
-//                                                   __hipsycl_uint32 delta){
-//                                                     static_assert(false, "Unimplemented");
-//                                                   }
 
-// HIPSYCL_SSCP_CONVERGENT_BUILTIN
-// __hipsycl_int32 __hipsycl_sscp_work_group_shr_i32(__hipsycl_int32 value,
-//                                                   __hipsycl_uint32 delta){
-//                                                     static_assert(false, "Unimplemented");
-//                                                   }
+HIPSYCL_SSCP_CONVERGENT_BUILTIN
+__hipsycl_int8 __hipsycl_sscp_sub_group_permute_i8(__hipsycl_int8 value,
+                                                   __hipsycl_int32 mask){
+    __hipsycl_sscp_sub_group_permute_i32(value, mask);
+                                                  }
 
-// HIPSYCL_SSCP_CONVERGENT_BUILTIN
-// __hipsycl_int64 __hipsycl_sscp_work_group_shr_i64(__hipsycl_int64 value,
-//                                                   __hipsycl_uint32 delta){
-//                                                     static_assert(false, "Unimplemented");
-//                                                   }
+HIPSYCL_SSCP_CONVERGENT_BUILTIN
+__hipsycl_int16 __hipsycl_sscp_sub_group_permute_i16(__hipsycl_int16 value,
+                                                     __hipsycl_int32 mask){
+    __hipsycl_sscp_sub_group_permute_i32(value, mask);
+                                                  }
 
+HIPSYCL_SSCP_CONVERGENT_BUILTIN
+__hipsycl_int32 __hipsycl_sscp_sub_group_permute_i32(__hipsycl_int32 value,
+                                                     __hipsycl_int32 mask){
+    int self = detail::__lane_id();
+    int index = self ^ mask;
+    index = (index < (self & ~(width-1)))?self:index;
+    return __builtin_amdgcn_ds_bpermute(index<<2, value);                                                
+                                                  }
 
+HIPSYCL_SSCP_CONVERGENT_BUILTIN
+__hipsycl_int64 __hipsycl_sscp_sub_group_permute_i64(__hipsycl_int64 value,
+                                                     __hipsycl_int32 mask){
+    int tmp[2];
+    __builtin_memcpy(tmp, &value, sizeof(tmp));
+    __hipsycl_sscp_sub_group_permute_i32(tmp[0], delta);
+    __hipsycl_sscp_sub_group_permute_i32(tmp[1], delta);
+    __hipsycl_int64 result = (static_cast<__hipsycl_int64>(tmp[1]) << 32ull) | (static_cast<__hipsycl_uint32>(tmp[0]));
+    return result;
+                                                  }
 
-// HIPSYCL_SSCP_CONVERGENT_BUILTIN
-// __hipsycl_int8 __hipsycl_sscp_sub_group_permute_i8(__hipsycl_int8 value,
-//                                                    __hipsycl_int32 mask){
-//                                                     static_assert(false, "Unimplemented");
-//                                                   }
-
-// HIPSYCL_SSCP_CONVERGENT_BUILTIN
-// __hipsycl_int16 __hipsycl_sscp_sub_group_permute_i16(__hipsycl_int16 value,
-//                                                      __hipsycl_int32 mask){
-//                                                     static_assert(false, "Unimplemented");
-//                                                   }
-
-// HIPSYCL_SSCP_CONVERGENT_BUILTIN
-// __hipsycl_int32 __hipsycl_sscp_sub_group_permute_i32(__hipsycl_int32 value,
-//                                                      __hipsycl_int32 mask){
-//                                                     static_assert(false, "Unimplemented");
-//                                                   }
-
-// HIPSYCL_SSCP_CONVERGENT_BUILTIN
-// __hipsycl_int64 __hipsycl_sscp_sub_group_permute_i64(__hipsycl_int64 value,
-//                                                      __hipsycl_int32 mask){
-//                                                     static_assert(false, "Unimplemented");
-//                                                   }
-
-
-
-// HIPSYCL_SSCP_CONVERGENT_BUILTIN
-// __hipsycl_int8 __hipsycl_sscp_work_group_permute_i8(__hipsycl_int8 value,
-//                                                    __hipsycl_int32 mask){
-//                                                     static_assert(false, "Unimplemented");
-//                                                   }
-
-// HIPSYCL_SSCP_CONVERGENT_BUILTIN
-// __hipsycl_int16 __hipsycl_sscp_work_group_permute_i16(__hipsycl_int16 value,
-//                                                      __hipsycl_int32 mask){
-//                                                     static_assert(false, "Unimplemented");
-//                                                   }
-
-// HIPSYCL_SSCP_CONVERGENT_BUILTIN
-// __hipsycl_int32 __hipsycl_sscp_work_group_permute_i32(__hipsycl_int32 value,
-//                                                      __hipsycl_int32 mask){
-//                                                     static_assert(false, "Unimplemented");
-//                                                   }
-
-// HIPSYCL_SSCP_CONVERGENT_BUILTIN
-// __hipsycl_int64 __hipsycl_sscp_work_group_permute_i64(__hipsycl_int64 value,
-//                                                      __hipsycl_int32 mask){
-//                                                     static_assert(false, "Unimplemented");
-//                                                   }
 
 
 HIPSYCL_SSCP_CONVERGENT_BUILTIN
@@ -235,27 +171,3 @@ __hipsycl_int64 __hipsycl_sscp_sub_group_select_i64(__hipsycl_int64 value,
                                                   }
 
 
-
-// HIPSYCL_SSCP_CONVERGENT_BUILTIN
-// __hipsycl_int8 __hipsycl_sscp_work_group_select_i8(__hipsycl_int8 value,
-//                                                    __hipsycl_int32 id){
-//                                                     static_assert(false, "Unimplemented");
-//                                                   }
-
-// HIPSYCL_SSCP_CONVERGENT_BUILTIN
-// __hipsycl_int16 __hipsycl_sscp_work_group_select_i16(__hipsycl_int16 value,
-//                                                      __hipsycl_int32 id){
-//                                                     static_assert(false, "Unimplemented");
-//                                                   }
-
-// HIPSYCL_SSCP_CONVERGENT_BUILTIN
-// __hipsycl_int32 __hipsycl_sscp_work_group_select_i32(__hipsycl_int32 value,
-//                                                      __hipsycl_int32 id){
-//                                                     static_assert(false, "Unimplemented");
-//                                                   }
-
-// HIPSYCL_SSCP_CONVERGENT_BUILTIN
-// __hipsycl_int64 __hipsycl_sscp_work_group_select_i64(__hipsycl_int64 value,
-//                                                      __hipsycl_int32 id){
-//                                                     static_assert(false, "Unimplemented");
-//                                                   }
