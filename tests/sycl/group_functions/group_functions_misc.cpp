@@ -470,8 +470,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(subgroup_shuffle_like, T, test_types) {
                             << " for case: sub_group, shift left, local size: "
                             << local_size);
 
-              // if (!detail::compare_type(expected, computed))
-              //   return;
+              if (!detail::compare_type(expected, computed))
+                return;
             }
           }
         }
@@ -524,50 +524,50 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(subgroup_shuffle_like, T, test_types) {
                                             tested_function, validation_function);
     }
 
-    // {
-    //   const auto tested_function = [=](auto acc, size_t global_linear_id,
-    //                                   sycl::sub_group sg, auto g, T local_value) {
-    //     acc[global_linear_id] = sycl::permute_group_by_xor(sg, local_value, 1);
-    //   };
-    //   const auto validation_function = [](const std::vector<T> &vIn,
-    //                                       const std::vector<T> &vOrig, size_t local_size,
-    //                                       size_t global_size) {
-    //     auto subgroup_size = detail::get_subgroup_size();
-    //     for (size_t i = 0; i < global_size / local_size; ++i) {
-    //       for (size_t j = 0; j < (local_size + subgroup_size - 1) / subgroup_size; ++j) {
-    //         for (size_t k = 0; k < subgroup_size; ++k) {
-    //           size_t local_index  = j * subgroup_size + k;
-    //           size_t global_index = i * local_size + local_index;
+    {
+      const auto tested_function = [=](auto acc, size_t global_linear_id,
+                                      sycl::sub_group sg, auto g, T local_value) {
+        acc[global_linear_id] = sycl::permute_group_by_xor(sg, local_value, 1);
+      };
+      const auto validation_function = [](const std::vector<T> &vIn,
+                                          const std::vector<T> &vOrig, size_t local_size,
+                                          size_t global_size) {
+        auto subgroup_size = detail::get_subgroup_size();
+        for (size_t i = 0; i < global_size / local_size; ++i) {
+          for (size_t j = 0; j < (local_size + subgroup_size - 1) / subgroup_size; ++j) {
+            for (size_t k = 0; k < subgroup_size; ++k) {
+              size_t local_index  = j * subgroup_size + k;
+              size_t global_index = i * local_size + local_index;
 
-    //           if (local_index >= local_size) // keep to work group size
-    //             break;
+              if (local_index >= local_size) // keep to work group size
+                break;
 
-    //           T expected = detail::initialize_type<T>(i*local_size + (local_index ^ 1)) +
-    //                       detail::get_offset<T>(global_size, 1);
+              T expected = detail::initialize_type<T>(i*local_size + (local_index ^ 1)) +
+                          detail::get_offset<T>(global_size, 1);
 
-    //           if ((local_index ^ 1) >= local_size ||
-    //               (k ^ 1) >= subgroup_size) // only defined if target is in subgroup
-    //             continue;
+              if ((local_index ^ 1) >= local_size ||
+                  (k ^ 1) >= subgroup_size) // only defined if target is in subgroup
+                continue;
 
-    //           T computed = vIn[global_index];
+              T computed = vIn[global_index];
 
-    //           BOOST_TEST_REQUIRE(detail::compare_type(expected, computed),
-    //                     detail::type_to_string(computed)
-    //                         << " at position " << global_index << " instead of "
-    //                         << detail::type_to_string(expected)
-    //                         << " for case: sub_group, permute xor, local size: "
-    //                         << local_size);
+              BOOST_TEST_REQUIRE(detail::compare_type(expected, computed),
+                        detail::type_to_string(computed)
+                            << " at position " << global_index << " instead of "
+                            << detail::type_to_string(expected)
+                            << " for case: sub_group, permute xor, local size: "
+                            << local_size);
 
-    //           if (!detail::compare_type(expected, computed))
-    //             break;
-    //         }
-    //       }
-    //     }
-    //   };
+              if (!detail::compare_type(expected, computed))
+                break;
+            }
+          }
+        }
+      };
 
-    //   test_nd_group_function_1d<__LINE__, T>(elements_per_thread, data_generator,
-    //                                         tested_function, validation_function);
-    // }
+      test_nd_group_function_1d<__LINE__, T>(elements_per_thread, data_generator,
+                                            tested_function, validation_function);
+    }
     
     {
       const auto tested_function = [=](auto acc, size_t global_linear_id, sycl::sub_group sg,
