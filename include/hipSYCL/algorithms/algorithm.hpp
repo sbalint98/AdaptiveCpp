@@ -486,8 +486,11 @@ sycl::event merge(sycl::queue& q,
   if(problem_size == 0)
     return sycl::event{};
 
-  return merging::segmented_merge(q, first1, last1, first2, last2, d_first,
-                                  comp);
+  //return merging::segmented_merge(q, first1, last1, first2, last2, d_first,
+  //                                comp);
+
+  return merging::hierarchical_hybrid_merge(q, scratch_allocations, first1,
+                                            last1, first2, last2, d_first, comp);
 }
 
 }

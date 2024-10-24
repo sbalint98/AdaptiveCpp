@@ -44,14 +44,14 @@ public:
 
   template <class ForwardIt1, class ForwardIt2, class Size>
   static constexpr Size
-  num_partitions(ForwardIt1 first1, ForwardIt1 last1, ForwardIt2 first2,
-                 ForwardIt2 last2, Size partition_chunk_size) {
+  num_independent_merges(ForwardIt1 first1, ForwardIt1 last1, ForwardIt2 first2,
+                 ForwardIt2 last2, Size segment_chunk_size) {
     Size input1_size = static_cast<Size>(std::distance(first1, last1));
     Size input2_size = static_cast<Size>(std::distance(first2, last2));
 
     auto num_diags = total_num_diags(input1_size, input2_size);
 
-    return (num_diags + partition_chunk_size - 1) / partition_chunk_size;
+    return (num_diags + segment_chunk_size - 1) / segment_chunk_size;
   }
 
 private:
