@@ -11,6 +11,7 @@ if(WITH_LLVM_TO_HOST)
     half.cpp
     math.cpp
     native.cpp
+    shuffle.cpp
     print.cpp
     relational.cpp
     localmem.cpp
