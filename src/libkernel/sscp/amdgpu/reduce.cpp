@@ -30,53 +30,53 @@
 
 
 // HIPSYCL_SSCP_CONVERGENT_BUILTIN
-// __hipsycl_int8 __hipsycl_sscp_sub_group_reduce_i8(__hipsycl_sscp_algorithm_op op, __hipsycl_int8 x);
+// __acpp_int8 __acpp_sscp_sub_group_reduce_i8(__acpp_sscp_algorithm_op op, __acpp_int8 x);
 
 // HIPSYCL_SSCP_CONVERGENT_BUILTIN
-// __hipsycl_int16 __hipsycl_sscp_sub_group_reduce_i16(__hipsycl_sscp_algorithm_op op, __hipsycl_int16 x);
+// __acpp_int16 __acpp_sscp_sub_group_reduce_i16(__acpp_sscp_algorithm_op op, __acpp_int16 x);
 
 // HIPSYCL_SSCP_CONVERGENT_BUILTIN
-// __hipsycl_int32 __hipsycl_sscp_sub_group_reduce_i32(__hipsycl_sscp_algorithm_op op, __hipsycl_int32 x);
+// __acpp_int32 __acpp_sscp_sub_group_reduce_i32(__acpp_sscp_algorithm_op op, __acpp_int32 x);
 
 // HIPSYCL_SSCP_CONVERGENT_BUILTIN
-// __hipsycl_int64 __hipsycl_sscp_sub_group_reduce_i64(__hipsycl_sscp_algorithm_op op, __hipsycl_int64 x);
+// __acpp_int64 __acpp_sscp_sub_group_reduce_i64(__acpp_sscp_algorithm_op op, __acpp_int64 x);
 
 // HIPSYCL_SSCP_CONVERGENT_BUILTIN
-// __hipsycl_uint8 __hipsycl_sscp_sub_group_reduce_u8(__hipsycl_sscp_algorithm_op op, __hipsycl_uint8 x);
+// __hipsycl_uint8 __acpp_sscp_sub_group_reduce_u8(__acpp_sscp_algorithm_op op, __hipsycl_uint8 x);
 
 // HIPSYCL_SSCP_CONVERGENT_BUILTIN
-// __hipsycl_uint16 __hipsycl_sscp_sub_group_reduce_u16(__hipsycl_sscp_algorithm_op op, __hipsycl_uint16 x);
+// __acpp_uint16 __acpp_sscp_sub_group_reduce_u16(__acpp_sscp_algorithm_op op, __acpp_uint16 x);
 
 // HIPSYCL_SSCP_CONVERGENT_BUILTIN
-// __hipsycl_uint32 __hipsycl_sscp_sub_group_reduce_u32(__hipsycl_sscp_algorithm_op op, __hipsycl_uint32 x);
+// __acpp_uint32 __acpp_sscp_sub_group_reduce_u32(__acpp_sscp_algorithm_op op, __acpp_uint32 x);
 
 // HIPSYCL_SSCP_CONVERGENT_BUILTIN
-// __hipsycl_uint64 __hipsycl_sscp_sub_group_reduce_u64(__hipsycl_sscp_algorithm_op op, __hipsycl_uint64 x);
+// __hipsycl_uint64 __acpp_sscp_sub_group_reduce_u64(__acpp_sscp_algorithm_op op, __hipsycl_uint64 x);
 
 // HIPSYCL_SSCP_CONVERGENT_BUILTIN
-// __hipsycl_f16 __hipsycl_sscp_sub_group_reduce_f16(__hipsycl_sscp_algorithm_op op, __hipsycl_f16 x);
+// __hipsycl_f16 __acpp_sscp_sub_group_reduce_f16(__acpp_sscp_algorithm_op op, __hipsycl_f16 x);
 
 HIPSYCL_SSCP_CONVERGENT_BUILTIN
-__hipsycl_f32 __hipsycl_sscp_sub_group_reduce_f32(__hipsycl_sscp_algorithm_op op, __hipsycl_f32 x){
+__acpp_f32 __acpp_sscp_sub_group_reduce_f32(__acpp_sscp_algorithm_op op, __acpp_f32 x){
     switch(op)
     {
-        case __hipsycl_sscp_algorithm_op::plus:
+        case __acpp_sscp_algorithm_op::plus:
             return __ockl_wfred_add_f32(x); 
-        case __hipsycl_sscp_algorithm_op::multiply:
+        case __acpp_sscp_algorithm_op::multiply:
             break;
-        case __hipsycl_sscp_algorithm_op::min:
+        case __acpp_sscp_algorithm_op::min:
             return __ockl_wfred_min_f32(x); 
-        case __hipsycl_sscp_algorithm_op::max:
+        case __acpp_sscp_algorithm_op::max:
             return __ockl_wfred_max_f32(x); 
-        case __hipsycl_sscp_algorithm_op::bit_and:
+        case __acpp_sscp_algorithm_op::bit_and:
             break;
-        case __hipsycl_sscp_algorithm_op::bit_or:
+        case __acpp_sscp_algorithm_op::bit_or:
             break;
-        case __hipsycl_sscp_algorithm_op::bit_xor:
+        case __acpp_sscp_algorithm_op::bit_xor:
             break;
-        case __hipsycl_sscp_algorithm_op::logical_and:
+        case __acpp_sscp_algorithm_op::logical_and:
             break;
-        case __hipsycl_sscp_algorithm_op::logical_or:
+        case __acpp_sscp_algorithm_op::logical_or:
             break;
         default:
             break;
@@ -84,4 +84,4 @@ __hipsycl_f32 __hipsycl_sscp_sub_group_reduce_f32(__hipsycl_sscp_algorithm_op op
 }
 
 // HIPSYCL_SSCP_CONVERGENT_BUILTIN
-// __hipsycl_f64 __hipsycl_sscp_sub_group_reduce_f64(__hipsycl_sscp_algorithm_op op, __hipsycl_f64 x);
+// __acpp_f64 __acpp_sscp_sub_group_reduce_f64(__acpp_sscp_algorithm_op op, __acpp_f64 x);

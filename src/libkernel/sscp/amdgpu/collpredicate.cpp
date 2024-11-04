@@ -30,23 +30,23 @@
 
 
 // HIPSYCL_SSCP_CONVERGENT_BUILTIN
-// bool __hipsycl_sscp_work_group_any(bool pred);
+// bool __acpp_sscp_work_group_any(bool pred);
 
 HIPSYCL_SSCP_CONVERGENT_BUILTIN
-bool __hipsycl_sscp_sub_group_any(bool pred){
+bool __acpp_sscp_sub_group_any(bool pred){
     return __ockl_wfany_i32(pred);
 }
 
 
 // HIPSYCL_SSCP_CONVERGENT_BUILTIN
-// bool __hipsycl_sscp_work_group_all(bool pred);
+// bool __acpp_sscp_work_group_all(bool pred);
 
 // HIPSYCL_SSCP_CONVERGENT_BUILTIN
-// bool __hipsycl_sscp_sub_group_all(bool pred);
+// bool __acpp_sscp_sub_group_all(bool pred);
 
 
 // HIPSYCL_SSCP_CONVERGENT_BUILTIN
-// bool __hipsycl_sscp_work_group_none(bool pred);
+// bool __acpp_sscp_work_group_none(bool pred);
 
 // HIPSYCL_SSCP_CONVERGENT_BUILTIN
-// bool __hipsycl_sscp_sub_group_none(bool pred);
+// bool __acpp_sscp_sub_group_none(bool pred);
