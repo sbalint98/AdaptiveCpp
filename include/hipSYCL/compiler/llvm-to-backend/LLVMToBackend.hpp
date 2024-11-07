@@ -232,9 +232,13 @@ private:
   int S2IRConstantBackendId;
   
   std::vector<std::string> OutliningEntrypoints;
+  // function call specializations might result in additional outlining entrypoints
+  // that we need to consider early on
+  std::vector<std::string> FunctionCallSpecializationOutliningEntrypoints;
   std::vector<std::string> Kernels;
 
   std::vector<std::string> Errors;
+  
   std::unordered_map<std::string, std::function<void(llvm::Module &)>> SpecializationApplicators;
   ExternalSymbolResolver SymbolResolver;
   bool HasExternalSymbolResolver = false;

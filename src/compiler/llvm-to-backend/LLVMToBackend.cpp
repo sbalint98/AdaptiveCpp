@@ -21,6 +21,7 @@
 #include "hipSYCL/compiler/utils/ProcessFunctionAnnotationsPass.hpp"
 #include "hipSYCL/compiler/utils/LLVMUtils.hpp"
 #include "hipSYCL/glue/llvm-sscp/s2_ir_constants.hpp"
+#include "hipSYCL/sycl/access.hpp"
 
 #include <cstdint>
 
@@ -227,11 +228,17 @@ bool LLVMToBackendTranslator::prepareIR(llvm::Module &M) {
     // Do an initial outlining to simplify the code, particularly to reduce
     // linking complexity if --acpp-export-all is used
     HIPSYCL_DEBUG_INFO << "LLVMToBackend: Reoutlining kernels...\n";
-    KernelOutliningPass InitialOutlining{OutliningEntrypoints};
+    // Function call specializations are only handled at a later stage,
+    // so if the user has requested any, ensure that we don't throw them away
+    // since these functions will not yet appear in the call graph.
+    std::vector<std::string> InitialOutliningEntrypoints = OutliningEntrypoints;
+    for(const auto& FName : FunctionCallSpecializationOutliningEntrypoints)
+      InitialOutliningEntrypoints.push_back(FName);
+    KernelOutliningPass InitialOutlining{InitialOutliningEntrypoints};
     InitialOutlining.run(M, MAM);
     
     // We need to resolve symbols now instead of after optimization, because we
-    // may have to reuotline if the code that is linked in after symbol resolution
+    // may have to reoutline if the code that is linked in after symbol resolution
     // depends on IR constants.
     // This also means that we cannot error yet if we cannot resolve all symbols :(
     resolveExternalSymbols(M);
@@ -488,6 +495,11 @@ void LLVMToBackendTranslator::specializeKernelArgument(const std::string &Kernel
 void LLVMToBackendTranslator::specializeFunctionCalls(
     const std::string &FuncName, const std::vector<std::string> &ReplacementCalls,
     bool OverrideOnlyUndefined) {
+
+  for(const auto& FName : ReplacementCalls) {
+    this->FunctionCallSpecializationOutliningEntrypoints.push_back(FName);
+  }
+
   std::string Id = "__specialized_function_call_"+FuncName;
   SpecializationApplicators[Id] = [=](llvm::Module &M) {
     HIPSYCL_DEBUG_INFO << "LLVMToBackend: Specializing function calls to " << FuncName << " to:\n";
