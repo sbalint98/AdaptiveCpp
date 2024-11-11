@@ -29,7 +29,36 @@
 #include "hipSYCL/sycl/libkernel/sscp/builtins/shuffle.hpp"
 #include "hipSYCL/sycl/libkernel/sscp/builtins/subgroup.hpp"
 
+#if __has_builtin(__builtin_bit_cast)
 
+#define HIPSYCL_INPLACE_BIT_CAST(Tin, Tout, in, out)                           \
+  out = __builtin_bit_cast(Tout, in)
+
+#else
+
+#define HIPSYCL_INPLACE_BIT_CAST(Tin, Tout, in, out)                           \
+  {                                                                            \
+    union {                                                                    \
+      Tout union_out;                                                          \
+      Tin union_in;                                                            \
+    } u;                                                                       \
+    u.union_in = in;                                                           \
+    out = u.union_out;                                                         \
+  }
+#endif
+
+template <class Tout, class Tin>
+Tout bit_cast(Tin x) {
+  Tout result;
+  HIPSYCL_INPLACE_BIT_CAST(Tin, Tout, x, result);
+  return result;
+}
+
+__acpp_uint32 get_active_mask(){
+    //__acpp_int64 mask = __nvvm_activemask();
+    __acpp_uint32 subgroup_size = __acpp_sscp_get_subgroup_size();
+    return (1ull << subgroup_size)-1;
+}
 
 // HIPSYCL_SSCP_CONVERGENT_BUILTIN
 // __acpp_int8 __acpp_sscp_sub_group_reduce_i8(__acpp_sscp_algorithm_op op, __acpp_int8 x);
@@ -59,66 +88,6 @@
 // __hipsycl_f16 __acpp_sscp_sub_group_reduce_f16(__acpp_sscp_algorithm_op op, __hipsycl_f16 x);
 
 
-__acpp_uint32 get_active_mask(){
-    //__acpp_int64 mask = __nvvm_activemask();
-    __acpp_uint32 subgroup_size = __acpp_sscp_get_subgroup_size();
-    return (1ull << subgroup_size)-1;
-}
-
-// template<class Tout, class Tin>
-// HIPSYCL_FORCE_INLINE
-// Tout maybe_bit_cast(Tin x) {
-//   static_assert(sizeof(Tout) == sizeof(Tin), "Invalid data type");
-//   if constexpr(std::is_same_v<Tin, Tout>) {
-//     return x;
-//   } else {
-//     return bit_cast<Tout>(x);
-//   }
-// }
-
-template <class Tout, class Tin>
-Tout bit_cast(Tin x) {
-  Tout result;
-  HIPSYCL_INPLACE_BIT_CAST(Tin, Tout, x, result);
-  return result;
-}
-
-
-#if __has_builtin(__builtin_bit_cast)
-
-#define HIPSYCL_INPLACE_BIT_CAST(Tin, Tout, in, out)                           \
-  out = __builtin_bit_cast(Tout, in)
-
-#else
-
-#define HIPSYCL_INPLACE_BIT_CAST(Tin, Tout, in, out)                           \
-  {                                                                            \
-    union {                                                                    \
-      Tout union_out;                                                          \
-      Tin union_in;                                                            \
-    } u;                                                                       \
-    u.union_in = in;                                                           \
-    out = u.union_out;                                                         \
-  }
-#endif
-
-// reduce
-template <typename T, typename BinaryOperation>
-T __acpp_reduce_over_group(T x, BinaryOperation binary_op) {
-  const __acpp_uint32       lid        = __acpp_sscp_get_subgroup_local_id();
-  const __acpp_uint32       lrange     = 32;//__acpp_sscp_get_subgroup_max_size();
-  const __acpp_uint32 activemask = get_active_mask();
-
-  auto local_x = x;
-  for (__acpp_int32 i = lrange / 2; i > 0; i /= 2) {
-    auto other_x=bit_cast<__acpp_f32>(__acpp_sscp_sub_group_select_i32(bit_cast<__acpp_uint32>(local_x), lid+i));
-
-   if (activemask & (1 << (lid + i)))
-      local_x = binary_op(local_x, other_x);
-  }
-  return bit_cast<__acpp_f32>(__acpp_sscp_sub_group_select_i32(bit_cast<__acpp_uint32>(local_x), 0));
-}
-
 struct plus
 {
     template<typename T>
@@ -143,35 +112,48 @@ struct max
     }
 };
 
+struct multiply
+{
+    template<typename T>
+    T operator()(T lhs, T rhs){
+        return lhs < rhs ? rhs : lhs;
+    }
+};
+
+
+// reduce
+#define REDUCE_OVER_GROUP(outType,internalType) \
+template <typename T, typename BinaryOperation> \
+T __acpp_reduce_over_group_##outType##_##internalType (T x, BinaryOperation binary_op) { \
+  const __acpp_uint32       lid        = __acpp_sscp_get_subgroup_local_id(); \
+  const __acpp_uint32       lrange     = __acpp_sscp_get_subgroup_max_size(); \
+  const __acpp_uint32 activemask = get_active_mask(); \
+  auto local_x = x; \
+  for (__acpp_int32 i = lrange / 2; i > 0; i /= 2) {  \
+    auto other_x=bit_cast<__acpp_##outType>(__acpp_sscp_sub_group_select_i32(bit_cast<__acpp_##internalType>(local_x), lid+i)); \
+   if (activemask & (1 << (lid + i))) \
+      local_x = binary_op(local_x, other_x); \
+  } \
+  return bit_cast<__acpp_##outType>(__acpp_sscp_sub_group_select_i32(bit_cast<__acpp_##internalType>(local_x), 0)); \
+} \
+
+REDUCE_OVER_GROUP(f32,uint32)
+
+
 HIPSYCL_SSCP_CONVERGENT_BUILTIN
 __acpp_f32 __acpp_sscp_sub_group_reduce_f32(__acpp_sscp_algorithm_op op, __acpp_f32 x){
     switch(op)
     {
         case __acpp_sscp_algorithm_op::plus:
-            return __acpp_reduce_over_group(x, plus{}); 
+            return __acpp_reduce_over_group_f32_uint32(x, plus{}); 
         case __acpp_sscp_algorithm_op::multiply:
-            break;
+            return __acpp_reduce_over_group_f32_uint32(x, multiply{});
         case __acpp_sscp_algorithm_op::min:
-            return __acpp_reduce_over_group(x, min{}); 
+            return __acpp_reduce_over_group_f32_uint32(x, min{}); 
         case __acpp_sscp_algorithm_op::max:
-            return __acpp_reduce_over_group(x, max{}); 
-        case __acpp_sscp_algorithm_op::bit_and:
-            break;
-        case __acpp_sscp_algorithm_op::bit_or:
-            break;
-        case __acpp_sscp_algorithm_op::bit_xor:
-            break;
-        case __acpp_sscp_algorithm_op::logical_and:
-            break;
-        case __acpp_sscp_algorithm_op::logical_or:
-            break;
-        default:
-            break;
+            return __acpp_reduce_over_group_f32_uint32(x, max{}); 
     }
-    return 42;
 }
-
-
 
 
 
