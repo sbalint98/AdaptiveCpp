@@ -163,11 +163,12 @@ __acpp_int16 __acpp_sscp_sub_group_select_i16(__acpp_int16 value,
 HIPSYCL_SSCP_CONVERGENT_BUILTIN
 __acpp_int32 __acpp_sscp_sub_group_select_i32(__acpp_int32 value,
                                                      __acpp_int32 id){
-    // int max_subgroup_size = __acpp_sscp_get_subgroup_max_size();
+    //int max_subgroup_size = __acpp_sscp_get_subgroup_max_size();
     // int index = id%max_subgroup_size;
     // return __builtin_amdgcn_ds_bpermute(index<<2, value);
     // __acpp_uint32 mask = get_active_mask();
-    return __nvvm_shfl_sync_idx_i32(FULL_MASk, value, id, 0);
+    // This doesn't work
+    return __nvvm_shfl_sync_idx_i32(FULL_MASk, value, id, 31);
                                                   }
 
 HIPSYCL_SSCP_CONVERGENT_BUILTIN
