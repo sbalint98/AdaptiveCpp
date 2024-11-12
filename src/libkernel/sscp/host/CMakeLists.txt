@@ -15,7 +15,8 @@ if(WITH_LLVM_TO_HOST)
     print.cpp
     relational.cpp
     localmem.cpp
-    subgroup.cpp)
+    subgroup.cpp
+    reduce.cpp)
 
   libkernel_generate_bitcode_target(
       TARGETNAME host 
