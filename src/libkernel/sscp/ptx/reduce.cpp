@@ -83,5 +83,3 @@ SUBGROUP_INT_REDUCTION(uint8)
 SUBGROUP_INT_REDUCTION(uint16)
 SUBGROUP_INT_REDUCTION(uint32)
 SUBGROUP_INT_REDUCTION(uint64)
-// HIPSYCL_SSCP_CONVERGENT_BUILTIN
-// __acpp_f64 __acpp_sscp_sub_group_reduce_f64(__acpp_sscp_algorithm_op op, __acpp_f64 x);
