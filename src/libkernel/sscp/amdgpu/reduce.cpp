@@ -26,7 +26,63 @@
  */
 
 #include "hipSYCL/sycl/libkernel/sscp/builtins/reduction.hpp"
-#include "hipSYCL/sycl/libkernel/sscp/builtins/amdgpu/ockl.hpp"
+
+#define SUBGROUP_FLOAT_REDUCTION(type) \
+HIPSYCL_SSCP_CONVERGENT_BUILTIN \
+__acpp_##type __acpp_sscp_sub_group_reduce_##type(__acpp_sscp_algorithm_op op, __acpp_##type x){ \
+    switch(op) \
+    { \
+        case __acpp_sscp_algorithm_op::plus: \
+            return __acpp_reduce_over_group_##type(x, plus{}); \
+        case __acpp_sscp_algorithm_op::multiply: \
+            return __acpp_reduce_over_group_##type(x, multiply{}); \
+        case __acpp_sscp_algorithm_op::min: \
+            return __acpp_reduce_over_group_##type(x, min{}); \
+        case __acpp_sscp_algorithm_op::max: \
+            return __acpp_reduce_over_group_##type(x, max{}); \
+    } \
+} \
+
+SUBGROUP_FLOAT_REDUCTION(f32)
+SUBGROUP_FLOAT_REDUCTION(f64)
+
+#define SUBGROUP_INT_REDUCTION(type) \
+HIPSYCL_SSCP_CONVERGENT_BUILTIN \
+__acpp_##type __acpp_sscp_sub_group_reduce_##type(__acpp_sscp_algorithm_op op, __acpp_##type x){ \
+    switch(op) \
+    { \
+        case __acpp_sscp_algorithm_op::plus: \
+            return __acpp_reduce_over_group_##type(x, plus{}); \
+        case __acpp_sscp_algorithm_op::multiply: \
+            return __acpp_reduce_over_group_##type(x, multiply{}); \
+        case __acpp_sscp_algorithm_op::min: \
+            return __acpp_reduce_over_group_##type(x, min{}); \
+        case __acpp_sscp_algorithm_op::max: \
+            return __acpp_reduce_over_group_##type(x, max{}); \
+        case __acpp_sscp_algorithm_op::bit_and: \
+            return __acpp_reduce_over_group_##type(x, bit_and{}); \
+        case __acpp_sscp_algorithm_op::bit_or: \
+            return __acpp_reduce_over_group_##type(x, bit_or{}); \
+        case __acpp_sscp_algorithm_op::bit_xor: \
+            return __acpp_reduce_over_group_##type(x, bit_xor{}); \
+        case __acpp_sscp_algorithm_op::logical_and: \
+            return __acpp_reduce_over_group_##type(x, logical_and{}); \
+        case __acpp_sscp_algorithm_op::logical_or: \
+            return __acpp_reduce_over_group_##type(x, logical_or{}); \
+    } \
+} \
+
+SUBGROUP_INT_REDUCTION(int8)
+SUBGROUP_INT_REDUCTION(int16)
+SUBGROUP_INT_REDUCTION(int32)
+SUBGROUP_INT_REDUCTION(int64)
+
+SUBGROUP_INT_REDUCTION(uint8)
+SUBGROUP_INT_REDUCTION(uint16)
+SUBGROUP_INT_REDUCTION(uint32)
+SUBGROUP_INT_REDUCTION(uint64)
+
+// #include "hipSYCL/sycl/libkernel/sscp/builtins/amdgpu/ockl.hpp"
 
 
 // HIPSYCL_SSCP_CONVERGENT_BUILTIN
@@ -56,32 +112,34 @@
 // HIPSYCL_SSCP_CONVERGENT_BUILTIN
 // __hipsycl_f16 __acpp_sscp_sub_group_reduce_f16(__acpp_sscp_algorithm_op op, __hipsycl_f16 x);
 
-HIPSYCL_SSCP_CONVERGENT_BUILTIN
-__acpp_f32 __acpp_sscp_sub_group_reduce_f32(__acpp_sscp_algorithm_op op, __acpp_f32 x){
-    switch(op)
-    {
-        case __acpp_sscp_algorithm_op::plus:
-            return __ockl_wfred_add_f32(x); 
-        case __acpp_sscp_algorithm_op::multiply:
-            break;
-        case __acpp_sscp_algorithm_op::min:
-            return __ockl_wfred_min_f32(x); 
-        case __acpp_sscp_algorithm_op::max:
-            return __ockl_wfred_max_f32(x); 
-        case __acpp_sscp_algorithm_op::bit_and:
-            break;
-        case __acpp_sscp_algorithm_op::bit_or:
-            break;
-        case __acpp_sscp_algorithm_op::bit_xor:
-            break;
-        case __acpp_sscp_algorithm_op::logical_and:
-            break;
-        case __acpp_sscp_algorithm_op::logical_or:
-            break;
-        default:
-            break;
-    }
-}
+// HIPSYCL_SSCP_CONVERGENT_BUILTIN
+// __acpp_f32 __acpp_sscp_sub_group_reduce_f32(__acpp_sscp_algorithm_op op, __acpp_f32 x){
+//     switch(op)
+//     {
+//         case __acpp_sscp_algorithm_op::plus:
+//             return __ockl_wfred_add_f32(x); 
+//         case __acpp_sscp_algorithm_op::multiply:
+//             break;
+//         case __acpp_sscp_algorithm_op::min:
+//             return __ockl_wfred_min_f32(x); 
+//         case __acpp_sscp_algorithm_op::max:
+//             return __ockl_wfred_max_f32(x); 
+//         case __acpp_sscp_algorithm_op::bit_and:
+//             break;
+//         case __acpp_sscp_algorithm_op::bit_or:
+//             break;
+//         case __acpp_sscp_algorithm_op::bit_xor:
+//             break;
+//         case __acpp_sscp_algorithm_op::logical_and:
+//             break;
+//         case __acpp_sscp_algorithm_op::logical_or:
+//             break;
+//         default:
+//             break;
+//     }
+// }
+
+
 
 // HIPSYCL_SSCP_CONVERGENT_BUILTIN
 // __acpp_f64 __acpp_sscp_sub_group_reduce_f64(__acpp_sscp_algorithm_op op, __acpp_f64 x);
