@@ -27,7 +27,10 @@
 
 #include "hipSYCL/sycl/libkernel/sscp/builtins/reduction.hpp"
 
-
+__acpp_uint64 get_active_mask(){
+    __acpp_uint64 subgroup_size = __acpp_sscp_get_subgroup_size();
+    return (1ull << subgroup_size)-1;
+}
 
 #define SUBGROUP_FLOAT_REDUCTION(type) \
 HIPSYCL_SSCP_CONVERGENT_BUILTIN \

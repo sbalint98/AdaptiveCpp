@@ -110,11 +110,7 @@ Tout bit_cast(Tin x) {
   return result;
 }
 
-__acpp_uint64 get_active_mask(){
-    //__acpp_int64 mask = __nvvm_activemask();
-    __acpp_uint64 subgroup_size = __acpp_sscp_get_subgroup_size();
-    return (1ull << subgroup_size)-1;
-}
+__acpp_uint64 get_active_mask();
 
 
 struct plus
