@@ -169,15 +169,15 @@ HIPSYCL_SSCP_CONVERGENT_BUILTIN
 __acpp_int32 __acpp_sscp_sub_group_select_i32(__acpp_int32 value,
                                               __acpp_int32 id)
 {
-  // TODO: This should work in theory but it does not unfortunatelly 
-  // It was also tried with the WG_ID but it did not make a reference
-  // Unfortuantely this way we need the intel extension which is not optimal
+
+   __acpp_uint32 target_wg_id = __acpp_sscp_get_subgroup_local_id()*__acpp_sscp_get_subgroup_size() + id;
+  //  __spirv_SubgroupShuffleINTEL(value, target_wg_id);
+  // TODO: For some reason returning here produces incorrect results during the reduction
+  // Probably need to look into the assembly generated
   // Reference usage: https://github.com/intel/llvm/blob/sycl/sycl/include/sycl/detail/spirv.hpp#L928-L941
   // first param: https://github.com/intel/llvm/blob/sycl/sycl/include/sycl/__spirv/spirv_types.hpp#L27-L33
-  // __acpp_uint32 id_unsigned = id;
-  // return __spirv_GroupNonUniformShuffle(3u, value, id_unsigned);
-   __acpp_uint32 target_wg_id = __acpp_sscp_get_subgroup_local_id()*__acpp_sscp_get_subgroup_size() + id;
-  return __spirv_SubgroupShuffleINTEL(value, target_wg_id);
+  __acpp_uint32 id_unsigned = id;
+  __spirv_GroupNonUniformShuffle(3u, value, id_unsigned);
 }
 
 HIPSYCL_SSCP_CONVERGENT_BUILTIN
