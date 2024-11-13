@@ -160,6 +160,12 @@ public:
   }
 
   void set_specialized_kernel_argument(int param_index, uint64_t buffer_value) {
+    for(int i = 0; i < _specialized_kernel_args.size(); ++i) {
+      if(_specialized_kernel_args[i].first == param_index) {
+        _specialized_kernel_args[i] = std::make_pair(param_index, buffer_value);
+        return;
+      }
+    }
     _specialized_kernel_args.push_back(
         std::make_pair(param_index, buffer_value));
   }
