@@ -29,6 +29,31 @@
 #include "hipSYCL/sycl/libkernel/sscp/builtins/shuffle.hpp"
 #include "hipSYCL/sycl/libkernel/sscp/builtins/subgroup.hpp"
 
+#if __has_builtin(__builtin_bit_cast)
+
+#define HIPSYCL_INPLACE_BIT_CAST(Tin, Tout, in, out)                           \
+  out = __builtin_bit_cast(Tout, in)
+
+#else
+
+#define HIPSYCL_INPLACE_BIT_CAST(Tin, Tout, in, out)                           \
+  {                                                                            \
+    union {                                                                    \
+      Tout union_out;                                                          \
+      Tin union_in;                                                            \
+    } u;                                                                       \
+    u.union_in = in;                                                           \
+    out = u.union_out;                                                         \
+  }
+#endif
+
+template <class Tout, class Tin>
+Tout bit_cast(Tin x) {
+  Tout result;
+  HIPSYCL_INPLACE_BIT_CAST(Tin, Tout, x, result);
+  return result;
+}
+
 template <typename dataT>
 dataT __spirv_SubgroupShuffleINTEL(dataT Data, __acpp_uint32 InvocationId) noexcept;
 template <typename dataT>
@@ -62,13 +87,13 @@ HIPSYCL_SSCP_CONVERGENT_BUILTIN
 __acpp_int32 __acpp_sscp_sub_group_shl_i32(__acpp_int32 value,
                                            __acpp_uint32 delta)
 {
-    __acpp_int32 local_id = __acpp_sscp_get_subgroup_local_id();
-    __acpp_int32 target_id = local_id;
-    if (local_id >= delta)
-      target_id -= delta;
-    return __spirv_GroupNonUniformShuffle(3,
+      __acpp_int32 local_id = __acpp_sscp_get_subgroup_local_id();
+    __acpp_int32 target_id = local_id + delta;
+    if (target_id >= __acpp_sscp_get_subgroup_size())
+      target_id = local_id;
+ return __spirv_GroupNonUniformShuffle(3,
                                           value, target_id);
-  // return __spirv_SubgroupShuffleDownINTEL(value, value, delta);
+
 }
 
 HIPSYCL_SSCP_CONVERGENT_BUILTIN
@@ -101,11 +126,12 @@ __acpp_int32 __acpp_sscp_sub_group_shr_i32(__acpp_int32 value,
                                            __acpp_uint32 delta)
 {
     __acpp_int32 local_id = __acpp_sscp_get_subgroup_local_id();
-    __acpp_int32 target_id = local_id + delta;
-    if (target_id >= __acpp_sscp_get_subgroup_size())
-      target_id = local_id;
- return __spirv_GroupNonUniformShuffle(3,
+    __acpp_int32 target_id = local_id;
+    if (local_id >= delta)
+      target_id -= delta;
+    return __spirv_GroupNonUniformShuffle(3,
                                           value, target_id);
+  // return __spirv_SubgroupShuffleDownINTEL(value, value, delta);
 }
 
 HIPSYCL_SSCP_CONVERGENT_BUILTIN
@@ -169,15 +195,7 @@ HIPSYCL_SSCP_CONVERGENT_BUILTIN
 __acpp_int32 __acpp_sscp_sub_group_select_i32(__acpp_int32 value,
                                               __acpp_int32 id)
 {
-
-   __acpp_uint32 target_wg_id = __acpp_sscp_get_subgroup_local_id()*__acpp_sscp_get_subgroup_size() + id;
-  //  __spirv_SubgroupShuffleINTEL(value, target_wg_id);
-  // TODO: For some reason returning here produces incorrect results during the reduction
-  // Probably need to look into the assembly generated
-  // Reference usage: https://github.com/intel/llvm/blob/sycl/sycl/include/sycl/detail/spirv.hpp#L928-L941
-  // first param: https://github.com/intel/llvm/blob/sycl/sycl/include/sycl/__spirv/spirv_types.hpp#L27-L33
-  __acpp_uint32 id_unsigned = id;
-  __spirv_GroupNonUniformShuffle(3u, value, id_unsigned);
+  return bit_cast<__acpp_int32>(__spirv_GroupNonUniformShuffle(3u,value, id) );
 }
 
 HIPSYCL_SSCP_CONVERGENT_BUILTIN
