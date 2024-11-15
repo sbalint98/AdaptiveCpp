@@ -240,9 +240,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(sub_group_reduce, T, test_types) {
         acc[global_linear_id] = sycl::reduce_over_group(sg, local_value, sycl::plus<T>());
       };
       const auto validation_function = [](const std::vector<T> &vIn,
-                                          const std::vector<T> &vOrig, size_t local_size,
+                                          const std::vector<T> &vOrig,size_t subgroup_size, size_t local_size,
                                           size_t global_size) {
-        auto subgroup_size = detail::get_subgroup_size();
         for (size_t i = 0; i < global_size / local_size; ++i) {
           T    expected         = T{};
           auto actual_warp_size = local_size < subgroup_size ? local_size : subgroup_size;

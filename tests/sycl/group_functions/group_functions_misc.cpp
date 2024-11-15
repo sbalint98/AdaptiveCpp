@@ -445,9 +445,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(subgroup_shuffle_like, T, test_types) {
         acc[global_linear_id] = sycl::shift_group_left(sg, local_value, 1);
       };
       const auto validation_function = [](const std::vector<T> &vIn,
-                                          const std::vector<T> &vOrig, size_t local_size,
+                                          const std::vector<T> &vOrig,size_t subgroup_size, size_t local_size,
                                           size_t global_size) {
-        auto subgroup_size = detail::get_subgroup_size();
         for (size_t i = 0; i < global_size / local_size; ++i) {
           for (size_t j = 0; j < (local_size + subgroup_size - 1) / subgroup_size; ++j) {
             for (size_t k = 0; k < subgroup_size; ++k) {
@@ -487,9 +486,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(subgroup_shuffle_like, T, test_types) {
         acc[global_linear_id] = sycl::shift_group_right(sg, local_value, 1);
       };
       const auto validation_function = [](const std::vector<T> &vIn,
-                                          const std::vector<T> &vOrig, size_t local_size,
+                                          const std::vector<T> &vOrig,size_t subgroup_size, size_t local_size,
                                           size_t global_size) {
-        auto subgroup_size = detail::get_subgroup_size();
         for (size_t i = 0; i < global_size / local_size; ++i) {
           for (size_t j = 0; j < (local_size + subgroup_size - 1) / subgroup_size; ++j) {
             for (size_t k = 0; k < subgroup_size; ++k) {
@@ -530,9 +528,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(subgroup_shuffle_like, T, test_types) {
         acc[global_linear_id] = sycl::permute_group_by_xor(sg, local_value, 1);
       };
       const auto validation_function = [](const std::vector<T> &vIn,
-                                          const std::vector<T> &vOrig, size_t local_size,
+                                          const std::vector<T> &vOrig,size_t subgroup_size, size_t local_size,
                                           size_t global_size) {
-        auto subgroup_size = detail::get_subgroup_size();
         for (size_t i = 0; i < global_size / local_size; ++i) {
           for (size_t j = 0; j < (local_size + subgroup_size - 1) / subgroup_size; ++j) {
             for (size_t k = 0; k < subgroup_size; ++k) {
@@ -575,9 +572,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(subgroup_shuffle_like, T, test_types) {
         acc[global_linear_id] = sycl::select_from_group(sg, local_value, sycl::id<1>());
       };
       const auto validation_function = [](const std::vector<T> &vIn,
-                                          const std::vector<T> &vOrig, size_t local_size,
+                                          const std::vector<T> &vOrig, size_t subgroup_size, size_t local_size,
                                           size_t global_size) {
-          auto subgroup_size = detail::get_subgroup_size();
           for (size_t i = 0; i < global_size / local_size; ++i) {
             for (size_t j = 0; j < (local_size + subgroup_size - 1) / subgroup_size; ++j) {
               for (size_t k = 0; k < subgroup_size; ++k) {
