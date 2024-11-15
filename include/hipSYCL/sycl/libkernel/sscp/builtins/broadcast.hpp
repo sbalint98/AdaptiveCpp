@@ -45,4 +45,11 @@ HIPSYCL_SSCP_CONVERGENT_BUILTIN
 __acpp_int64 __acpp_sscp_sub_group_broadcast_i64(__acpp_int32 sender,
                                                        __acpp_int64 x);
 
+#define SUBGROUP_BCAST(fn_suffix,input_type) \
+HIPSYCL_SSCP_CONVERGENT_BUILTIN \
+__acpp_##input_type __acpp_sscp_sub_group_broadcast_##fn_suffix(__acpp_int32 sender, \
+                                                     __acpp_##input_type x){ \
+    return __acpp_sscp_sub_group_select_##fn_suffix(x, sender); \
+                                                     } \
+
 #endif
