@@ -102,8 +102,8 @@ __acpp_int64 __acpp_sscp_sub_group_shl_i64(__acpp_int64 value,
 {
   int tmp[2];
   __builtin_memcpy(tmp, &value, sizeof(tmp));
-  __acpp_sscp_sub_group_shl_i32(tmp[0], delta);
-  __acpp_sscp_sub_group_shl_i32(tmp[1], delta);
+  tmp[0] = __acpp_sscp_sub_group_shl_i32(tmp[0], delta);
+  tmp[1] = __acpp_sscp_sub_group_shl_i32(tmp[1], delta);
   __acpp_int64 result = (static_cast<__acpp_int64>(tmp[1]) << 32ull) | (static_cast<__acpp_uint32>(tmp[0]));
   return result;
 }
@@ -112,13 +112,13 @@ HIPSYCL_SSCP_CONVERGENT_BUILTIN
 __acpp_int8 __acpp_sscp_sub_group_shr_i8(__acpp_int8 value,
                                          __acpp_uint32 delta)
 {
-  return __acpp_sscp_sub_group_shl_i32(value, delta);
+  return __acpp_sscp_sub_group_shr_i32(value, delta);
 }
 HIPSYCL_SSCP_CONVERGENT_BUILTIN
 __acpp_int16 __acpp_sscp_sub_group_shr_i16(__acpp_int16 value,
                                            __acpp_uint32 delta)
 {
-  return __acpp_sscp_sub_group_shl_i32(value, delta);
+  return __acpp_sscp_sub_group_shr_i32(value, delta);
 }
 
 HIPSYCL_SSCP_CONVERGENT_BUILTIN
@@ -140,8 +140,8 @@ __acpp_int64 __acpp_sscp_sub_group_shr_i64(__acpp_int64 value,
 {
   int tmp[2];
   __builtin_memcpy(tmp, &value, sizeof(tmp));
-  __acpp_sscp_sub_group_shl_i32(tmp[0], delta);
-  __acpp_sscp_sub_group_shl_i32(tmp[1], delta);
+  tmp[0] = __acpp_sscp_sub_group_shr_i32(tmp[0], delta);
+  tmp[1] = __acpp_sscp_sub_group_shr_i32(tmp[1], delta);
   __acpp_int64 result = (static_cast<__acpp_int64>(tmp[1]) << 32ull) | (static_cast<__acpp_uint32>(tmp[0]));
   return result;
 }
@@ -204,8 +204,8 @@ __acpp_int64 __acpp_sscp_sub_group_select_i64(__acpp_int64 value,
 {
   int tmp[2];
   __builtin_memcpy(tmp, &value, sizeof(tmp));
-  __acpp_sscp_sub_group_select_i32(tmp[0], id);
-  __acpp_sscp_sub_group_select_i32(tmp[1], id);
+  tmp[0] = __acpp_sscp_sub_group_select_i32(tmp[0], id);
+  tmp[1] = __acpp_sscp_sub_group_select_i32(tmp[1], id);
   __acpp_int64 result = (static_cast<__acpp_int64>(tmp[1]) << 32ull) | (static_cast<__acpp_uint32>(tmp[0]));
   return result;
 }

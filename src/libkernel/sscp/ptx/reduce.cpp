@@ -51,9 +51,9 @@ __acpp_##type __acpp_sscp_sub_group_reduce_##type(__acpp_sscp_algorithm_op op, _
 SUBGROUP_FLOAT_REDUCTION(f32)
 SUBGROUP_FLOAT_REDUCTION(f64)
 
-#define SUBGROUP_INT_REDUCTION(type) \
+#define SUBGROUP_INT_REDUCTION(fn_suffix,type) \
 HIPSYCL_SSCP_CONVERGENT_BUILTIN \
-__acpp_##type __acpp_sscp_sub_group_reduce_##type(__acpp_sscp_algorithm_op op, __acpp_##type x){ \
+__acpp_##type __acpp_sscp_sub_group_reduce_##fn_suffix(__acpp_sscp_algorithm_op op, __acpp_##type x){ \
     switch(op) \
     { \
         case __acpp_sscp_algorithm_op::plus: \
@@ -77,12 +77,11 @@ __acpp_##type __acpp_sscp_sub_group_reduce_##type(__acpp_sscp_algorithm_op op, _
     } \
 } \
 
-SUBGROUP_INT_REDUCTION(int8)
-SUBGROUP_INT_REDUCTION(int16)
-SUBGROUP_INT_REDUCTION(int32)
-SUBGROUP_INT_REDUCTION(int64)
-
-SUBGROUP_INT_REDUCTION(uint8)
-SUBGROUP_INT_REDUCTION(uint16)
-SUBGROUP_INT_REDUCTION(uint32)
-SUBGROUP_INT_REDUCTION(uint64)
+SUBGROUP_INT_REDUCTION(i8 ,int8 )
+SUBGROUP_INT_REDUCTION(i16,int16)
+SUBGROUP_INT_REDUCTION(i32,int32)
+SUBGROUP_INT_REDUCTION(i64,int64)
+SUBGROUP_INT_REDUCTION(u8 ,uint8 )
+SUBGROUP_INT_REDUCTION(u16,uint16)
+SUBGROUP_INT_REDUCTION(u32,uint32)
+SUBGROUP_INT_REDUCTION(u64,uint64)

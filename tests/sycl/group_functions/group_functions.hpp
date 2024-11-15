@@ -32,7 +32,7 @@ using namespace cl;
 
 #ifdef TESTS_GROUPFUNCTION_FULL
 using test_types =
-    boost::mpl::list<char, int, unsigned int, long long, float, double;
+    boost::mpl::list<char, int, unsigned int, long long, float, double>;
 #else
 using test_types = boost::mpl::list<float>;
 #endif
