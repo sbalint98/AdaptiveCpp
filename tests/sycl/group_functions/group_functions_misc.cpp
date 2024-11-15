@@ -171,114 +171,114 @@ BOOST_FIXTURE_TEST_SUITE(group_functions_tests, reset_device_fixture)
 //   }
 // }
 
-// BOOST_AUTO_TEST_CASE_TEMPLATE(sub_group_broadcast, T, test_types) {
-//   if(!sycl::queue{}.get_device().is_host()) {
-//     const size_t   elements_per_thread = 1;
+BOOST_AUTO_TEST_CASE_TEMPLATE(sub_group_broadcast, T, test_types) {
+  if(!sycl::queue{}.get_device().is_host()) {
+    const size_t   elements_per_thread = 1;
 
-//     const auto data_generator = [](std::vector<T> &v, size_t local_size,
-//                                   size_t global_size) {
-//       for (size_t i = 0; i < v.size(); ++i)
-//         v[i] = detail::initialize_type<T>(i) + detail::get_offset<T>(global_size);
-//     };
+    const auto data_generator = [](std::vector<T> &v, size_t local_size,
+                                  size_t global_size) {
+      for (size_t i = 0; i < v.size(); ++i)
+        v[i] = detail::initialize_type<T>(i) + detail::get_offset<T>(global_size);
+    };
 
-//     {
-//       const auto tested_function = [](auto acc, size_t global_linear_id, sycl::sub_group sg,
-//                                       auto g, T local_value) {
-//         acc[global_linear_id] = sycl::group_broadcast(sg, local_value);
-//       };
-//       const auto validation_function = [](const std::vector<T> &vIn,
-//                                           const std::vector<T> &vOrig, size_t local_size,
-//                                           size_t global_size) {
-//         auto subgroup_size = detail::get_subgroup_size();
-//         for (size_t i = 0; i < vIn.size(); ++i) {
-//           int expected_base = i % local_size;
-//           expected_base = ((int)expected_base / subgroup_size) *
-//                           subgroup_size;
-//           expected_base += ((int)i / local_size) * local_size;
+    {
+      const auto tested_function = [](auto acc, size_t global_linear_id, sycl::sub_group sg,
+                                      auto g, T local_value) {
+        acc[global_linear_id] = sycl::group_broadcast(sg, local_value);
+      };
+      const auto validation_function = [](const std::vector<T> &vIn,
+                                          const std::vector<T> &vOrig, size_t subgroup_size, size_t local_size,
+                                          size_t global_size) {
+        for (size_t i = 0; i < vIn.size(); ++i) {
+          int expected_base = i % local_size;
+          expected_base = ((int)expected_base / subgroup_size) *
+                          subgroup_size;
+          expected_base += ((int)i / local_size) * local_size;
 
-//           T expected = detail::initialize_type<T>(expected_base) +
-//                       detail::get_offset<T>(global_size);
-//           T computed = vIn[i];
+          T expected = detail::initialize_type<T>(expected_base) +
+                      detail::get_offset<T>(global_size);
+          T computed = vIn[i];
 
-//           BOOST_TEST(detail::compare_type(expected, computed),
-//                     detail::type_to_string(computed)
-//                         << " at position " << i << " instead of "
-//                         << detail::type_to_string(expected) << " for case: no id");
+          BOOST_TEST(detail::compare_type(expected, computed),
+                    detail::type_to_string(computed)
+                        << " at position " << i << " instead of "
+                        << detail::type_to_string(expected) << " for case: no id");
 
-//           if (!detail::compare_type(expected, computed))
-//             break;
-//         }
-//       };
+          if (!detail::compare_type(expected, computed))
+            break;
+        }
+      };
 
-//       test_nd_group_function_1d<__LINE__, T>(elements_per_thread, data_generator,
-//                                             tested_function, validation_function);
-//     }
+      test_nd_group_function_1d<__LINE__, T>(elements_per_thread, data_generator,
+                                            tested_function, validation_function);
+    }
 
-//     {
-//       const auto tested_function = [](auto acc, size_t global_linear_id, sycl::sub_group sg,
-//                                       auto g, T local_value) {
-//         acc[global_linear_id] = sycl::group_broadcast(sg, local_value, 10);
-//       };
-//       const auto validation_function = [](const std::vector<T> &vIn,
-//                                           const std::vector<T> &vOrig, size_t local_size,
-//                                           size_t global_size) {
-//         auto subgroup_size = detail::get_subgroup_size();
-//         for (size_t i = 0; i < vIn.size(); ++i) {
-//           int expected_base = i % local_size;
-//           expected_base     = ((int)expected_base / subgroup_size) * subgroup_size;
-//           expected_base += ((int)i / local_size) * local_size + 10;
+    {
+      const auto tested_function = [](auto acc, size_t global_linear_id, sycl::sub_group sg,
+                                      auto g, T local_value) {
+        acc[global_linear_id] = sycl::group_broadcast(sg, local_value, 7);
+      };
+      const auto validation_function = [](const std::vector<T> &vIn,
+                                          const std::vector<T> &vOrig, size_t subgroup_size, size_t local_size,
+                                          size_t global_size) {
+        for (size_t i = 0; i < vIn.size(); ++i) {
+          int expected_base = i % local_size;
+          expected_base     = ((int)expected_base / subgroup_size) * subgroup_size;
+          expected_base += ((int)i / local_size) * local_size + 7;
 
-//           T expected = detail::initialize_type<T>(expected_base) +
-//                       detail::get_offset<T>(global_size);
-//           T computed = vIn[i];
+          T expected = detail::initialize_type<T>(expected_base) +
+                      detail::get_offset<T>(global_size);
+          T computed = vIn[i];
 
-//           BOOST_TEST(detail::compare_type(expected, computed),
-//                     detail::type_to_string(computed)
-//                         << " at position " << i << " instead of "
-//                         << detail::type_to_string(expected) << " for case: linear id");
+          BOOST_TEST(detail::compare_type(expected, computed),
+                    detail::type_to_string(computed)
+                        << " at position " << i << " instead of "
+                        << detail::type_to_string(expected) << " for case: linear id");
 
-//           if (!detail::compare_type(expected, computed))
-//             break;
-//         }
-//       };
+          if (!detail::compare_type(expected, computed))
+            break;
+        }
+      };
 
-//       test_nd_group_function_1d<__LINE__, T>(elements_per_thread, data_generator,
-//                                             tested_function, validation_function);
-//     }
+      test_nd_group_function_1d<__LINE__, T>(elements_per_thread, data_generator,
+                                            tested_function, validation_function);
+    }
 
-//     {
-//       const auto tested_function = [](auto acc, size_t global_linear_id, sycl::sub_group sg,
-//                                       auto g, T local_value) {
-//         acc[global_linear_id] = sycl::group_broadcast(sg, local_value, sycl::id<1>(10));
-//       };
-//       const auto validation_function = [](const std::vector<T> &vIn,
-//                                           const std::vector<T> &vOrig, size_t local_size,
-//                                           size_t global_size) {
-//         auto subgroup_size = detail::get_subgroup_size();
-//         for (size_t i = 0; i < vIn.size(); ++i) {
-//           int expected_base = i % local_size;
-//           expected_base     = ((int)expected_base / subgroup_size) * subgroup_size;
-//           expected_base += ((int)i / local_size) * local_size + 10;
+    {
+      const auto tested_function = [](auto acc, size_t global_linear_id, sycl::sub_group sg,
+                                      auto g, T local_value) {
+        acc[global_linear_id] = sycl::group_broadcast(sg, local_value, sycl::id<1>(7));
+      };
+      const auto validation_function = [](const std::vector<T> &vIn,
+                                          const std::vector<T> &vOrig,size_t subgroup_size, size_t local_size,
+                                          size_t global_size) {
+        for (size_t i = 0; i < vIn.size(); ++i) {
+          int expected_base = i % local_size;
+          expected_base     = ((int)expected_base / subgroup_size) * subgroup_size;
+          expected_base += ((int)i / local_size) * local_size + 7;
 
-//           T expected = detail::initialize_type<T>(expected_base) +
-//                       detail::get_offset<T>(global_size);
-//           T computed = vIn[i];
+          T expected = detail::initialize_type<T>(expected_base) +
+                      detail::get_offset<T>(global_size);
+          T computed = vIn[i];
 
-//           BOOST_TEST(detail::compare_type(expected, computed),
-//                     detail::type_to_string(computed)
-//                         << " at position " << i << " instead of "
-//                         << detail::type_to_string(expected) << " for case: id");
+          BOOST_TEST(detail::compare_type(expected, computed),
+                    detail::type_to_string(computed)
+                        << " at position " << i << " instead of "
+                        << detail::type_to_string(expected) << " for case: id " 
+                        << "subgroup_size: " << subgroup_size 
+                        << " global_size: " << global_size 
+                        << " local_size: " << local_size);
 
-//           if (!detail::compare_type(expected, computed))
-//             break;
-//         }
-//       };
+          if (!detail::compare_type(expected, computed))
+            break;
+        }
+      };
 
-//       test_nd_group_function_1d<__LINE__, T>(elements_per_thread, data_generator,
-//                                             tested_function, validation_function);
-//     }
-//   }
-// }
+      test_nd_group_function_1d<__LINE__, T>(elements_per_thread, data_generator,
+                                            tested_function, validation_function);
+    }
+  }
+}
 
 // #if !defined(REDUCED_LOCAL_MEM_USAGE)
 // BOOST_AUTO_TEST_CASE_TEMPLATE(group_shuffle_like, T, test_types) {
