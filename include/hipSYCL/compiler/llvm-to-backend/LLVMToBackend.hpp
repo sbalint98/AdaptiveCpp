@@ -50,12 +50,6 @@ public:
 
   virtual ~LLVMToBackendTranslator() {}
 
-  template<class T>
-  void setS2IRConstant(const std::string& name, T value) {
-    setS2IRConstant(name, static_cast<const void*>(&value));
-  }
-
-  void setS2IRConstant(const std::string& name, const void* ValueBuffer);
   void specializeKernelArgument(const std::string &KernelName, int ParamIndex,
                                 const void *ValueBuffer);
   void specializeFunctionCalls(const std::string &FuncName,

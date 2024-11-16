@@ -432,13 +432,6 @@ bool LLVMToBackendTranslator::linkBitcodeFile(llvm::Module &M, const std::string
                            LinkOnlyNeeded);
 }
 
-void LLVMToBackendTranslator::setS2IRConstant(const std::string &name, const void *ValueBuffer) {
-  SpecializationApplicators[name] = [=](llvm::Module& M){
-    S2IRConstant C = S2IRConstant::getFromConstantName(M, name);
-    C.set(ValueBuffer);
-  };
-}
-
 void LLVMToBackendTranslator::specializeKernelArgument(const std::string &KernelName, int ParamIndex,
                                 const void *ValueBuffer) {
   std::string Id = KernelName+"__specialized_kernel_argument_"+std::to_string(ParamIndex);

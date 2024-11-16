@@ -238,9 +238,6 @@ inline rt::result compile(compiler::LLVMToBackendTranslator *translator,
   runtime_linker configure_linker {translator, imported_symbol_names};
 
   // Apply configuration
-  for(const auto& entry : config.s2_ir_entries()) {
-    translator->setS2IRConstant(entry.get_name(), entry.get_data_buffer());
-  }
   if(translator->getKernels().size() == 1) {
     // Currently we only can specialize kernel arguments for the 
     // single-kernel code object model
