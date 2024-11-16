@@ -18,7 +18,7 @@ extern "C" bool __acpp_sscp_jit_reflect_knows_random_unknown_thing();
 
 int main() {
   sycl::queue q = get_queue();
-  int* data = sycl::malloc_shared<int>(6, q);
+  int* data = sycl::malloc_shared<int>(7, q);
 
   q.single_task([data]{
     __acpp_if_target_device(
