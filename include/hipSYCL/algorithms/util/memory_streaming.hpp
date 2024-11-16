@@ -62,7 +62,8 @@ public:
   static void run(std::size_t problem_size, sycl::nd_item<1> idx,
                   F &&f) noexcept {
     __acpp_if_target_sscp(
-      if(sycl::jit::introspect<sycl::jit::current_backend, int>() == sycl::jit::backend::host) {
+      if(__acpp_sscp_jit_reflect_compiler_backend() == 
+         sycl::jit::compiler_backend::host) {
         run_host(problem_size, idx, f);
       } else {
         run_device(problem_size, idx, f);

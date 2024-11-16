@@ -20,6 +20,7 @@
 #if ACPP_LIBKERNEL_IS_DEVICE_PASS_SSCP
 #include "hipSYCL/glue/reflection.hpp"
 #include "hipSYCL/glue/llvm-sscp/fcall_specialization.hpp"
+#include "hipSYCL/glue/llvm-sscp/jit-reflection/queries.hpp"
 #include "hipSYCL/common/stable_running_hash.hpp"
 #include "hipSYCL/common/unordered_dense.hpp"
 #include "exception.hpp"

@@ -15,12 +15,13 @@
 #include "hipSYCL/compiler/llvm-to-backend/GlobalInliningAttributorPass.hpp"
 #include "hipSYCL/compiler/llvm-to-backend/KnownGroupSizeOptPass.hpp"
 #include "hipSYCL/compiler/llvm-to-backend/LLVMToBackend.hpp"
+#include "hipSYCL/compiler/llvm-to-backend/ProcessS2ReflectionPass.hpp"
 #include "hipSYCL/compiler/llvm-to-backend/Utils.hpp"
 #include "hipSYCL/compiler/sscp/IRConstantReplacer.hpp"
 #include "hipSYCL/compiler/sscp/KernelOutliningPass.hpp"
 #include "hipSYCL/compiler/utils/ProcessFunctionAnnotationsPass.hpp"
 #include "hipSYCL/compiler/utils/LLVMUtils.hpp"
-#include "hipSYCL/glue/llvm-sscp/s2_ir_constants.hpp"
+#include "hipSYCL/glue/llvm-sscp/jit-reflection/queries.hpp"
 #include "hipSYCL/sycl/access.hpp"
 
 #include <cstdint>
@@ -254,6 +255,15 @@ bool LLVMToBackendTranslator::prepareIR(llvm::Module &M) {
     // Return error in case applying specializations has caused error list to be populated
     if(!Errors.empty())
       return false;
+
+    // Process stage 2 reflection calls
+    ReflectionFields["compiler_backend"] = this->getBackendId();
+    for(const auto& Fields : ReflectionFields) {
+      HIPSYCL_DEBUG_INFO << "LLVMToBackend: Setting up reflection fields: " << Fields.first << " = "
+                         << Fields.second << "\n";
+    }
+    ProcessS2ReflectionPass S2RP{ReflectionFields};
+    S2RP.run(M, MAM);
 
     // Optimize away unnecessary branches due to backend-specific S2IR constants
     // This is what allows us to specialize code for different backends.
@@ -682,6 +692,11 @@ void LLVMToBackendTranslator::runKernelDeadArgumentElimination(
                        << "\n";
   }
 }
+
+void LLVMToBackendTranslator::setReflectionField(const std::string &str, uint64_t value) {
+  ReflectionFields[str] = value;
+}
+
 }
 }
 
