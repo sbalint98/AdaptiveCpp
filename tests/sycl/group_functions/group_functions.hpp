@@ -347,7 +347,7 @@ void test_nd_group_function_2d(size_t elements_per_thread, DataGenerator dg,
       });
     }
 
-    vf(host_buf, original_host_buf, local_size * local_size, global_size * global_size);
+    vf(host_buf, original_host_buf,0, local_size * local_size, global_size * global_size);
   }
 }
 
