@@ -18,7 +18,8 @@ if(WITH_LLVM_TO_HOST)
     subgroup.cpp
     reduce.cpp
     broadcast.cpp
-    scan_inclusive.cpp)
+    scan_inclusive.cpp
+    scan_exclusive.cpp)
 
   libkernel_generate_bitcode_target(
       TARGETNAME host 

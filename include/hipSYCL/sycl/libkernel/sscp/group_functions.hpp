@@ -624,15 +624,18 @@ float __acpp_exclusive_scan_over_group(sub_group g, float x, BinaryOperation bin
 
 // exclusive scan group
 
-template <int Dim, typename V, typename T, typename BinaryOperation>
-HIPSYCL_BUILTIN T __acpp_exclusive_scan_over_group(
-    group<Dim> g, V x, T init, BinaryOperation binary_op);
-
 template <typename Group, typename T, typename BinaryOperation,
           std::enable_if_t<is_group_v<std::decay_t<Group>>, bool> = true>
 HIPSYCL_BUILTIN T
 __acpp_exclusive_scan_over_group(Group g, T x, BinaryOperation binary_op);
 
+
+template <typename Group, typename V, typename T, typename BinaryOperation>
+HIPSYCL_BUILTIN T __acpp_exclusive_scan_over_group(
+    Group g, V x, T init, BinaryOperation binary_op) {
+  auto scan = __acpp_exclusive_scan_over_group(g, T{x}, binary_op);
+  return binary_op(scan, init);
+}
 
 // exclusive scan joint
 template <typename Group, typename InPtr, typename OutPtr, typename T,
@@ -747,8 +750,7 @@ T __acpp_inclusive_scan_over_group(
     group<Dim> g, T x, BinaryOperation binary_op);
 
 
-template <typename Group, typename V, typename T, typename BinaryOperation,
-          std::enable_if_t<is_group_v<std::decay_t<Group>>, bool> = true>
+template <typename Group, typename V, typename T, typename BinaryOperation>
 HIPSYCL_BUILTIN T __acpp_inclusive_scan_over_group(
     Group g, V x, T init, BinaryOperation binary_op) {
   auto scan = __acpp_inclusive_scan_over_group(g, T{x}, binary_op);
