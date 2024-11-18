@@ -25,28 +25,12 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
- #include "hipSYCL/sycl/libkernel/sscp/builtins/broadcast.hpp"
- #include "hipSYCL/sycl/libkernel/sscp/builtins/shuffle.hpp"
+#include "hipSYCL/sycl/libkernel/sscp/builtins/broadcast.hpp"
 
-
- HIPSYCL_SSCP_CONVERGENT_BUILTIN
-__acpp_int8 __acpp_sscp_work_group_broadcast_i8(__acpp_int32 sender,
-                                                      __acpp_int8 x);
-
-HIPSYCL_SSCP_CONVERGENT_BUILTIN
-__acpp_int16 __acpp_sscp_work_group_broadcast_i16(__acpp_int32 sender,
-                                                        __acpp_int16 x);
-
-HIPSYCL_SSCP_CONVERGENT_BUILTIN
-__acpp_int32 __acpp_sscp_work_group_broadcast_i32(__acpp_int32 sender,
-                                                        __acpp_int32 x);
-
-HIPSYCL_SSCP_CONVERGENT_BUILTIN
-__acpp_int64 __acpp_sscp_work_group_broadcast_i64(__acpp_int32 sender,
-                                                        __acpp_int64 x);
-
-
-
+GROUP_BCAST(i8,int8)
+GROUP_BCAST(i16,int16)
+GROUP_BCAST(i32,int32)
+GROUP_BCAST(i64,int64)
 
 SUBGROUP_BCAST(i8,int8)
 SUBGROUP_BCAST(i16,int16)
