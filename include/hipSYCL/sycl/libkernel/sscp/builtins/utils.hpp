@@ -1,4 +1,3 @@
-
 /*
  * This file is part of AdaptiveCpp, an implementation of SYCL and C++ standard
  * parallelism for CPUs and GPUs.

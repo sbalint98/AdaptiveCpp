@@ -32,6 +32,11 @@ __acpp_uint64 get_active_mask(){
     return (1ull << subgroup_size)-1;
 }
 
+HIPSYCL_SSCP_CONVERGENT_BUILTIN
+__acpp_f32 __acpp_sscp_work_group_reduce_f32(__acpp_sscp_algorithm_op op, __acpp_f32 x){
+    return 0;
+}
+
 #define SUBGROUP_FLOAT_REDUCTION(type) \
 HIPSYCL_SSCP_CONVERGENT_BUILTIN \
 __acpp_##type __acpp_sscp_sub_group_reduce_##type(__acpp_sscp_algorithm_op op, __acpp_##type x){ \

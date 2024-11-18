@@ -9,6 +9,8 @@
  */
 // SPDX-License-Identifier: BSD-2-Clause
 #include "builtin_config.hpp"
+#include "core_typed.hpp"
+#include "broadcast.hpp"
 #include "utils.hpp"
 #include "hipSYCL/sycl/libkernel/detail/half_representation.hpp"
 #include "hipSYCL/sycl/libkernel/sscp/builtins/shuffle.hpp"
@@ -50,6 +52,10 @@ __acpp_f32 __acpp_sscp_work_group_reduce_f32(__acpp_sscp_algorithm_op op, __acpp
 
 HIPSYCL_SSCP_CONVERGENT_BUILTIN
 __acpp_f64 __acpp_sscp_work_group_reduce_f64(__acpp_sscp_algorithm_op op, __acpp_f64 x);
+
+
+
+
 
 HIPSYCL_SSCP_CONVERGENT_BUILTIN
 __acpp_int8 __acpp_sscp_sub_group_reduce_i8(__acpp_sscp_algorithm_op op, __acpp_int8 x);
