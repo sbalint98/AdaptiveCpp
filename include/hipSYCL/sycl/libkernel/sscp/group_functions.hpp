@@ -34,6 +34,8 @@
 #include "builtins/broadcast.hpp"
 #include "builtins/collpredicate.hpp"
 #include "builtins/reduction.hpp"
+#include "builtins/scan_exclusive.hpp"
+#include "builtins/scan_inclusive.hpp"
 #include "builtins/shuffle.hpp"
 
 namespace hipsycl {
@@ -334,7 +336,7 @@ HIPSYCL_SSCP_MAP_GROUP_BINARY_IDENTITY(__acpp_sscp_algorithm_op::bit_or, T{0})
 HIPSYCL_SSCP_MAP_GROUP_BINARY_IDENTITY(__acpp_sscp_algorithm_op::bit_xor, T{0})
 HIPSYCL_SSCP_MAP_GROUP_BINARY_IDENTITY(__acpp_sscp_algorithm_op::logical_and, T{1})
 HIPSYCL_SSCP_MAP_GROUP_BINARY_IDENTITY(__acpp_sscp_algorithm_op::logical_or, T{0})
-
+// ---- subgroup
 template <
     typename T, typename BinaryOperation,
     std::enable_if_t<(std::is_integral_v<T> && std::is_signed_v<T>), int> = 0>
@@ -424,6 +426,7 @@ marray<T,N> __acpp_reduce_over_group(sub_group g, marray<T,N> x, BinaryOperation
   return result;
 }
 
+// End of subgroup algos
 
 template <
     typename T, int Dim, typename BinaryOperation,
@@ -537,8 +540,7 @@ __acpp_joint_reduce(Group g, Ptr first, Ptr last, BinaryOperation binary_op) {
 
   using type = decltype(*first);
 
-  auto local = sscp_binary_operation_identity<
-      std::decay_t<type>, sscp_binary_operation_v<BinaryOperation>>::get();
+  auto local = sscp_binary_operation_identity<std::decay_t<type>, sscp_binary_operation_v<BinaryOperation>>::get();
   if(start_ptr < last)
     local = *start_ptr;
   
@@ -556,23 +558,83 @@ T __acpp_joint_reduce(Group g, Ptr first, Ptr last, T init,
   return binary_op(__acpp_joint_reduce(g, first, last, binary_op), init);
 }
 
-// exclusive_scan
+// exclusive_scan -- subgroup
 
+template <
+    typename T, typename BinaryOperation,
+    std::enable_if_t<(std::is_integral_v<T> && std::is_signed_v<T>), int> = 0>
+HIPSYCL_BUILTIN T __acpp_exclusive_scan_over_group(sub_group g, T x,
+                                              BinaryOperation binary_op) {
+  if constexpr(sizeof(T) == 1) {
+    return maybe_bit_cast<T>(__acpp_sscp_sub_group_exclusive_scan_i8(
+        sscp_binary_operation_v<BinaryOperation>,
+        maybe_bit_cast<__acpp_int8>(x)));
+  } else if constexpr(sizeof(T) == 2) {
+    return maybe_bit_cast<T>(__acpp_sscp_sub_group_exclusive_scan_i16(
+        sscp_binary_operation_v<BinaryOperation>,
+        maybe_bit_cast<__acpp_int16>(x)));
+  } else if constexpr(sizeof(T) == 4) {
+    return maybe_bit_cast<T>(__acpp_sscp_sub_group_exclusive_scan_i32(
+        sscp_binary_operation_v<BinaryOperation>,
+        maybe_bit_cast<__acpp_int32>(x)));
+  } else {
+    return maybe_bit_cast<T>(__acpp_sscp_sub_group_exclusive_scan_i64(
+        sscp_binary_operation_v<BinaryOperation>,
+        maybe_bit_cast<__acpp_int64>(x)));
+  }
+}
+
+template <
+    typename T, typename BinaryOperation,
+    std::enable_if_t<(std::is_integral_v<T> && !std::is_signed_v<T>), int> = 0>
+HIPSYCL_BUILTIN T __acpp_exclusive_scan_over_group(sub_group g, T x,
+                                              BinaryOperation binary_op) {
+  if constexpr(sizeof(T) == 1) {
+    return maybe_bit_cast<T>(__acpp_sscp_sub_group_exclusive_scan_u8(
+        sscp_binary_operation_v<BinaryOperation>,
+        maybe_bit_cast<__acpp_uint8>(x)));
+  } else if constexpr(sizeof(T) == 2) {
+    return maybe_bit_cast<T>(__acpp_sscp_sub_group_exclusive_scan_u16(
+        sscp_binary_operation_v<BinaryOperation>,
+        maybe_bit_cast<__acpp_uint16>(x)));
+  } else if constexpr(sizeof(T) == 4) {
+    return maybe_bit_cast<T>(__acpp_sscp_sub_group_exclusive_scan_u32(
+        sscp_binary_operation_v<BinaryOperation>,
+        maybe_bit_cast<__acpp_uint32>(x)));
+  } else {
+    return maybe_bit_cast<T>(__acpp_sscp_sub_group_exclusive_scan_u64(
+        sscp_binary_operation_v<BinaryOperation>,
+        maybe_bit_cast<__acpp_uint64>(x)));
+  }
+}
+
+template<typename BinaryOperation>
+HIPSYCL_BUILTIN
+half __acpp_exclusive_scan_over_group(sub_group g, half x, BinaryOperation binary_op) {
+  return detail::create_half(__acpp_sscp_sub_group_exclusive_scan_f16(
+      sscp_binary_operation_v<BinaryOperation>, detail::get_half_storage(x)));
+}
+
+template<typename BinaryOperation>
+HIPSYCL_BUILTIN
+float __acpp_exclusive_scan_over_group(sub_group g, float x, BinaryOperation binary_op) {
+  return __acpp_sscp_sub_group_exclusive_scan_f32(
+      sscp_binary_operation_v<BinaryOperation>, x);
+}
+
+// exclusive scan group
 
 template <int Dim, typename V, typename T, typename BinaryOperation>
 HIPSYCL_BUILTIN T __acpp_exclusive_scan_over_group(
     group<Dim> g, V x, T init, BinaryOperation binary_op);
-
-
-template <typename V, typename T, typename BinaryOperation>
-HIPSYCL_BUILTIN T __acpp_exclusive_scan_over_group(
-    sub_group g, V x, T init, BinaryOperation binary_op);
 
 template <typename Group, typename T, typename BinaryOperation,
           std::enable_if_t<is_group_v<std::decay_t<Group>>, bool> = true>
 HIPSYCL_BUILTIN T
 __acpp_exclusive_scan_over_group(Group g, T x, BinaryOperation binary_op);
 
+
+// exclusive scan joint
 template <typename Group, typename InPtr, typename OutPtr, typename T,
           typename BinaryOperation,
           std::enable_if_t<is_group_v<std::decay_t<Group>>, bool> = true>
@@ -587,7 +649,113 @@ HIPSYCL_BUILTIN OutPtr
 __acpp_joint_exclusive_scan(Group g, InPtr first, InPtr last, OutPtr result,
                                BinaryOperation binary_op);
 
-// inclusive_scan
+// subgroup inclusive_scan
+
+template <
+    typename T, typename BinaryOperation,
+    std::enable_if_t<(std::is_integral_v<T> && std::is_signed_v<T>), int> = 0>
+HIPSYCL_BUILTIN T __acpp_inclusive_scan_over_group(sub_group g, T x,
+                                              BinaryOperation binary_op) {
+  if constexpr(sizeof(T) == 1) {
+    return maybe_bit_cast<T>(__acpp_sscp_sub_group_inclusive_scan_i8(
+        sscp_binary_operation_v<BinaryOperation>,
+        maybe_bit_cast<__acpp_int8>(x)));
+  } else if constexpr(sizeof(T) == 2) {
+    return maybe_bit_cast<T>(__acpp_sscp_sub_group_inclusive_scan_i16(
+        sscp_binary_operation_v<BinaryOperation>,
+        maybe_bit_cast<__acpp_int16>(x)));
+  } else if constexpr(sizeof(T) == 4) {
+    return maybe_bit_cast<T>(__acpp_sscp_sub_group_inclusive_scan_i32(
+        sscp_binary_operation_v<BinaryOperation>,
+        maybe_bit_cast<__acpp_int32>(x)));
+  } else {
+    return maybe_bit_cast<T>(__acpp_sscp_sub_group_inclusive_scan_i64(
+        sscp_binary_operation_v<BinaryOperation>,
+        maybe_bit_cast<__acpp_int64>(x)));
+  }
+}
+
+template <
+    typename T, typename BinaryOperation,
+    std::enable_if_t<(std::is_integral_v<T> && !std::is_signed_v<T>), int> = 0>
+HIPSYCL_BUILTIN T __acpp_inclusive_scan_over_group(sub_group g, T x,
+                                              BinaryOperation binary_op) {
+  if constexpr(sizeof(T) == 1) {
+    return maybe_bit_cast<T>(__acpp_sscp_sub_group_inclusive_scan_u8(
+        sscp_binary_operation_v<BinaryOperation>,
+        maybe_bit_cast<__acpp_uint8>(x)));
+  } else if constexpr(sizeof(T) == 2) {
+    return maybe_bit_cast<T>(__acpp_sscp_sub_group_inclusive_scan_u16(
+        sscp_binary_operation_v<BinaryOperation>,
+        maybe_bit_cast<__acpp_uint16>(x)));
+  } else if constexpr(sizeof(T) == 4) {
+    return maybe_bit_cast<T>(__acpp_sscp_sub_group_inclusive_scan_u32(
+        sscp_binary_operation_v<BinaryOperation>,
+        maybe_bit_cast<__acpp_uint32>(x)));
+  } else {
+    return maybe_bit_cast<T>(__acpp_sscp_sub_group_inclusive_scan_u64(
+        sscp_binary_operation_v<BinaryOperation>,
+        maybe_bit_cast<__acpp_uint64>(x)));
+  }
+}
+
+template<typename BinaryOperation>
+HIPSYCL_BUILTIN
+half __acpp_inclusive_scan_over_group(sub_group g, half x, BinaryOperation binary_op) {
+  return detail::create_half(__acpp_sscp_sub_group_inclusive_scan_f16(
+      sscp_binary_operation_v<BinaryOperation>, detail::get_half_storage(x)));
+}
+
+template<typename BinaryOperation>
+HIPSYCL_BUILTIN
+float __acpp_inclusive_scan_over_group(sub_group g, float x, BinaryOperation binary_op) {
+  return __acpp_sscp_sub_group_inclusive_scan_f32(
+      sscp_binary_operation_v<BinaryOperation>, x);
+}
+
+template<typename BinaryOperation>
+HIPSYCL_BUILTIN
+double __acpp_inclusive_scan_over_group(sub_group g, double x, BinaryOperation binary_op) {
+  return __acpp_sscp_sub_group_inclusive_scan_f64(
+      sscp_binary_operation_v<BinaryOperation>, x);
+}
+
+template<typename T, int N, typename BinaryOperation>
+HIPSYCL_BUILTIN
+vec<T,N> __acpp_inclusive_scan_over_group(sub_group g, vec<T,N> x, BinaryOperation binary_op) {
+  vec<T,N> result;
+  for(int i = 0; i < N; ++i) {
+    result[i] = __acpp_inclusive_scan_over_group(g, x[i], binary_op);
+  }
+  return result;
+}
+
+template<typename T, int N, typename BinaryOperation>
+HIPSYCL_BUILTIN
+marray<T,N> __acpp_inclusive_scan_over_group(sub_group g, marray<T,N> x, BinaryOperation binary_op) {
+  marray<T,N> result;
+  for(int i = 0; i < N; ++i) {
+    result[i] = __acpp_inclusive_scan_over_group(g, x[i], binary_op);
+  }
+  return result;
+}
+
+// group inclusive scan
+template <int Dim, typename T, typename BinaryOperation>
+HIPSYCL_BUILTIN
+T __acpp_inclusive_scan_over_group(
+    group<Dim> g, T x, BinaryOperation binary_op);
+
+
+template <typename Group, typename V, typename T, typename BinaryOperation,
+          std::enable_if_t<is_group_v<std::decay_t<Group>>, bool> = true>
+HIPSYCL_BUILTIN T __acpp_inclusive_scan_over_group(
+    Group g, V x, T init, BinaryOperation binary_op) {
+  auto scan = __acpp_inclusive_scan_over_group(g, T{x}, binary_op);
+  return binary_op(scan, init);
+}
+
+// joint inclusive scan
 
 template <typename Group, typename InPtr, typename OutPtr, typename T,
           typename BinaryOperation,
@@ -602,23 +770,6 @@ template <typename Group, typename InPtr, typename OutPtr,
 HIPSYCL_BUILTIN OutPtr
 __acpp_joint_inclusive_scan(Group g, InPtr first, InPtr last, OutPtr result,
                                BinaryOperation binary_op);
-
-template <int Dim, typename T, typename BinaryOperation>
-HIPSYCL_BUILTIN
-T __acpp_inclusive_scan_over_group(
-    group<Dim> g, T x, BinaryOperation binary_op);
-
-template <typename T, typename BinaryOperation>
-HIPSYCL_BUILTIN T __acpp_inclusive_scan_over_group(
-    sub_group g, T x, BinaryOperation binary_op);
-
-template <typename Group, typename V, typename T, typename BinaryOperation,
-          std::enable_if_t<is_group_v<std::decay_t<Group>>, bool> = true>
-HIPSYCL_BUILTIN T __acpp_inclusive_scan_over_group(
-    Group g, V x, T init, BinaryOperation binary_op) {
-  auto scan = __acpp_inclusive_scan_over_group(g, T{x}, binary_op);
-  return binary_op(scan, init);
-}
 
 // shift_left
 template <int Dim, typename T>

@@ -9,6 +9,7 @@
  */
 // SPDX-License-Identifier: BSD-2-Clause
 #include "builtin_config.hpp"
+#include "utils.hpp"
 #include "hipSYCL/sycl/libkernel/detail/half_representation.hpp"
 #include "hipSYCL/sycl/libkernel/sscp/builtins/shuffle.hpp"
 #include "hipSYCL/sycl/libkernel/sscp/builtins/subgroup.hpp"
@@ -85,105 +86,7 @@ __acpp_f64 __acpp_sscp_sub_group_reduce_f64(__acpp_sscp_algorithm_op op, __acpp_
 
 
 
-#if __has_builtin(__builtin_bit_cast)
 
-#define HIPSYCL_INPLACE_BIT_CAST(Tin, Tout, in, out)                           \
-  out = __builtin_bit_cast(Tout, in)
-
-#else
-
-#define HIPSYCL_INPLACE_BIT_CAST(Tin, Tout, in, out)                           \
-  {                                                                            \
-    union {                                                                    \
-      Tout union_out;                                                          \
-      Tin union_in;                                                            \
-    } u;                                                                       \
-    u.union_in = in;                                                           \
-    out = u.union_out;                                                         \
-  }
-#endif
-
-template <class Tout, class Tin>
-Tout bit_cast(Tin x) {
-  Tout result;
-  HIPSYCL_INPLACE_BIT_CAST(Tin, Tout, x, result);
-  return result;
-}
-
-__acpp_uint64 get_active_mask();
-
-
-struct plus
-{
-    template<typename T>
-    T operator()(T lhs, T rhs){
-        return lhs+rhs;
-    }
-};
-
-struct min
-{
-    template<typename T>
-    T operator()(T lhs, T rhs){
-        return lhs < rhs ? lhs : rhs;
-    }
-};
-
-struct max
-{
-    template<typename T>
-    T operator()(T lhs, T rhs){
-        return lhs < rhs ? rhs : lhs;
-    }
-};
-
-struct multiply
-{
-    template<typename T>
-    T operator()(T lhs, T rhs){
-        return lhs < rhs ? rhs : lhs;
-    }
-};
-
-struct bit_and
-{
-    template<typename T>
-    T operator()(T lhs, T rhs){
-        return lhs & rhs ;
-    }
-};
-
-struct bit_or
-{
-    template<typename T>
-    T operator()(T lhs, T rhs){
-        return lhs | rhs;
-    }
-};
-
-struct bit_xor
-{
-    template<typename T>
-    T operator()(T lhs, T rhs){
-        return lhs ^ rhs;
-    }
-};
-
-struct logical_and
-{
-    template<typename T>
-    T operator()(T lhs, T rhs){
-        return lhs and rhs;
-    }
-};
-
-struct logical_or
-{
-    template<typename T>
-    T operator()(T lhs, T rhs){
-        return lhs or rhs;
-    }
-};
 // reduce
 #define REDUCE_OVER_GROUP(outType,size) \
 template <typename T, typename BinaryOperation> \
