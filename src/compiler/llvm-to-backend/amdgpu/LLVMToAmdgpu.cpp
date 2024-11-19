@@ -209,7 +209,7 @@ public:
 };
 
 LLVMToAmdgpuTranslator::LLVMToAmdgpuTranslator(const std::vector<std::string> &KN)
-    : LLVMToBackendTranslator{static_cast<int>(sycl::jit::compiler_backend::amdgpu), KN, KN},
+    : LLVMToBackendTranslator{static_cast<int>(sycl::AdaptiveCpp_jit::compiler_backend::amdgpu), KN, KN},
       KernelNames{KN} {
   RocmDeviceLibsPath = common::filesystem::join_path(RocmPath,
                                                      std::vector<std::string>{"amdgcn", "bitcode"});

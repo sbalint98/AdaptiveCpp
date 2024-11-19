@@ -64,5 +64,25 @@ int main() {
   // CHECK: 0
   std::cout << data[6] << std::endl;
 
+  q.single_task([=]() {
+    __acpp_if_target_device(
+      auto backend = sycl::AdaptiveCpp_jit::reflect<
+          sycl::AdaptiveCpp_jit::reflection_query::runtime_backend>();
+      data[0] = sycl::AdaptiveCpp_jit::compile_if_else(
+          backend == static_cast<int>(sycl::backend::omp), 
+          []() { return 1; },
+          []() { return 0; });
+      data[1] = sycl::AdaptiveCpp_jit::knows<
+          sycl::AdaptiveCpp_jit::reflection_query::runtime_backend>();
+    );
+  }).wait();
+  // CHECK: 1
+  std::cout << (data[0] == (q.get_device().get_backend() ==
+                            sycl::backend::omp))
+            << std::endl;
+
+  // CHECK: 1
+  std::cout << data[1] << std::endl;
+
   sycl::free(data, q);
 }

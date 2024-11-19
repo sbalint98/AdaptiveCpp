@@ -59,7 +59,7 @@ namespace hipsycl {
 namespace compiler {
 
 LLVMToHostTranslator::LLVMToHostTranslator(const std::vector<std::string> &KN)
-    : LLVMToBackendTranslator{static_cast<int>(sycl::jit::compiler_backend::host), KN, KN},
+    : LLVMToBackendTranslator{static_cast<int>(sycl::AdaptiveCpp_jit::compiler_backend::host), KN, KN},
       KernelNames{KN} {}
 
 bool LLVMToHostTranslator::toBackendFlavor(llvm::Module &M, PassHandler &PH) {

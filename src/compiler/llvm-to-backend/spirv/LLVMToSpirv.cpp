@@ -123,7 +123,7 @@ void assignSPIRCallConvention(llvm::Function *F) {
 }
 
 LLVMToSpirvTranslator::LLVMToSpirvTranslator(const std::vector<std::string> &KN)
-    : LLVMToBackendTranslator{static_cast<int>(sycl::jit::compiler_backend::spirv), KN, KN},
+    : LLVMToBackendTranslator{static_cast<int>(sycl::AdaptiveCpp_jit::compiler_backend::spirv), KN, KN},
       KernelNames{KN} {}
 
 bool LLVMToSpirvTranslator::toBackendFlavor(llvm::Module &M, PassHandler& PH) {

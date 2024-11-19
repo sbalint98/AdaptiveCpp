@@ -36,7 +36,7 @@ extern "C" void __acpp_function_annotation_dynamic_function_def_arg1();
 template<class T>
 void __acpp_function_annotation_argument_used(T&& x);
 
-namespace hipsycl::sycl::jit {
+namespace hipsycl::sycl::AdaptiveCpp_jit {
 
 template<class T>
 void arguments_are_used(T&& x) {
@@ -275,6 +275,10 @@ private:
 
 }
 
+
+namespace hipsycl::sycl::jit {
+using namespace hipsycl::sycl::AdaptiveCpp_jit;
+}
 
 #endif // IS_DEVICE_PASS_SSCP
 

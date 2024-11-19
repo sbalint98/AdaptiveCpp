@@ -155,7 +155,7 @@ void replaceBrokenLLVMIntrinsics(llvm::Module& M) {
 }
 
 LLVMToPtxTranslator::LLVMToPtxTranslator(const std::vector<std::string> &KN)
-    : LLVMToBackendTranslator{static_cast<int>(sycl::jit::compiler_backend::ptx), KN, KN},
+    : LLVMToBackendTranslator{static_cast<int>(sycl::AdaptiveCpp_jit::compiler_backend::ptx), KN, KN},
       KernelNames{KN} {}
 
 bool LLVMToPtxTranslator::toBackendFlavor(llvm::Module &M, PassHandler& PH) {
