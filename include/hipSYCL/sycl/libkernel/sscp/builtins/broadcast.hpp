@@ -49,19 +49,22 @@ __acpp_int64 __acpp_sscp_sub_group_broadcast<__acpp_int64>(__acpp_int64 value, _
 
 
 template<typename T>
-T __acpp_sscp_work_group_broadcast(T, __acpp_int32) = delete;
+T __acpp_sscp_work_group_broadcast(__acpp_int32, T) = delete;
 
-template<>
-__acpp_int8 __acpp_sscp_work_group_broadcast<__acpp_int8>(__acpp_int8 value, __acpp_int32 id);
+#define TEMPLATE_DECLARATION_WG_BROADCAST(size) \
+template<> \
+__acpp_int##size __acpp_sscp_work_group_broadcast<__acpp_int##size>(__acpp_int32 id, __acpp_int##size value); \
 
-template<>
-__acpp_int16 __acpp_sscp_work_group_broadcast<__acpp_int16>(__acpp_int16 value, __acpp_int32 id);
+#define TEMPLATE_DEFINITION_WG_BROADCAST(size) \
+template<> \
+__acpp_int##size __acpp_sscp_work_group_broadcast<__acpp_int##size>(__acpp_int32 id, __acpp_int##size value){ \
+  return __acpp_sscp_work_group_broadcast_i##size(id, value); \
+} \
 
-template<>
-__acpp_int32 __acpp_sscp_work_group_broadcast<__acpp_int32>(__acpp_int32 value, __acpp_int32 idx);
-
-template<>
-__acpp_int64 __acpp_sscp_work_group_broadcast<__acpp_int64>(__acpp_int64 value, __acpp_int32 id);
+TEMPLATE_DECLARATION_WG_BROADCAST(8)
+TEMPLATE_DECLARATION_WG_BROADCAST(16)
+TEMPLATE_DECLARATION_WG_BROADCAST(32)
+TEMPLATE_DECLARATION_WG_BROADCAST(64)
 
 
 HIPSYCL_SSCP_CONVERGENT_BUILTIN

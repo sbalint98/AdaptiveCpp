@@ -118,24 +118,21 @@ OutType __acpp_reduce_over_subgroup(OutType x) {
 template <typename OutType, typename BinaryOperation> 
 OutType __acpp_reduce_over_work_group_impl(OutType x,BinaryOperation op){
   const constexpr __acpp_uint32 shmem_array_length = 32;
-  static __attribute__((loader_uninitialized))  __attribute__((address_space(3))) int shrd_mem[shmem_array_length];
+  static __attribute__((loader_uninitialized))  __attribute__((address_space(3))) OutType  shrd_mem[shmem_array_length];
 
   const __acpp_uint32       wg_lid     = __acpp_sscp_typed_get_local_linear_id<3, int>();
   const __acpp_uint32       wg_size    = __acpp_sscp_typed_get_local_size<3, int>();
   const __acpp_uint32       max_sg_size = __acpp_sscp_get_subgroup_max_size();
-  const __acpp_uint32       sg_size = __acpp_sscp_get_subgroup_size();
-  const __acpp_uint32 first_sg_size = __acpp_sscp_work_group_broadcast(0, sg_size);
-
-  const __acpp_uint32       block_reduction_iteration_increment = max_sg_size <= shmem_array_length ? max_sg_size : shmem_array_length;
+  const __acpp_int32       sg_size = __acpp_sscp_get_subgroup_size();
+  const __acpp_int32 first_sg_size = __acpp_sscp_work_group_broadcast(0, sg_size);
 
   const __acpp_uint32       num_subgroups = (wg_size+max_sg_size-1)/max_sg_size;
   const __acpp_uint32       subgroup_id = wg_lid/max_sg_size;
   const __acpp_uint32       sg_lid    = __acpp_sscp_get_subgroup_id();
 
 
-  __acpp_f32 local_reduce_result = __acpp_reduce_over_subgroup_impl(x, op, max_sg_size);
+  OutType local_reduce_result = __acpp_reduce_over_subgroup_impl(x, op, max_sg_size);
   
-  // return local_reduce_result;
   //Sum up until all sgs can load their data into shmem
   if(subgroup_id < shmem_array_length){
     shrd_mem[subgroup_id] = local_reduce_result;
@@ -164,11 +161,13 @@ OutType __acpp_reduce_over_work_group_impl(OutType x,BinaryOperation op){
   if(wg_lid < first_sg_size){
     local_reduce_result = shrd_mem[wg_lid];
     int active_threads = num_subgroups < first_sg_size ? num_subgroups : first_sg_size;
-    local_reduce_result =  __acpp_reduce_over_subgroup_impl(local_reduce_result, plus{}, active_threads);
+    local_reduce_result =  __acpp_reduce_over_subgroup_impl(local_reduce_result, op, active_threads);
   }
   
   // Do a final broadcast
-  local_reduce_result = bit_cast<float>(__acpp_sscp_work_group_broadcast(0, bit_cast<__acpp_uint32>(local_reduce_result)));
+  using internal_type = typename integer_type<OutType>::type;
+  static_assert(sizeof(internal_type) == sizeof(OutType));
+  local_reduce_result = bit_cast<OutType>(__acpp_sscp_work_group_broadcast(0, bit_cast<internal_type>(local_reduce_result)));
   return local_reduce_result;
 }
 

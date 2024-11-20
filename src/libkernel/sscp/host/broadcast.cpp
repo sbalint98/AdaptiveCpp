@@ -47,26 +47,10 @@ __acpp_int64 __acpp_sscp_sub_group_broadcast<__acpp_int64>(__acpp_int64 value, _
   return __acpp_sscp_sub_group_broadcast_i64(value, id);
 }
 
-template<>
-__acpp_int8 __acpp_sscp_work_group_broadcast<__acpp_int8>(__acpp_int8 value, __acpp_int32 id){
-  return __acpp_sscp_work_group_broadcast_i8(value, id);
-}
-
-template<>
-__acpp_int16 __acpp_sscp_work_group_broadcast<__acpp_int16>(__acpp_int16 value, __acpp_int32 id){
-  return __acpp_sscp_work_group_broadcast_i16(value, id);
-}
-
-template<>
-__acpp_int32 __acpp_sscp_work_group_broadcast<__acpp_int32>(__acpp_int32 value, __acpp_int32 id){
-  return __acpp_sscp_work_group_broadcast_i32(value, id);
-}
-
-template<>
-__acpp_int64 __acpp_sscp_work_group_broadcast<__acpp_int64>(__acpp_int64 value, __acpp_int32 id){
-  return __acpp_sscp_work_group_broadcast_i64(value, id);
-}
-
+TEMPLATE_DEFINITION_WG_BROADCAST(8)
+TEMPLATE_DEFINITION_WG_BROADCAST(16)
+TEMPLATE_DEFINITION_WG_BROADCAST(32)
+TEMPLATE_DEFINITION_WG_BROADCAST(64)
 
 GROUP_BCAST(i8,int8)
 GROUP_BCAST(i16,int16)
