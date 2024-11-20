@@ -32,7 +32,6 @@ HIPSYCL_SSCP_CONVERGENT_BUILTIN
 __acpp_int64 __acpp_sscp_work_group_broadcast_i64(__acpp_int32 sender,
                                                         __acpp_int64 x);
 
-
 HIPSYCL_SSCP_CONVERGENT_BUILTIN
 __acpp_int8 __acpp_sscp_sub_group_broadcast_i8(__acpp_int32 sender,
                                                      __acpp_int8 x);

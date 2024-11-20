@@ -41,7 +41,6 @@ Tout bit_cast(Tin x) {
 
 __acpp_uint64 get_active_mask();
 
-
 struct plus
 {
     template<typename T>
@@ -113,5 +112,70 @@ struct logical_or
         return lhs or rhs;
     }
 };
+
+template<__acpp_sscp_algorithm_op op>
+struct get_op{
+};
+
+#define MAP_SSCP_ALGORITHM_OP(sscp_algo_op,impl) \
+template<> \
+struct get_op< sscp_algo_op >{ \
+    using type =impl; \
+}; \
+
+MAP_SSCP_ALGORITHM_OP(__acpp_sscp_algorithm_op::plus,plus)
+MAP_SSCP_ALGORITHM_OP(__acpp_sscp_algorithm_op::multiply,multiply)
+MAP_SSCP_ALGORITHM_OP(__acpp_sscp_algorithm_op::min,min)
+MAP_SSCP_ALGORITHM_OP(__acpp_sscp_algorithm_op::max,max)
+MAP_SSCP_ALGORITHM_OP(__acpp_sscp_algorithm_op::bit_and,bit_and)
+MAP_SSCP_ALGORITHM_OP(__acpp_sscp_algorithm_op::bit_or,bit_or)
+MAP_SSCP_ALGORITHM_OP(__acpp_sscp_algorithm_op::bit_xor,bit_xor)
+MAP_SSCP_ALGORITHM_OP(__acpp_sscp_algorithm_op::logical_and,logical_and)
+MAP_SSCP_ALGORITHM_OP(__acpp_sscp_algorithm_op::logical_or,logical_or)
+
+
+template<typename T>
+struct integer_type{
+    using type = T;
+};
+
+// __acpp_f16 is unsigned short currently so
+// This will resolve to the same type
+// template<>
+// struct integer_type<__acpp_f16>{
+//   using type = __acpp_int16;
+// };
+
+template<>
+struct integer_type<__acpp_f32>{
+  using type = __acpp_int32;
+};
+
+template<>
+struct integer_type<__acpp_f64>{
+  using type = __acpp_int64;
+};
+
+template<>
+struct integer_type<__acpp_uint8>{
+  using type = __acpp_int8;
+};
+
+template<>
+struct integer_type<__acpp_uint16>{
+  using type = __acpp_int16;
+};
+
+template<>
+struct integer_type<__acpp_uint32>{
+  using type = __acpp_int32;
+};
+
+template<>
+struct integer_type<__acpp_uint64>{
+  using type = __acpp_int64;
+};
+
+
 
 #endif

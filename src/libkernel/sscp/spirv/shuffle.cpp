@@ -29,6 +29,26 @@
 #include "hipSYCL/sycl/libkernel/sscp/builtins/shuffle.hpp"
 #include "hipSYCL/sycl/libkernel/sscp/builtins/subgroup.hpp"
 
+template<>
+__acpp_int8 __acpp_sscp_sub_group_select<__acpp_int8>(__acpp_int8 value, __acpp_int32 id){
+  return __acpp_sscp_sub_group_select_i8(value, id);
+}
+
+template<>
+__acpp_int16 __acpp_sscp_sub_group_select<__acpp_int16>(__acpp_int16 value, __acpp_int32 id){
+  return __acpp_sscp_sub_group_select_i16(value, id);
+}
+
+template<>
+__acpp_int32 __acpp_sscp_sub_group_select<__acpp_int32>(__acpp_int32 value, __acpp_int32 id){
+  return __acpp_sscp_sub_group_select_i32(value, id);
+}
+
+template<>
+__acpp_int64 __acpp_sscp_sub_group_select<__acpp_int64>(__acpp_int64 value, __acpp_int32 id){
+  return __acpp_sscp_sub_group_select_i64(value, id);
+}   
+
 #if __has_builtin(__builtin_bit_cast)
 
 #define HIPSYCL_INPLACE_BIT_CAST(Tin, Tout, in, out)                           \
