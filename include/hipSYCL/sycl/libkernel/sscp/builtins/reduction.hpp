@@ -19,7 +19,6 @@
 #ifndef HIPSYCL_SSCP_REDUCTION_BUILTINS_HPP
 #define HIPSYCL_SSCP_REDUCTION_BUILTINS_HPP
 
-
 HIPSYCL_SSCP_CONVERGENT_BUILTIN
 __acpp_int8 __acpp_sscp_work_group_reduce_i8(__acpp_sscp_algorithm_op op, __acpp_int8 x);
 
@@ -114,7 +113,7 @@ OutType __acpp_reduce_over_subgroup(OutType x) {
   using op = typename get_op<binary_op>::type;
   const __acpp_uint32       lrange     = __acpp_sscp_get_subgroup_max_size(); 
   return __acpp_reduce_over_subgroup_impl(x, op{}, lrange);
-} 
+}
 
 template <typename OutType, typename BinaryOperation> 
 OutType __acpp_reduce_over_work_group_impl(OutType x,BinaryOperation op){
@@ -125,7 +124,7 @@ OutType __acpp_reduce_over_work_group_impl(OutType x,BinaryOperation op){
   const __acpp_uint32       wg_size    = __acpp_sscp_typed_get_local_size<3, int>();
   const __acpp_uint32       max_sg_size = __acpp_sscp_get_subgroup_max_size();
   const __acpp_uint32       sg_size = __acpp_sscp_get_subgroup_size();
-  const __acpp_uint32 first_sg_size = __acpp_sscp_work_group_broadcast_i32(0, sg_size);
+  const __acpp_uint32 first_sg_size = __acpp_sscp_work_group_broadcast(0, sg_size);
 
   const __acpp_uint32       block_reduction_iteration_increment = max_sg_size <= shmem_array_length ? max_sg_size : shmem_array_length;
 
@@ -160,9 +159,8 @@ OutType __acpp_reduce_over_work_group_impl(OutType x,BinaryOperation op){
   }
 
   __acpp_sscp_work_group_barrier(__acpp_sscp_memory_scope::work_group, __acpp_sscp_memory_order::relaxed);
-  // Now we load the data into the first element
 
-  
+  // Now we load the data into registers
   if(wg_lid < first_sg_size){
     local_reduce_result = shrd_mem[wg_lid];
     int active_threads = num_subgroups < first_sg_size ? num_subgroups : first_sg_size;
@@ -170,7 +168,7 @@ OutType __acpp_reduce_over_work_group_impl(OutType x,BinaryOperation op){
   }
   
   // Do a final broadcast
-  local_reduce_result = bit_cast<float>(__acpp_sscp_work_group_broadcast_i32(0, bit_cast<__acpp_uint32>(local_reduce_result)));
+  local_reduce_result = bit_cast<float>(__acpp_sscp_work_group_broadcast(0, bit_cast<__acpp_uint32>(local_reduce_result)));
   return local_reduce_result;
 }
 
