@@ -129,6 +129,16 @@ public:
     _build_flags.push_back(flag);
   }
 
+  void set_known_alignment(int param_index, int alignment) {
+    for(auto& entry : _known_alignments) {
+      if(entry.first == param_index) {
+        entry.second = alignment;
+        return;
+      }
+    }
+    _known_alignments.push_back(std::make_pair(param_index, alignment));
+  }
+
   template <class ValueT>
   void append_base_configuration(kernel_base_config_parameter key,
                                  const ValueT &value) {
@@ -181,6 +191,13 @@ public:
                         &config_id, sizeof(config_id));
     }
 
+    for(const auto& entry : _known_alignments) {
+      uint64_t numeric_option_id = static_cast<uint64_t>(entry.first) | (1ull << 37);
+      uint64_t config_id = entry.second;
+      add_entry_to_hash(result, &numeric_option_id, sizeof(numeric_option_id),
+                        &config_id, sizeof(config_id));
+    }
+
     return result;
   }
 
@@ -198,6 +215,10 @@ public:
 
   const auto& function_call_specialization_config() const {
     return _function_call_specializations;
+  }
+
+  const auto& known_alignments() const {
+    return _known_alignments;
   }
 
 private:
@@ -260,6 +281,7 @@ private:
   std::vector<std::pair<int, uint64_t>> _specialized_kernel_args;
   std::vector<glue::sscp::fcall_config_kernel_property_t>
       _function_call_specializations;
+  std::vector<std::pair<int, int>> _known_alignments;
 
   id_type _base_configuration_result = {};
 };
