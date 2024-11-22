@@ -106,7 +106,7 @@ SUBGROUP_FLOAT_WORK_GROUP_REDUCTION(f64)
 
 #define SUBGROUP_INT_WORK_GROUP_REDUCTION(fn_suffix,type) \
 HIPSYCL_SSCP_CONVERGENT_BUILTIN \
-__acpp_##type __acpp_work_group_group_reduce_##fn_suffix(__acpp_sscp_algorithm_op op, __acpp_##type x){ \
+__acpp_##type __acpp_sscp_work_group_reduce_##fn_suffix(__acpp_sscp_algorithm_op op, __acpp_##type x){ \
     switch(op) \
     { \
         case __acpp_sscp_algorithm_op::plus: \

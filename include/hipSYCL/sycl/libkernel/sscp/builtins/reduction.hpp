@@ -111,7 +111,7 @@ OutType __acpp_reduce_over_subgroup_impl(OutType x, BinaryOperation binary_op, _
 template < __acpp_sscp_algorithm_op binary_op, typename OutType> 
 OutType __acpp_reduce_over_subgroup(OutType x) {
   using op = typename get_op<binary_op>::type;
-  const __acpp_uint32       lrange     = __acpp_sscp_get_subgroup_max_size(); 
+  const __acpp_uint32       lrange     = __acpp_sscp_get_subgroup_size(); 
   return __acpp_reduce_over_subgroup_impl(x, op{}, lrange);
 }
 
@@ -131,7 +131,7 @@ OutType __acpp_reduce_over_work_group_impl(OutType x,BinaryOperation op){
   const __acpp_uint32       sg_lid    = __acpp_sscp_get_subgroup_id();
 
 
-  OutType local_reduce_result = __acpp_reduce_over_subgroup_impl(x, op, max_sg_size);
+  OutType local_reduce_result = __acpp_reduce_over_subgroup_impl(x, op, sg_size);
   
   //Sum up until all sgs can load their data into shmem
   if(subgroup_id < shmem_array_length){

@@ -220,7 +220,7 @@ inline void create_bool_test_data(std::vector<char> &buffer, size_t local_size,
 }
 
 template<typename T, int Line>
-void check_binary_reduce(std::vector<T> buffer, size_t local_size, size_t global_size,
+void check_binary_reduce(std::vector<T> buffer, std::vector<T> input, size_t local_size, size_t global_size,
                          std::vector<bool> expected, std::string name,
                          size_t break_size = 0, size_t offset = 0) {
   std::vector<std::string> cases{"everything except one false", "everything false",
@@ -234,14 +234,38 @@ void check_binary_reduce(std::vector<T> buffer, size_t local_size, size_t global
 
       T computed      = buffer[i * local_size + j + offset];
       T expectedValue = initialize_type<T>(expected[i]);
-
-      BOOST_TEST_REQUIRE(compare_type(expectedValue, computed),
+      BOOST_TEST(compare_type(expectedValue, computed),
                  Line << ":" << type_to_string(computed) << " at position " << j
                       << " instead of " << type_to_string(expectedValue)
                       << " for case: " << cases[i] << " " << name);
 
-      if (!compare_type(expectedValue, computed))
+      if (!compare_type(expectedValue, computed)){
+        std::cout << input.size() << std::endl;
+        std::cout << "Input:" << std::endl;
+        for (int i = 0; i < input.size(); i++){
+          std::cout << static_cast<int>(input[i]) << " ";
+          if(i%local_size == local_size-1){
+            std::cout << std::endl;
+          }
+        }
+        std::cout << std::endl;
+
+        std::cout << buffer.size() << std::endl;
+        std::cout << "computed:" << std::endl;
+        for (int i = 0; i < buffer.size(); i++){
+          std::cout << static_cast<int>(buffer[i]) << " ";
+          if(i%local_size == local_size-1){
+            std::cout << std::endl;
+          }
+        }
+        std::cout << std::endl;
+        std::cout << "expected:" << std::endl;
+        for (const auto& i : expected){
+          std::cout << static_cast<int>(i) << " ";
+        }
+        std::cout << std::endl;
         break;
+      }
     }
   }
 }
