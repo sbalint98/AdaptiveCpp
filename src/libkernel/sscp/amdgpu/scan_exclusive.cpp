@@ -33,13 +33,13 @@ __acpp_##type __acpp_sscp_sub_group_exclusive_scan_##type(__acpp_sscp_algorithm_
     switch(op) \
     { \
         case __acpp_sscp_algorithm_op::plus: \
-            return __acpp_subgroup_exclusive_scan_impl_##type(x, plus{}); \
+            return __acpp_subgroup_exclusive_scan_impl(x, plus{}); \
         case __acpp_sscp_algorithm_op::multiply: \
-            return __acpp_subgroup_exclusive_scan_impl_##type(x, multiply{}); \
+            return __acpp_subgroup_exclusive_scan_impl(x, multiply{}); \
         case __acpp_sscp_algorithm_op::min: \
-            return __acpp_subgroup_exclusive_scan_impl_##type(x, min{}); \
+            return __acpp_subgroup_exclusive_scan_impl(x, min{}); \
         case __acpp_sscp_algorithm_op::max: \
-            return __acpp_subgroup_exclusive_scan_impl_##type(x, max{}); \
+            return __acpp_subgroup_exclusive_scan_impl(x, max{}); \
     } \
 } \
 
@@ -53,23 +53,23 @@ __acpp_##type __acpp_sscp_sub_group_exclusive_scan_##fn_suffix(__acpp_sscp_algor
     switch(op) \
     { \
         case __acpp_sscp_algorithm_op::plus: \
-            return __acpp_subgroup_exclusive_scan_impl_##type(x, plus{}); \
+            return __acpp_subgroup_exclusive_scan_impl(x, plus{}); \
         case __acpp_sscp_algorithm_op::multiply: \
-            return __acpp_subgroup_exclusive_scan_impl_##type(x, multiply{}); \
+            return __acpp_subgroup_exclusive_scan_impl(x, multiply{}); \
         case __acpp_sscp_algorithm_op::min: \
-            return __acpp_subgroup_exclusive_scan_impl_##type(x, min{}); \
+            return __acpp_subgroup_exclusive_scan_impl(x, min{}); \
         case __acpp_sscp_algorithm_op::max: \
-            return __acpp_subgroup_exclusive_scan_impl_##type(x, max{}); \
+            return __acpp_subgroup_exclusive_scan_impl(x, max{}); \
         case __acpp_sscp_algorithm_op::bit_and: \
-            return __acpp_subgroup_exclusive_scan_impl_##type(x, bit_and{}); \
+            return __acpp_subgroup_exclusive_scan_impl(x, bit_and{}); \
         case __acpp_sscp_algorithm_op::bit_or: \
-            return __acpp_subgroup_exclusive_scan_impl_##type(x, bit_or{}); \
+            return __acpp_subgroup_exclusive_scan_impl(x, bit_or{}); \
         case __acpp_sscp_algorithm_op::bit_xor: \
-            return __acpp_subgroup_exclusive_scan_impl_##type(x, bit_xor{}); \
+            return __acpp_subgroup_exclusive_scan_impl(x, bit_xor{}); \
         case __acpp_sscp_algorithm_op::logical_and: \
-            return __acpp_subgroup_exclusive_scan_impl_##type(x, logical_and{}); \
+            return __acpp_subgroup_exclusive_scan_impl(x, logical_and{}); \
         case __acpp_sscp_algorithm_op::logical_or: \
-            return __acpp_subgroup_exclusive_scan_impl_##type(x, logical_or{}); \
+            return __acpp_subgroup_exclusive_scan_impl(x, logical_or{}); \
     } \
 } \
 
