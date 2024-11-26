@@ -8,14 +8,18 @@
  * See file LICENSE in the project root for full license details.
  */
 // SPDX-License-Identifier: BSD-2-Clause
+#ifndef HIPSYCL_SSCP_SCAN_INCLUSIVE_BUILTINS_HPP
+#define HIPSYCL_SSCP_SCAN_INCLUSIVE_BUILTINS_HPP
+
 #include "builtin_config.hpp"
 #include "utils.hpp"
+#include "scan_exclusive.hpp"
+#include "core_typed.hpp"
+#include "barrier.hpp"
 #include "hipSYCL/sycl/libkernel/detail/half_representation.hpp"
 #include "hipSYCL/sycl/libkernel/sscp/builtins/shuffle.hpp"
 #include "hipSYCL/sycl/libkernel/sscp/builtins/subgroup.hpp"
 
-#ifndef HIPSYCL_SSCP_SCAN_INCLUSIVE_BUILTINS_HPP
-#define HIPSYCL_SSCP_SCAN_INCLUSIVE_BUILTINS_HPP
 
 HIPSYCL_SSCP_CONVERGENT_BUILTIN
 __acpp_int8 __acpp_sscp_work_group_inclusive_scan_i8(__acpp_sscp_algorithm_op op, __acpp_int8 x);
@@ -98,7 +102,78 @@ T __acpp_subgroup_inclusive_scan_impl(T x, BinaryOperation binary_op) {
     if (next_id >= 0 && i <= lid) 
         local_x = binary_op(local_x, other_x); 
     } 
-    return local_x; 
+  return local_x; 
+}
+
+
+
+
+template <typename OutType, typename BinaryOperation> 
+OutType __acpp_group_inclusive_scan_impl(OutType x,BinaryOperation op){
+  const constexpr __acpp_uint32 shmem_array_length = 32;
+  static __attribute__((loader_uninitialized))  __attribute__((address_space(3))) OutType  shrd_mem[shmem_array_length+1];
+
+  const __acpp_uint32       wg_lid     = __acpp_sscp_typed_get_local_linear_id<3, int>();
+  const __acpp_uint32       wg_size    = __acpp_sscp_typed_get_local_size<3, int>();
+  const __acpp_uint32       max_sg_size = __acpp_sscp_get_subgroup_max_size();
+  const __acpp_int32        sg_size = __acpp_sscp_get_subgroup_size();
+  //const __acpp_int32 first_sg_size = __acpp_sscp_work_group_broadcast(0, sg_size);
+
+  const __acpp_uint32       num_subgroups = (wg_size+max_sg_size-1)/max_sg_size;
+  const __acpp_uint32       subgroup_id = wg_lid/max_sg_size;
+
+  const bool                last_item_in_sg = (wg_lid%sg_size) == (sg_size-1);
+
+
+  // OutType sg_scan_result = __acpp_subgroup_inclusive_scan_impl(x, op, sg_size);
+  OutType sg_scan_result = __acpp_subgroup_inclusive_scan_impl(x, op);
+  for(int i = 0; i < (num_subgroups-1+shmem_array_length)/shmem_array_length; i++){
+    __acpp_uint32 first_active_thread = i*num_subgroups*max_sg_size;
+    __acpp_uint32 last_active_thread  = (i+1)*num_subgroups*max_sg_size;
+    last_active_thread  =  last_active_thread > wg_size ? wg_size : last_active_thread;
+    __acpp_uint32 relative_thread_id = wg_lid - first_active_thread;
+    if(subgroup_id/shmem_array_length == i){
+      if(last_item_in_sg){
+      // return 1212;
+
+        // return sg_scan_result;
+        shrd_mem[subgroup_id%shmem_array_length] = sg_scan_result;
+      }
+    }
+    __acpp_sscp_work_group_barrier(__acpp_sscp_memory_scope::work_group, __acpp_sscp_memory_order::relaxed);
+    // First shmem_array_length number of threads inclusive scan in shared memory
+      auto local_x = shrd_mem[relative_thread_id];
+      for (__acpp_int32 j = 1; j < shmem_array_length; j *= 2) {  
+        __acpp_int32 next_id = relative_thread_id -j; 
+        if (next_id >= 0 && j <= relative_thread_id){
+          if(relative_thread_id < shmem_array_length){
+            auto other_x= shrd_mem[next_id];
+            local_x = op(local_x, other_x);
+            shrd_mem[relative_thread_id] = local_x;
+          }
+        }
+        __acpp_sscp_work_group_barrier(__acpp_sscp_memory_scope::work_group, __acpp_sscp_memory_order::relaxed);
+      }
+      __acpp_sscp_work_group_barrier(__acpp_sscp_memory_scope::work_group, __acpp_sscp_memory_order::relaxed);
+
+    if(subgroup_id > 0){
+      auto current_segment_update = shrd_mem[(subgroup_id%shmem_array_length)-1];
+      sg_scan_result = op(current_segment_update, sg_scan_result);
+    }
+    if(i>0){
+      sg_scan_result = op(shrd_mem[shmem_array_length], sg_scan_result);
+    }
+    __acpp_sscp_work_group_barrier(__acpp_sscp_memory_scope::work_group, __acpp_sscp_memory_order::relaxed);
+    shrd_mem[shmem_array_length] = sg_scan_result;
+  }
+  return sg_scan_result;
+}
+
+
+template < __acpp_sscp_algorithm_op binary_op, typename OutType> 
+OutType __acpp_inclusive_scan_over_work_group(OutType x) {
+  using op = typename get_op<binary_op>::type;
+  return __acpp_group_inclusive_scan_impl(x, op{});
 } 
 
 #endif

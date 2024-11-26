@@ -8,6 +8,9 @@
  * See file LICENSE in the project root for full license details.
  */
 // SPDX-License-Identifier: BSD-2-Clause
+#ifndef HIPSYCL_SSCP_SCAN_EXCLUSIVE_BUILTINS_HPP
+#define HIPSYCL_SSCP_SCAN_EXCLUSIVE_BUILTINS_HPP
+
 #include "builtin_config.hpp"
 #include "utils.hpp"
 #include "hipSYCL/sycl/libkernel/detail/half_representation.hpp"
@@ -15,8 +18,6 @@
 #include "subgroup.hpp"
 #include "scan_inclusive.hpp"
 
-#ifndef HIPSYCL_SSCP_SCAN_EXCLUSIVE_BUILTINS_HPP
-#define HIPSYCL_SSCP_SCAN_EXCLUSIVE_BUILTINS_HPP
 
 
 HIPSYCL_SSCP_CONVERGENT_BUILTIN

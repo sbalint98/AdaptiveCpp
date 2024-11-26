@@ -714,6 +714,12 @@ marray<T,N> __acpp_exclusive_scan_over_group(group<Dim> g, marray<T,N> x, Binary
   return result;
 }
 
+template<class Group, typename V, typename T, typename BinaryOperation>
+HIPSYCL_BUILTIN
+T __acpp_exclusive_scan_over_group(Group g, V x, T init, BinaryOperation binary_op) {
+  return binary_op(__acpp_exclusive_scan_over_group(g, x, binary_op), init);
+}
+
 template <typename Group, typename Ptr, typename BinaryOperation,
           std::enable_if_t<is_group_v<std::decay_t<Group>>, bool> = true>
 HIPSYCL_BUILTIN
@@ -935,6 +941,12 @@ marray<T,N> __acpp_inclusive_scan_over_group(group<Dim> g, marray<T,N> x, Binary
     result[i] = __acpp_inclusive_scan_over_group(g, x[i], binary_op);
   }
   return result;
+}
+
+template<class Group, typename V, typename T, typename BinaryOperation>
+HIPSYCL_BUILTIN
+T __acpp_inclusive_scan_over_group(Group g, V x, T init, BinaryOperation binary_op) {
+  return binary_op(__acpp_inclusive_scan_over_group(g, x, binary_op), init);
 }
 
 template <typename Group, typename Ptr, typename BinaryOperation,
