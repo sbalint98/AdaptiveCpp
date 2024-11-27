@@ -949,44 +949,64 @@ T __acpp_inclusive_scan_over_group(Group g, V x, T init, BinaryOperation binary_
   return binary_op(__acpp_inclusive_scan_over_group(g, x, binary_op), init);
 }
 
-template <typename Group, typename Ptr, typename BinaryOperation,
+
+template <typename Group, typename InPtr, typename OutPtr,
+          typename BinaryOperation,
           std::enable_if_t<is_group_v<std::decay_t<Group>>, bool> = true>
 HIPSYCL_BUILTIN
-typename std::iterator_traits<Ptr>::value_type
-__acpp_joint_inclusive_scan(Group g, Ptr first, Ptr last, BinaryOperation binary_op) {
-  
-  const size_t lrange       = g.get_local_range().size();
-  const size_t num_elements = last - first;
-  const size_t lid          = g.get_local_linear_id();
-
+OutPtr __acpp_joint_inclusive_scan(Group g, InPtr first, InPtr last, OutPtr result,
+                       BinaryOperation binary_op) {
+  const size_t lrange            = g.get_local_range().size();
+  const size_t num_elements      = last - first;
+  const size_t lid               = g.get_local_linear_id();
+  const size_t elements_per_item = num_elements/lrange + (lid < (num_elements%lrange));
   using value_type = std::remove_reference_t<decltype(*first)>;
 
   if(num_elements == 0)
-    return value_type{};
+    return result;
   
-  if(num_elements == 1)
-    return *first;
+  if(num_elements == 1){
+    *result = *first;
+    return result;
+  }
   
-  Ptr start_ptr = first + lid;
-
+  //Ptr start_ptr = first + lid;
   using type = decltype(*first);
+  auto identity = sscp_binary_operation_identity<std::decay_t<type>, sscp_binary_operation_v<BinaryOperation>>::get();
+  size_t segment = 0;
+  size_t num_segments = num_elements/lrange;
 
-  auto local = sscp_binary_operation_identity<std::decay_t<type>, sscp_binary_operation_v<BinaryOperation>>::get();
-  if(start_ptr < last)
-    local = *start_ptr;
-  
-  for (Ptr p = start_ptr + lrange; p < last; p += lrange)
-    local = binary_op(local, *p);
-
-  return __acpp_inclusive_scan_over_group(g, local, binary_op);
+  // for (Ptr p = start_ptr + lrange; p < last; p += lrange){
+  for(size_t segment = 0; segment < num_segments; segment++){
+    size_t element_idx = segment*lrange+lid;
+    auto local_element = element_idx < num_elements ? first[element_idx] : identity;
+    result[element_idx] = __acpp_inclusive_scan_over_group(g, local_element, binary_op);
+    if(segment > 0){
+      auto update_value = result[segment*lrange-1];
+      result[element_idx] = binary_op(update_value, result[element_idx]);
+    }
+  }
+  return result;
 }
 
-template <typename Group, typename Ptr, typename T, typename BinaryOperation,
+template <typename Group, typename InPtr, typename OutPtr, typename T,
+          typename BinaryOperation,
           std::enable_if_t<is_group_v<std::decay_t<Group>>, bool> = true>
 HIPSYCL_BUILTIN
-T __acpp_joint_inclusive_scan(Group g, Ptr first, Ptr last, T init,
-                         BinaryOperation binary_op) {
-  return binary_op(__acpp_joint_inclusive_scan(g, first, last, binary_op), init);
+OutPtr __acpp_joint_inclusive_scan(Group g, InPtr first, InPtr last, OutPtr result,
+                            BinaryOperation binary_op, T init) {
+
+  const size_t lrange            = g.get_local_range().size();
+  const size_t num_elements      = last - first;
+  const size_t lid               = g.get_local_linear_id();
+  const size_t elements_per_item = num_elements/lrange + (lid < (num_elements%lrange));
+  
+
+  OutPtr updated_result = __acpp_joint_inclusive_scan(g, first, last, result, binary_op);
+  
+  for (size_t idx = lid; idx < num_elements ; idx += lrange)
+    updated_result[idx] = binary_op(updated_result[idx], init);
+  return updated_result;
 }
 
 
