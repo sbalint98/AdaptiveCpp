@@ -20,6 +20,7 @@
 #include "hipSYCL/sycl/queue.hpp"
 #include "hipSYCL/sycl/libkernel/atomic_ref.hpp"
 #include "hipSYCL/sycl/libkernel/group_functions.hpp"
+#include "hipSYCL/sycl/jit.hpp"
 #include "hipSYCL/algorithms/util/allocation_cache.hpp"
 
 namespace hipsycl::algorithms::scanning {
@@ -102,8 +103,19 @@ T collective_inclusive_group_scan(sycl::nd_item<1> idx, T my_element,
   if constexpr(can_use_group_algorithms<T, BinaryOp>()) {
     // TODO
   } else {
+    namespace jit = sycl::AdaptiveCpp_jit;
+    __acpp_if_target_sscp(
+      // For some reason, using the compile_if_else wrapper introduces
+      // overheads for host JIT in this case :(
+      // This seems to be unique to this particular case here though.
+      if(jit::reflect<jit::reflection_query::compiler_backend>() ==
+              jit::compiler_backend::host) {
+        return sequential_scan<T, BinaryOp>(idx, my_element, op, local_mem);
+      } else {
+        return kogge_stone_scan<T, BinaryOp>(idx, my_element, op, local_mem);
+      }
+    );
     return kogge_stone_scan<T, BinaryOp>(idx, my_element, op, local_mem);
-    //return sequential_scan<T, BinaryOp>(idx, my_element, op, local_mem);
   }
 }
 
@@ -122,8 +134,6 @@ T collective_broadcast(sycl::nd_item<1> idx, T x, int local_id, T* local_mem) {
   }
 }
 
-<<<<<<< HEAD
-=======
 template <int WorkPerItem, class T, class BinaryOp, class Generator,
           class Processor, class PrefixHandler>
 void iterate_host_and_inclusive_group_scan(
@@ -206,7 +216,6 @@ void iterate_and_inclusive_group_scan(
   }
 }
 
->>>>>>> 22982201 (Some performance improvements)
 template <class T, class BinaryOp>
 T exclusive_prefix_look_back(const T &dummy_init, int effective_group_id,
                              detail::status *status, T *group_aggregate,
@@ -332,6 +341,8 @@ void flat_group_scan_kernel(sycl::nd_item<1> idx, T *local_memory,
       status_ref.store(static_cast<uint32_t>(status::aggregate_available));
     }
   }
+
+  sycl::group_barrier(idx.get_group());
 
   // All groups except group 0 need to perform lookback to find their prefix
   if(effective_group_id != 0) {
