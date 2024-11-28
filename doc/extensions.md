@@ -4,6 +4,26 @@ AdaptiveCpp implements several extensions that are not defined by the specificat
 
 ## Supported extensions
 
+### `ACPP_EXT_RESTRICT_PTR`
+
+Provides a wrapper type that hints to the compiler that a pointer kernel argument does not alias other pointer arguments.
+*Note:* This currently only has an effect with AdaptiveCpp's generic JIT compiler (`--acpp-targets=generic`), other compilation flows ignore this hint.
+
+Example:
+
+```c++
+
+sycl::queue q;
+float* data = ...
+sycl::AdaptiveCpp_restrict_ptr<float> restrict_data = data;
+
+q.parallel_for(range, [=](auto idx){
+  // Converts implicitly to the underlying pointer type - float* in this
+  // example.
+  restrict_data[idx] *= 1.5f;
+});
+```
+
 ### `ACPP_EXT_JIT_COMPILE_IF`
 
 Allows for specializing code based on target properties only known at JIT time. This is only supported with AdaptiveCpp's default generic JIT compiler (`--acpp-targets=generic`).

@@ -270,11 +270,25 @@ bool LLVMToBackendTranslator::prepareIR(llvm::Module &M) {
     // This is what allows us to specialize code for different backends.
     HIPSYCL_DEBUG_INFO << "LLVMToBackend: Optimizing branches post S2 IR constant application...\n";
     IRConstant::optimizeCodeAfterConstantModification(M, MAM);
+
     // Rerun kernel outlining pass so that we don't include unneeded functions
     // that are specific to other backends.
     HIPSYCL_DEBUG_INFO << "LLVMToBackend: Reoutlining kernels...\n";
     KernelOutliningPass KP{OutliningEntrypoints};
     KP.run(M, MAM);
+
+    for(auto& P : NoAliasParameters) {
+      auto* F = M.getFunction(P.first);
+      if(F) {
+        for(int i : P.second) {
+          HIPSYCL_DEBUG_INFO << "LLVMToBackend: Attaching noalias attribute to parameter " << i
+                             << " of kernel " << P.first << "\n";
+          if(i < F->getFunctionType()->getNumParams())
+            if(!F->hasParamAttribute(i, llvm::Attribute::AttrKind::NoAlias))
+              F->addParamAttr(i, llvm::Attribute::AttrKind::NoAlias);
+        }
+      }
+    }
 
     // These optimizations should be run before __acpp_sscp_* builtins
     // are resolved, so before backend bitcode libraries are linked. We thus
@@ -577,6 +591,10 @@ void LLVMToBackendTranslator::specializeFunctionCalls(
       }
     }
   };
+}
+
+void LLVMToBackendTranslator::setNoAliasKernelParam(const std::string &KernelName, int ParamIndex) {
+  NoAliasParameters[KernelName].push_back(ParamIndex);
 }
 
 void LLVMToBackendTranslator::provideExternalSymbolResolver(ExternalSymbolResolver Resolver) {
