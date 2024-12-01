@@ -152,7 +152,7 @@ bool should_include_device(const std::string& dev_name, const cl::Device& dev) {
       info_query<CL_DEVICE_SVM_CAPABILITIES, cl_device_svm_capabilities>(dev);
 
   bool has_usm_extension = info_query<CL_DEVICE_EXTENSIONS, std::string>(dev).find("cl_intel_unified_shared_memory") != std::string::npos;
-  bool has_system_svm = !(cap & CL_DEVICE_SVM_FINE_GRAIN_SYSTEM);
+  bool has_system_svm = cap & CL_DEVICE_SVM_FINE_GRAIN_SYSTEM;
 
   if(!has_usm_extension && !has_system_svm) {
     HIPSYCL_DEBUG_WARNING << "ocl_hardware_manager: OpenCL device '" << dev_name
@@ -568,7 +568,10 @@ void ocl_hardware_context::init_allocator(ocl_hardware_manager *mgr) {
                              "allocations are not possible on that device."
                           << std::endl;
   }
-  _alloc = ocl_allocator{_usm_provider.get()};
+  device_id dev{
+      backend_descriptor{hardware_platform::ocl, api_platform::ocl},
+      _dev_id};
+  _alloc = ocl_allocator{dev, _usm_provider.get()};
 }
 
 ocl_hardware_manager::ocl_hardware_manager()

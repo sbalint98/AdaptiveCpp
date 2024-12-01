@@ -12,10 +12,13 @@
 
 #include "hipSYCL/common/appdb.hpp"
 #include "hipSYCL/glue/llvm-sscp/fcall_specialization.hpp"
+#include "hipSYCL/runtime/allocation_tracker.hpp"
 #include "hipSYCL/runtime/kernel_configuration.hpp"
 #include "hipSYCL/glue/llvm-sscp/jit.hpp"
 #include "hipSYCL/runtime/application.hpp"
 #include "hipSYCL/common/filesystem.hpp"
+#include "hipSYCL/runtime/runtime_event_handlers.hpp"
+#include <cstdint>
 #include <limits>
 
 
@@ -153,6 +156,9 @@ bool is_likely_invariant_argument(common::db::kernel_entry &kernel_entry,
 }
 
 int determine_ptr_alignment(uint64_t ptrval) {
+  if(ptrval == 0)
+    return 0;
+  
 #if defined(__GNUC__) && !defined(__llvm__) && !defined(__INTEL_COMPILER) && \
     !defined(__NVCOMPILER)
   // gcc supports __builtin_ctz, but versions prior to 10
@@ -165,8 +171,8 @@ int determine_ptr_alignment(uint64_t ptrval) {
 #endif
 
 #ifdef ACPP_HAS_BUILTIN_CTZ
-  int max_alignment = std::min(1 << __builtin_ctz(ptrval), 32);
-  return max_alignment > 4 ? max_alignment : 0;
+  uint64_t alignment = 1ull << __builtin_ctz(ptrval);
+  return alignment >= 32 ? 32 : 0;
 #else
   return 0;
 #endif
@@ -241,6 +247,14 @@ kernel_adaptivity_engine::finalize_binary_configuration(
         std::memcpy(&buffer_value, _arg_mapper.get_mapped_args()[i], arg_size);
         config.set_specialized_kernel_argument(i, buffer_value);
       }
+
+      if (_kernel_info->get_argument_type(i) ==
+          hcf_kernel_info::argument_type::pointer) {
+        if (has_annotation(_kernel_info, i,
+                           hcf_kernel_info::annotation_type::noalias)) {
+          config.set_kernel_param_flag(i, kernel_param_flag::noalias);
+        }
+      }
     }
 
     // Handle auto alignment specialization
@@ -259,9 +273,68 @@ kernel_adaptivity_engine::finalize_binary_configuration(
         }
       }
     }
+
+    if(application::get_settings().get<setting::enable_allocation_tracking>()) {
+      // Detect whether pointer arguments qualify for NoAlias/restrict semantics.
+      // This is achieved by determining the base of the allocations for all pointer
+      // kernel arguments, and checking whether there are other pointer arguments
+      // from the same allocation.
+      constexpr int max_allocations = 32;
+      uint64_t allocation_base_addresses [max_allocations] = {};
+      bool allocations_exceeded = false;
+      for(int alloc_index = 0, i = 0; i < _kernel_info->get_num_parameters(); ++i) {
+        if(_kernel_info->get_argument_type(i) == hcf_kernel_info::argument_type::pointer) {
+          auto arg_size = _kernel_info->get_argument_size(i);
+          if(arg_size == sizeof(void*)) {
+            void* ptr_arg;
+            std::memcpy(&ptr_arg, _arg_mapper.get_mapped_args()[i], arg_size);
+            if (ptr_arg) {
+              allocation_info ainfo;
+              uint64_t allocation_base;
+              if(allocation_tracker::query_allocation(ptr_arg, ainfo, allocation_base)) {
+                allocation_base_addresses[alloc_index] = allocation_base;
+              }
+            }
+          }
+          ++alloc_index;
+          if (alloc_index >= max_allocations) {
+            allocations_exceeded = true;
+            break;
+          }
+        }
+      }
+      if (!allocations_exceeded) {
+        for (int alloc_index = 0, i = 0; i < _kernel_info->get_num_parameters();
+            ++i) {
+          if (_kernel_info->get_argument_type(i) ==
+              hcf_kernel_info::argument_type::pointer) {
+            if (allocation_base_addresses[alloc_index] != 0) {
+              bool argument_might_alias = false;
+              for (int k = 0; k < max_allocations; ++k) {
+                if (k != alloc_index) {
+                  if (allocation_base_addresses[alloc_index] ==
+                      allocation_base_addresses[k]) {
+                    argument_might_alias = true;
+                    break;
+                  }
+                }
+              }
+              if (!argument_might_alias) {
+                HIPSYCL_DEBUG_INFO << "adaptivity_engine: Inferred noalias "
+                                      "pointer semantics for kernel argument "
+                                  << i << std::endl;
+                config.set_kernel_param_flag(i, kernel_param_flag::noalias);
+              }
+            }
+            ++alloc_index;
+          }
+        }
+      }
+    }
   }
   
   if(_adaptivity_level > 1) {
+
     auto base_id = config.generate_id();
     
     // Automatic application of specialization constants by detecting
@@ -326,5 +399,6 @@ std::string kernel_adaptivity_engine::select_image_and_kernels(
     return glue::jit::select_image(_kernel_info, kernel_names_out);
   }
 }
+
 }
 }
