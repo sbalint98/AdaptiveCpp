@@ -42,6 +42,8 @@ __acpp_##type __acpp_sscp_sub_group_reduce_##type(__acpp_sscp_algorithm_op op, _
             return __acpp_reduce_over_subgroup<__acpp_sscp_algorithm_op::min>(x); \
         case __acpp_sscp_algorithm_op::max: \
             return __acpp_reduce_over_subgroup<__acpp_sscp_algorithm_op::max>(x); \
+        default: \
+            return __acpp_##type{}; \
     } \
 } \
 
@@ -72,6 +74,8 @@ __acpp_##type __acpp_sscp_sub_group_reduce_##fn_suffix(__acpp_sscp_algorithm_op 
             return __acpp_reduce_over_subgroup<__acpp_sscp_algorithm_op::logical_and>(x); \
         case __acpp_sscp_algorithm_op::logical_or: \
             return __acpp_reduce_over_subgroup<__acpp_sscp_algorithm_op::logical_or>(x); \
+        default: \
+            return __acpp_##type{}; \
     } \
 } \
 
@@ -98,6 +102,8 @@ __acpp_##type __acpp_sscp_work_group_reduce_##type(__acpp_sscp_algorithm_op op, 
             return __acpp_reduce_over_work_group<__acpp_sscp_algorithm_op::min>(x); \
         case __acpp_sscp_algorithm_op::max: \
             return __acpp_reduce_over_work_group<__acpp_sscp_algorithm_op::max>(x); \
+        default: \
+            return __acpp_##type{}; \
     } \
 } \
 
@@ -128,6 +134,8 @@ __acpp_##type __acpp_sscp_work_group_reduce_##fn_suffix(__acpp_sscp_algorithm_op
             return __acpp_reduce_over_work_group<__acpp_sscp_algorithm_op::logical_and>(x); \
         case __acpp_sscp_algorithm_op::logical_or: \
             return __acpp_reduce_over_work_group<__acpp_sscp_algorithm_op::logical_or>(x); \
+        default: \
+            return __acpp_##type{}; \
     } \
 } \
 

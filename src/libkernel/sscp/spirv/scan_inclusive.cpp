@@ -40,6 +40,8 @@ __acpp_##type __acpp_sscp_sub_group_inclusive_scan_##type(__acpp_sscp_algorithm_
             return __acpp_subgroup_inclusive_scan_impl(x, min{}); \
         case __acpp_sscp_algorithm_op::max: \
             return __acpp_subgroup_inclusive_scan_impl(x, max{}); \
+        default: \
+            return __acpp_##type{}; \
     } \
 } \
 
@@ -70,6 +72,8 @@ __acpp_##type __acpp_sscp_sub_group_inclusive_scan_##fn_suffix(__acpp_sscp_algor
             return __acpp_subgroup_inclusive_scan_impl(x, logical_and{}); \
         case __acpp_sscp_algorithm_op::logical_or: \
             return __acpp_subgroup_inclusive_scan_impl(x, logical_or{}); \
+        default: \
+            return __acpp_##type{}; \
     } \
 } \
 
@@ -97,6 +101,8 @@ __acpp_##type __acpp_sscp_work_group_inclusive_scan_##type(__acpp_sscp_algorithm
             return __acpp_group_inclusive_scan_impl(x, min{}); \
         case __acpp_sscp_algorithm_op::max: \
             return __acpp_group_inclusive_scan_impl(x, max{}); \
+        default: \
+            return __acpp_##type{}; \
     } \
 } \
 
@@ -127,6 +133,8 @@ __acpp_##type __acpp_sscp_work_group_inclusive_scan_##fn_suffix(__acpp_sscp_algo
             return __acpp_group_inclusive_scan_impl(x, logical_and{}); \
         case __acpp_sscp_algorithm_op::logical_or: \
             return __acpp_group_inclusive_scan_impl(x, logical_or{}); \
+        default: \
+            return __acpp_##type{}; \
     } \
 } \
 
