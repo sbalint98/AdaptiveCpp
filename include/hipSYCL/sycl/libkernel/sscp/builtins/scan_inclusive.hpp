@@ -170,10 +170,4 @@ OutType __acpp_group_inclusive_scan_impl(OutType x,BinaryOperation op){
 }
 
 
-template < __acpp_sscp_algorithm_op binary_op, typename OutType> 
-OutType __acpp_inclusive_scan_over_work_group(OutType x) {
-  using op = typename get_op<binary_op>::type;
-  return __acpp_group_inclusive_scan_impl(x, op{});
-} 
-
 #endif

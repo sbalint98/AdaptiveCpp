@@ -29,17 +29,17 @@
 
 #define SUBGROUP_FLOAT_REDUCTION(type) \
 HIPSYCL_SSCP_CONVERGENT_BUILTIN \
-__acpp_##type __acpp_sscp_sub_group_exclusive_scan_##type(__acpp_sscp_algorithm_op op, __acpp_##type x){ \
+__acpp_##type __acpp_sscp_sub_group_exclusive_scan_##type(__acpp_sscp_algorithm_op op, __acpp_##type x, __acpp_##type init){ \
     switch(op) \
     { \
         case __acpp_sscp_algorithm_op::plus: \
-            return __acpp_subgroup_exclusive_scan_impl(x, plus{}); \
+            return __acpp_subgroup_exclusive_scan_impl(x, plus{}, init); \
         case __acpp_sscp_algorithm_op::multiply: \
-            return __acpp_subgroup_exclusive_scan_impl(x, multiply{}); \
+            return __acpp_subgroup_exclusive_scan_impl(x, multiply{}, init); \
         case __acpp_sscp_algorithm_op::min: \
-            return __acpp_subgroup_exclusive_scan_impl(x, min{}); \
+            return __acpp_subgroup_exclusive_scan_impl(x, min{}, init); \
         case __acpp_sscp_algorithm_op::max: \
-            return __acpp_subgroup_exclusive_scan_impl(x, max{}); \
+            return __acpp_subgroup_exclusive_scan_impl(x, max{}, init); \
     } \
 } \
 
@@ -49,27 +49,27 @@ SUBGROUP_FLOAT_REDUCTION(f64)
 
 #define SUBGROUP_INT_REDUCTION(fn_suffix,type) \
 HIPSYCL_SSCP_CONVERGENT_BUILTIN \
-__acpp_##type __acpp_sscp_sub_group_exclusive_scan_##fn_suffix(__acpp_sscp_algorithm_op op, __acpp_##type x){ \
+__acpp_##type __acpp_sscp_sub_group_exclusive_scan_##fn_suffix(__acpp_sscp_algorithm_op op, __acpp_##type x, __acpp_##type init){ \
     switch(op) \
     { \
         case __acpp_sscp_algorithm_op::plus: \
-            return __acpp_subgroup_exclusive_scan_impl(x, plus{}); \
+            return __acpp_subgroup_exclusive_scan_impl(x, plus{}, init); \
         case __acpp_sscp_algorithm_op::multiply: \
-            return __acpp_subgroup_exclusive_scan_impl(x, multiply{}); \
+            return __acpp_subgroup_exclusive_scan_impl(x, multiply{}, init); \
         case __acpp_sscp_algorithm_op::min: \
-            return __acpp_subgroup_exclusive_scan_impl(x, min{}); \
+            return __acpp_subgroup_exclusive_scan_impl(x, min{}, init); \
         case __acpp_sscp_algorithm_op::max: \
-            return __acpp_subgroup_exclusive_scan_impl(x, max{}); \
+            return __acpp_subgroup_exclusive_scan_impl(x, max{}, init); \
         case __acpp_sscp_algorithm_op::bit_and: \
-            return __acpp_subgroup_exclusive_scan_impl(x, bit_and{}); \
+            return __acpp_subgroup_exclusive_scan_impl(x, bit_and{}, init); \
         case __acpp_sscp_algorithm_op::bit_or: \
-            return __acpp_subgroup_exclusive_scan_impl(x, bit_or{}); \
+            return __acpp_subgroup_exclusive_scan_impl(x, bit_or{}, init); \
         case __acpp_sscp_algorithm_op::bit_xor: \
-            return __acpp_subgroup_exclusive_scan_impl(x, bit_xor{}); \
+            return __acpp_subgroup_exclusive_scan_impl(x, bit_xor{}, init); \
         case __acpp_sscp_algorithm_op::logical_and: \
-            return __acpp_subgroup_exclusive_scan_impl(x, logical_and{}); \
+            return __acpp_subgroup_exclusive_scan_impl(x, logical_and{}, init); \
         case __acpp_sscp_algorithm_op::logical_or: \
-            return __acpp_subgroup_exclusive_scan_impl(x, logical_or{}); \
+            return __acpp_subgroup_exclusive_scan_impl(x, logical_or{}, init); \
     } \
 } \
 

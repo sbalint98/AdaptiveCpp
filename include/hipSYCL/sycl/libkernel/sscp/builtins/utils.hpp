@@ -69,7 +69,7 @@ struct multiply
 {
     template<typename T>
     T operator()(T lhs, T rhs){
-        return lhs < rhs ? rhs : lhs;
+        return lhs * rhs;
     }
 };
 

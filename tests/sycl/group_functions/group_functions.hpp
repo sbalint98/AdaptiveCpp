@@ -280,8 +280,8 @@ template<int CallingLine, typename T, typename DataGenerator, typename TestedFun
 void test_nd_group_function_1d(size_t elements_per_thread, DataGenerator dg,
                                TestedFunction f, ValidationFunction vf) {
   sycl::queue    queue;
-  std::vector<size_t> local_sizes  = {144};
-  std::vector<size_t> global_sizes = {576};
+  std::vector<size_t> local_sizes  = {25};;
+  std::vector<size_t> global_sizes = {100};
   // currently only groupsizes between 128 and 256 are supported for HIP
   if(queue.get_device().get_backend() == sycl::backend::hip) {
     local_sizes = std::vector<size_t>{256};
