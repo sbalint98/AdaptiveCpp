@@ -15,6 +15,7 @@
 #include <iterator>
 #include <limits>
 #include <type_traits>
+#include <cstring>
 #include "hipSYCL/sycl/libkernel/accessor.hpp"
 #include "hipSYCL/sycl/libkernel/atomic_builtins.hpp"
 #include "hipSYCL/sycl/libkernel/memory.hpp"
@@ -22,11 +23,13 @@
 #include "hipSYCL/sycl/event.hpp"
 #include "hipSYCL/sycl/queue.hpp"
 #include "merge/merge.hpp"
+#include "scan/scan.hpp"
 #include "util/traits.hpp"
 #include "hipSYCL/algorithms/util/allocation_cache.hpp"
 #include "hipSYCL/algorithms/util/memory_streaming.hpp"
 #include "hipSYCL/algorithms/sort/bitonic_sort.hpp"
 #include "hipSYCL/algorithms/merge/merge.hpp"
+#include "hipSYCL/algorithms/scan/scan.hpp"
 
 namespace hipsycl::algorithms {
 
@@ -167,24 +170,71 @@ sycl::event copy(sycl::queue &q, ForwardIt1 first, ForwardIt1 last,
   }
 }
 
-
-template<class ForwardIt1, class ForwardIt2, class UnaryPredicate >
-sycl::event copy_if(sycl::queue& q,
-                    ForwardIt1 first, ForwardIt1 last,
-                    ForwardIt2 d_first,
-                    UnaryPredicate pred) {
-  if(first == last)
+template <class ForwardIt1, class ForwardIt2, class UnaryPredicate>
+sycl::event copy_if(sycl::queue &q, util::allocation_group &scratch_allocations,
+                    ForwardIt1 first, ForwardIt1 last, ForwardIt2 d_first,
+                    UnaryPredicate pred,
+                    std::size_t *num_elements_copied = nullptr,
+                    const std::vector<sycl::event> &deps = {}) {
+  if(first == last) {
+    if(num_elements_copied)
+      *num_elements_copied = 0;
     return sycl::event{};
-  return q.parallel_for(sycl::range{std::distance(first, last)},
-                        [=](sycl::id<1> id) {
-                          auto input = first;
-                          auto output = d_first;
-                          std::advance(input, id[0]);
-                          std::advance(output, id[0]);
-                          auto input_v = *input;
-                          if(pred(input_v))
-                            *output = input_v;
-                        });
+  }
+
+  // TODO: We could optimize by switching between 32/64 bit types
+  // depending on problem size
+  using ScanT = std::size_t;
+
+  auto generator = [=](auto idx, auto effective_group_id,
+                       auto effective_global_id, auto problem_size) {
+    if(effective_global_id >= problem_size)
+      return ScanT{0};
+
+    ForwardIt1 it = first;
+    std::advance(it, effective_global_id);
+    if(pred(*it))
+      return ScanT{1};
+
+    return ScanT{0};
+  };
+
+  auto result_processor = [=](auto idx, auto effective_group_id,
+                       auto effective_global_id, auto problem_size,
+                       auto value) {
+    if (effective_global_id < problem_size) {
+      ForwardIt2 output = d_first;
+      ForwardIt1 input = first;
+      std::advance(input, effective_global_id);
+      std::advance(output, value);
+
+      bool needs_copy = false;
+
+      if(effective_global_id < problem_size) {
+        auto input_value = *input;
+        needs_copy = pred(input_value);
+        if(needs_copy)
+          *output = *input;
+      }
+
+      if (effective_global_id == problem_size - 1 && num_elements_copied) {
+        ScanT inclusive_scan_result = value;
+        // We did an exclusive scan, so if the last element also was copied,
+        // we need to add that.
+        if(needs_copy)
+          ++inclusive_scan_result;
+        
+        *num_elements_copied = static_cast<std::size_t>(inclusive_scan_result);
+      }
+    }
+  };
+
+  std::size_t problem_size = std::distance(first, last);
+
+  constexpr bool is_inclusive_scan = false;
+  return scanning::generate_scan_process<is_inclusive_scan, ScanT>(
+      q, scratch_allocations, problem_size, sycl::plus<>{},
+      ScanT{0}, generator, result_processor, deps);
 }
 
 template<class ForwardIt1, class Size, class ForwardIt2 >
