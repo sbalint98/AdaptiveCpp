@@ -54,6 +54,7 @@ Available stages for dumping:
 * `ACPP_S2_IR_DUMP_REFLECTION` - After processing JIT-time reflection queries
 * `ACPP_S2_IR_DUMP_JIT_OPTIMIZATIONS` - After processing optimizations that rely on JIT-time information`
 * `ACPP_S2_IR_DUMP_BACKEND_FLAVORING` - After applying the "backend flavor", i.e. turning generic LLVM IR into IR that targets a specific backend.
+* `ACPP_S2_IR_DUMP_BUILTIN_REFLECTION` - After second run of JIT-time reflection pass; particularly affects reflection use inside AdaptiveCpp builtins.
 * `ACPP_S2_IR_DUMP_FULL_OPTIMIZATIONS` - After running the full LLVM optimization pipeline on the code.
 * `ACPP_S2_IR_DUMP_FINAL` - Final state of the LLVM IR before handing it off to lowering it to backend-specific formats (e.g. PTX, amdgcn ISA, SPIR-V).
 * `ACPP_S2_IR_DUMP_ALL` - Dump all stages.
