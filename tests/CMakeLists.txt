@@ -153,6 +153,8 @@ if(WITH_PSTL_TESTS)
     pstl/sort.cpp
     pstl/transform.cpp
     pstl/transform_reduce.cpp
+    pstl/transform_inclusive_scan.cpp
+    pstl/transform_exclusive_scan.cpp
     pstl/pointer_validation.cpp
     pstl/allocation_map.cpp
     pstl/free_space_map.cpp)

@@ -23,7 +23,7 @@
 #include "hipSYCL/sycl/queue.hpp"
 #include "hipSYCL/algorithms/reduction/reduction_descriptor.hpp"
 #include "hipSYCL/algorithms/reduction/reduction_engine.hpp"
-#include "hipSYCL/algorithms/scan/decoupled_lookback_scan.hpp"
+#include "hipSYCL/algorithms/scan/scan.hpp"
 #include "hipSYCL/algorithms/util/memory_streaming.hpp"
 
 
@@ -359,6 +359,36 @@ sycl::event exclusive_scan(sycl::queue &q,
                            T init, const std::vector<sycl::event> &deps = {}) {
   return exclusive_scan(q, scratch_allocations, first, last, d_first, init,
                         std::plus<>{}, deps);
+}
+
+template <class InputIt, class OutputIt, class BinaryOp, class UnaryOp>
+sycl::event transform_inclusive_scan(
+    sycl::queue &q, util::allocation_group &scratch_allocations, InputIt first,
+    InputIt last, OutputIt d_first, BinaryOp binary_op, UnaryOp unary_op,
+    const std::vector<sycl::event> &deps = {}) {
+  return scanning::transform_scan<true>(q, scratch_allocations, first, last,
+                                        d_first, unary_op, binary_op,
+                                        std::nullopt, deps);
+}
+
+template <class InputIt, class OutputIt, class BinaryOp, class UnaryOp, class T>
+sycl::event transform_inclusive_scan(
+    sycl::queue &q, util::allocation_group &scratch_allocations, InputIt first,
+    InputIt last, OutputIt d_first, BinaryOp binary_op, UnaryOp unary_op,
+    T init, const std::vector<sycl::event> &deps = {}) {
+  return scanning::transform_scan<true>(q, scratch_allocations, first, last,
+                                        d_first, unary_op, binary_op,
+                                        init, deps);
+}
+
+template <class InputIt, class OutputIt, class T, class BinaryOp, class UnaryOp>
+sycl::event transform_exclusive_scan(
+    sycl::queue &q, util::allocation_group &scratch_allocations, InputIt first,
+    InputIt last, OutputIt d_first, T init, BinaryOp binary_op,
+    UnaryOp unary_op, const std::vector<sycl::event> &deps = {}) {
+  return scanning::transform_scan<false>(q, scratch_allocations, first, last,
+                                         d_first, unary_op, binary_op, init,
+                                         deps);
 }
 
 } // algorithms
