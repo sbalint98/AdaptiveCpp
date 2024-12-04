@@ -41,8 +41,11 @@ inline constexpr int builtin_memory_order(memory_order o) noexcept {
   return __ATOMIC_RELAXED;
 }
 
-#if ACPP_LIBKERNEL_IS_DEVICE_PASS_CUDA
+#if ACPP_LIBKERNEL_IS_DEVICE_PASS_CUDA && !defined(ACPP_LIBKERNEL_CUDA_NVCXX)
+ #define ACPP_NEEDS_CUDA_ATOMIC_WORKAROUNDS
+#endif
 
+#ifdef ACPP_NEEDS_CUDA_ATOMIC_WORKAROUNDS
 // LLVM NVPTX backend does currently not properly support acquire/release
 // atomics. We workaround this for two load/store instructions that we
 // need for the algorithms library using inline assembly.
@@ -83,7 +86,7 @@ HIPSYCL_HIPLIKE_BUILTIN void
 __acpp_atomic_store(T *addr, T x, memory_order order,
                        memory_scope scope) noexcept {
   if constexpr(sizeof(T) == sizeof(int32_t)) {
-#if ACPP_LIBKERNEL_IS_DEVICE_PASS_CUDA
+#ifdef ACPP_NEEDS_CUDA_ATOMIC_WORKAROUNDS
     if(scope == memory_scope::device && order == memory_order::release){
       __acpp_cuda_atomic_store_device_rel_i32(reinterpret_cast<int32_t*>(addr),
                                               bit_cast<int32_t>(x));
@@ -114,7 +117,7 @@ template <access::address_space S, class T>
 HIPSYCL_HIPLIKE_BUILTIN T __acpp_atomic_load(T *addr, memory_order order,
                                                 memory_scope scope) noexcept {
   if constexpr(sizeof(T) == sizeof(int32_t)) {
-#if ACPP_LIBKERNEL_IS_DEVICE_PASS_CUDA
+#ifdef ACPP_NEEDS_CUDA_ATOMIC_WORKAROUNDS
     if(scope == memory_scope::device && order == memory_order::acquire){
       return bit_cast<T>(__acpp_cuda_atomic_load_device_acq_i32(
           reinterpret_cast<int32_t*>(addr)));
@@ -547,6 +550,8 @@ __acpp_atomic_fetch_max(double *addr, double x, memory_order order,
 }
 }
 }
+
+#undef ACPP_NEEDS_CUDA_ATOMIC_WORKAROUNDS
 
 #endif
 
