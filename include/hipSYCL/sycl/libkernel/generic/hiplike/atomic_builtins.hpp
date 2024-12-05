@@ -53,6 +53,7 @@ __attribute__((always_inline))
 HIPSYCL_HIPLIKE_BUILTIN
 void __acpp_cuda_atomic_store_device_rel_i32(int32_t *ptr, int32_t x) {
 #if __CUDA_ARCH__ < 700
+  __threadfence();
   *ptr = x;
   __threadfence();
 #else
@@ -68,7 +69,9 @@ HIPSYCL_HIPLIKE_BUILTIN
 int32_t __acpp_cuda_atomic_load_device_acq_i32(int32_t *ptr) {
 #if __CUDA_ARCH__ < 700
   __threadfence();
-  return *ptr;
+  int32_t res = *ptr;
+  __threadfence();
+  return res;
 #else
   int32_t result;
   asm volatile("ld.acquire.gpu.u32 %0,[%1];"
