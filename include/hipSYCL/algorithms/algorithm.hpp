@@ -19,6 +19,7 @@
 #include "hipSYCL/sycl/libkernel/atomic_builtins.hpp"
 #include "hipSYCL/sycl/libkernel/memory.hpp"
 #include "hipSYCL/sycl/libkernel/functional.hpp"
+#include "hipSYCL/sycl/detail/namespace_compat.hpp"
 #include "hipSYCL/sycl/event.hpp"
 #include "hipSYCL/sycl/queue.hpp"
 #include "merge/merge.hpp"
@@ -27,6 +28,7 @@
 #include "hipSYCL/algorithms/util/memory_streaming.hpp"
 #include "hipSYCL/algorithms/sort/bitonic_sort.hpp"
 #include "hipSYCL/algorithms/merge/merge.hpp"
+
 
 namespace hipsycl::algorithms {
 
