@@ -294,6 +294,16 @@ std::string omp_hardware_context::get_profile() const {
   return "FULL_PROFILE";
 }
 
+std::size_t omp_hardware_context::get_platform_index() const {
+  return 0;
+}
+
+std::size_t omp_hardware_manager::get_num_platforms() const {
+  return 1;
+}
+
+
+
 std::size_t omp_hardware_manager::get_num_devices() const { return 1; }
 
 
