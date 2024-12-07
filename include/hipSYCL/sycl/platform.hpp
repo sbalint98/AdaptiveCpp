@@ -172,6 +172,7 @@ HIPSYCL_SPECIALIZE_GET_INFO(platform, name)
       _requires_runtime.get()->backends().get(b)->get_name();
   platform_name +=
       " (platform " + std::to_string(_platform.get_platform()) + ")";
+      return platform_name;
 }
 
 HIPSYCL_SPECIALIZE_GET_INFO(platform, vendor)
