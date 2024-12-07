@@ -85,6 +85,13 @@ device_id cuda_hardware_manager::get_device_id(std::size_t index) const {
                    static_cast<int>(index)};
 }
 
+std::size_t cuda_hardware_manager::get_num_platforms() const {
+  return 1;
+}
+
+std::size_t cuda_hardware_context::get_platform_index() const {
+  return 0;
+}
 
 cuda_hardware_context::cuda_hardware_context(int dev) 
   : _dev{dev} {

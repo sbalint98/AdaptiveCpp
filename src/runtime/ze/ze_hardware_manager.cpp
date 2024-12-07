@@ -512,6 +512,15 @@ uint32_t ze_hardware_context::get_ze_global_memory_ordinal() const {
   return result;
 }
 
+std::size_t ze_hardware_context::get_platform_index() const {
+  return 0;
+}
+
+std::size_t ze_hardware_manager::get_num_platforms() const {
+  return 1;
+}
+
+
 ze_hardware_manager::ze_hardware_manager() {
 
   if (has_device_visibility_mask(

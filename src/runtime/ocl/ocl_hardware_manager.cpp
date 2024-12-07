@@ -574,6 +574,14 @@ void ocl_hardware_context::init_allocator(ocl_hardware_manager *mgr) {
   _alloc = ocl_allocator{dev, _usm_provider.get()};
 }
 
+std::size_t ocl_hardware_context::get_platform_index() const {
+  return static_cast<std::size_t>(_platform_id);
+}
+
+std::size_t ocl_hardware_manager::get_num_platforms() const {
+  return _platforms.size();
+}
+
 ocl_hardware_manager::ocl_hardware_manager()
 : _hw_platform{hardware_platform::ocl} {
   const auto visibility_mask =

@@ -128,29 +128,35 @@ public:
   }
 
   platform get_platform() const {
-    bool found_device_backend = false;
-    rt::backend_id last_backend;
+    bool found_device_platform = false;
+    rt::platform_id last_platform;
 
     this->_impl->devices.for_each_backend([&](rt::backend_id b) {
-      if (b != detail::get_host_device().get_backend()) {
-        if (found_device_backend) {
-          // We already have a device backend
-          HIPSYCL_DEBUG_WARNING
-              << "context: get_platform() was called but this context spans "
-                 "multiple backends/platforms. Only returning last platform"
-              << std::endl;
+      rt::backend* backend = this->_impl->requires_runtime.get()->backends().get(b);
+
+      for (std::size_t platform_index = 0;
+           platform_index < backend->get_hardware_manager()->get_num_platforms();
+           ++platform_index) {
+        if (b != detail::get_host_device().get_backend()) {
+          if (found_device_platform) {
+            // We already have a device backend
+            HIPSYCL_DEBUG_WARNING
+                << "context: get_platform() was called but this context spans "
+                  "multiple backends/platforms. Only returning last platform"
+                << std::endl;
+          }
+          
+          last_platform = rt::platform_id{b, platform_index};
+          found_device_platform = true;
         }
-        
-        last_backend = b;
-        found_device_backend = true;
       }
     });
 
-    if (!found_device_backend) {
-      last_backend = detail::get_host_device().get_backend(); 
+    if (!found_device_platform) {
+      last_platform = rt::platform_id{detail::get_host_device().get_backend(), 0}; 
     }
 
-    return platform{last_backend};
+    return platform{last_platform};
   }
 
   vector_class<device> get_devices() const {

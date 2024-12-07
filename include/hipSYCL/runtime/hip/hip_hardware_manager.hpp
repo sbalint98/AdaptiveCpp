@@ -53,6 +53,8 @@ public:
   virtual std::string get_driver_version() const override;
   virtual std::string get_profile() const override;
 
+  virtual std::size_t get_platform_index() const override;
+
   virtual ~hip_hardware_context() {}
 
   hip_allocator* get_allocator() const;
@@ -75,6 +77,7 @@ public:
   virtual std::size_t get_num_devices() const override;
   virtual hardware_context *get_device(std::size_t index) override;
   virtual device_id get_device_id(std::size_t index) const override;
+  virtual std::size_t get_num_platforms() const override;
 
   virtual ~hip_hardware_manager() {}
   
