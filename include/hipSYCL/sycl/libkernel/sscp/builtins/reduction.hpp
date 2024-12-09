@@ -103,8 +103,8 @@ OutType __acpp_reduce_over_subgroup_impl(OutType x, BinaryOperation binary_op, _
     auto other_x=bit_cast<OutType>(__acpp_sscp_sub_group_select(bit_cast<typename integer_type<OutType>::type>(local_x), lid+i)); 
     if (lid +i < subgroup_size) 
         local_x = binary_op(local_x, other_x); 
-    } 
-    return bit_cast<OutType>(__acpp_sscp_sub_group_select(bit_cast<typename integer_type<OutType>::type>(local_x), 0)); 
+  } 
+  return bit_cast<OutType>(__acpp_sscp_sub_group_select(bit_cast<typename integer_type<OutType>::type>(local_x), 0)); 
 } 
 
 
@@ -118,7 +118,7 @@ OutType __acpp_reduce_over_subgroup(OutType x) {
 template <typename OutType, typename BinaryOperation> 
 OutType __acpp_reduce_over_work_group_impl(OutType x,BinaryOperation op){
   const constexpr __acpp_uint32 shmem_array_length = 32;
-  static __attribute__((loader_uninitialized))  __attribute__((address_space(3))) OutType  shrd_mem[shmem_array_length];
+  ACPP_SHMEM_ATTRIBUTE OutType  shrd_mem[shmem_array_length];
 
   const __acpp_uint32       wg_lid     = __acpp_sscp_typed_get_local_linear_id<3, int>();
   const __acpp_uint32       wg_size    = __acpp_sscp_typed_get_local_size<3, int>();
@@ -133,29 +133,30 @@ OutType __acpp_reduce_over_work_group_impl(OutType x,BinaryOperation op){
 
   OutType local_reduce_result = __acpp_reduce_over_subgroup_impl(x, op, sg_size);
   
+
   //Sum up until all sgs can load their data into shmem
   if(subgroup_id < shmem_array_length){
     shrd_mem[subgroup_id] = local_reduce_result;
   }
    __acpp_sscp_work_group_barrier(__acpp_sscp_memory_scope::work_group, __acpp_sscp_memory_order::relaxed);
 
-   
+
   for(int i = shmem_array_length; i < num_subgroups; i+= shmem_array_length){
     if(subgroup_id > i && subgroup_id < shmem_array_length){
-         shrd_mem[subgroup_id] += local_reduce_result;
-         __acpp_sscp_work_group_barrier(__acpp_sscp_memory_scope::work_group, __acpp_sscp_memory_order::relaxed);
+         shrd_mem[subgroup_id] = local_reduce_result;
     }
+    __acpp_sscp_work_group_barrier(__acpp_sscp_memory_scope::work_group, __acpp_sscp_memory_order::relaxed);
   }
+
 
   // Now we are filled up shared memory with the results of all the subgroups
   // We reduce in shared memory until it fits into one sg
-  for(int i = shmem_array_length/2; i > first_sg_size; i /= 2){
-    if(wg_lid < i){
+  for(int i = shmem_array_length/2; i >= first_sg_size; i /= 2){
+    if(wg_lid < i && wg_lid + i < wg_size){
       shrd_mem[wg_lid] += shrd_mem[wg_lid+i];
     }
+    __acpp_sscp_work_group_barrier(__acpp_sscp_memory_scope::work_group, __acpp_sscp_memory_order::relaxed);
   }
-
-  __acpp_sscp_work_group_barrier(__acpp_sscp_memory_scope::work_group, __acpp_sscp_memory_order::relaxed);
 
   // Now we load the data into registers
   if(wg_lid < first_sg_size){
@@ -169,6 +170,7 @@ OutType __acpp_reduce_over_work_group_impl(OutType x,BinaryOperation op){
   static_assert(sizeof(internal_type) == sizeof(OutType));
   local_reduce_result = bit_cast<OutType>(__acpp_sscp_work_group_broadcast(0, bit_cast<internal_type>(local_reduce_result)));
   return local_reduce_result;
+  // return wg_size;
 }
 
 template < __acpp_sscp_algorithm_op binary_op, typename OutType> 

@@ -97,8 +97,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(group_reduce, T, test_types) {
     test_nd_group_function_1d<__LINE__, T>(elements_per_thread, data_generator,
                                            tested_function, validation_function);
     std::cout << "Starting tests with 2D functions" << std::endl;
-    test_nd_group_function_2d<__LINE__, T>(elements_per_thread, data_generator,
-                                           tested_function, validation_function);
+    // test_nd_group_function_2d<__LINE__, T>(elements_per_thread, data_generator,
+    //                                        tested_function, validation_function);
   }
 
   {

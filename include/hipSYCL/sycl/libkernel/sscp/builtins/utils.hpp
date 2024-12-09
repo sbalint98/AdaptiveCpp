@@ -10,6 +10,11 @@
 // SPDX-License-Identifier: BSD-2-Clause
 #include "builtin_config.hpp"
 
+#ifndef ACPP_SSCP_OMP_LIBKERNEL
+#define  ACPP_SHMEM_ATTRIBUTE static __attribute__((loader_uninitialized))  __attribute__((address_space(3)))
+#else
+#define ACPP_SHMEM_ATTRIBUTE volatile thread_local
+#endif
 
 #ifndef HIPSYCL_SSCP_UTILS_BUILTINS_HPP
 #define HIPSYCL_SSCP_UTILS_BUILTINS_HPP

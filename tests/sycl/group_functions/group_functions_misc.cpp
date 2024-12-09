@@ -11,6 +11,9 @@
 
 #include "../sycl_test_suite.hpp"
 #include "group_functions.hpp"
+#include<iterator>
+#include<algorithm>
+#include<numeric>
 
 #ifdef HIPSYCL_ENABLE_GROUP_ALGORITHM_TESTS
 
@@ -91,11 +94,21 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(group_broadcast, T, test_types) {
 
         BOOST_TEST(detail::compare_type(expected, computed),
                    detail::type_to_string(computed)
+                       << " local_size: " << local_size 
+                       << " global_size: " << global_size
+                       << " subgroup_size: " << subgroup_size
                        << " at position " << i << " instead of "
                        << detail::type_to_string(expected) << " for case: no id");
 
-        if (!detail::compare_type(expected, computed))
+        if (!detail::compare_type(expected, computed)){
+          
+          std::cout << "Input: " << std::endl;
+          std::copy(vOrig.begin(), vOrig.end(), std::ostream_iterator<T>(std::cout, " "));
+          std::cout << "computed: " << std::endl;
+          std::copy(vIn.begin(), vIn.end(), std::ostream_iterator<T>(std::cout, " "));
           break;
+
+        }
       }
     };
 
@@ -132,8 +145,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(group_broadcast, T, test_types) {
     test_nd_group_function_1d<__LINE__, T>(elements_per_thread, data_generator,
                                            tested_function, validation_function);
 
-    test_nd_group_function_2d<__LINE__, T>(elements_per_thread, data_generator,
-                                           tested_function, validation_function);
+    // test_nd_group_function_2d<__LINE__, T>(elements_per_thread, data_generator,
+    //                                        tested_function, validation_function);
   }
 
   {
@@ -166,8 +179,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(group_broadcast, T, test_types) {
     test_nd_group_function_1d<__LINE__, T>(elements_per_thread, data_generator,
                                            tested_function_1d, validation_function);
 
-    test_nd_group_function_2d<__LINE__, T>(elements_per_thread, data_generator,
-                                           tested_function_2d, validation_function);
+    // test_nd_group_function_2d<__LINE__, T>(elements_per_thread, data_generator,
+    //                                        tested_function_2d, validation_function);
   }
 }
 

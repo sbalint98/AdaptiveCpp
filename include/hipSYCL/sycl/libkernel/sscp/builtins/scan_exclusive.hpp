@@ -72,7 +72,7 @@ T __acpp_subgroup_exclusive_scan_impl(T x, BinaryOperation binary_op, T init) {
 template <typename OutType, typename BinaryOperation> 
 OutType __acpp_group_exclusive_scan_impl(OutType x,BinaryOperation op, OutType init){
   const constexpr __acpp_uint32 shmem_array_length = 32;
-  static __attribute__((loader_uninitialized))  __attribute__((address_space(3))) OutType  shrd_mem[shmem_array_length+1];
+  ACPP_SHMEM_ATTRIBUTE OutType  shrd_mem[shmem_array_length+1];
 
   const __acpp_uint32       wg_lid     = __acpp_sscp_typed_get_local_linear_id<3, int>();
   const __acpp_uint32       wg_size    = __acpp_sscp_typed_get_local_size<3, int>();

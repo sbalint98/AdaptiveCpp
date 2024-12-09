@@ -25,9 +25,9 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-
-
 #include "hipSYCL/sycl/libkernel/sscp/builtins/reduction.hpp"
+
+#define ACPP_SSCP_OMP_LIBKERNEL
 
 #define SUBGROUP_FLOAT_SUB_GROUP_REDUCTION(type) \
 HIPSYCL_SSCP_CONVERGENT_BUILTIN \

@@ -27,6 +27,9 @@
 
 #include "hipSYCL/sycl/libkernel/sscp/builtins/scan_inclusive.hpp"
 
+#define ACPP_SSCP_OMP_LIBKERNEL
+
+
 #define SUBGROUP_FLOAT_INCLUSIVE_SCAN(type) \
 HIPSYCL_SSCP_CONVERGENT_BUILTIN \
 __acpp_##type __acpp_sscp_sub_group_inclusive_scan_##type(__acpp_sscp_algorithm_op op, __acpp_##type x){ \

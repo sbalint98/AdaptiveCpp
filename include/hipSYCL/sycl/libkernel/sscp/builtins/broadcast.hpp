@@ -12,6 +12,7 @@
 #include "core_typed.hpp"
 #include "barrier.hpp"
 #include "shuffle.hpp"
+#include "utils.hpp"
 
 #ifndef HIPSYCL_SSCP_BROADCAST_BUILTINS_HPP
 #define HIPSYCL_SSCP_BROADCAST_BUILTINS_HPP
@@ -90,18 +91,24 @@ __acpp_##input_type __acpp_sscp_sub_group_broadcast_##fn_suffix(__acpp_int32 sen
     return __acpp_sscp_sub_group_select_##fn_suffix(x, sender); \
                                                      } \
 
+template<typename T> 
+T __acpp_sscp_work_group_broadcas_impl(__acpp_int32 sender, 
+                                                     T x){        
+     ACPP_SHMEM_ATTRIBUTE int shrd_x;
+     if(sender == __acpp_sscp_typed_get_local_linear_id<1, int>()){ 
+        shrd_x = x; 
+     }; 
+     __acpp_sscp_work_group_barrier(__acpp_sscp_memory_scope::work_group, __acpp_sscp_memory_order::relaxed); 
+     x = shrd_x; 
+    __acpp_sscp_work_group_barrier(__acpp_sscp_memory_scope::work_group, __acpp_sscp_memory_order::relaxed); 
+    return x; 
+    } 
+
 #define GROUP_BCAST(fn_suffix,input_type) \
 HIPSYCL_SSCP_CONVERGENT_BUILTIN \
 __acpp_##input_type __acpp_sscp_work_group_broadcast_##fn_suffix(__acpp_int32 sender, \
                                                      __acpp_##input_type x){ \
-     static __attribute__((loader_uninitialized))  __attribute__((address_space(3))) int shrd_x[1]; \
-     if(sender == __acpp_sscp_typed_get_local_linear_id<3, int>()){ \
-        shrd_x[0] = x; \
-     }; \
-     __acpp_sscp_work_group_barrier(__acpp_sscp_memory_scope::work_group, __acpp_sscp_memory_order::relaxed); \
-     x = shrd_x[0]; \
-    __acpp_sscp_work_group_barrier(__acpp_sscp_memory_scope::work_group, __acpp_sscp_memory_order::relaxed); \
-    return x; \
+      return __acpp_sscp_work_group_broadcas_impl(sender, x); \
     } \
 
 #endif

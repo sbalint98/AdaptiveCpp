@@ -27,6 +27,9 @@
 
 #include "hipSYCL/sycl/libkernel/sscp/builtins/scan_exclusive.hpp"
 
+#define ACPP_SSCP_OMP_LIBKERNEL
+
+
 #define SUBGROUP_FLOAT_REDUCTION(type) \
 HIPSYCL_SSCP_CONVERGENT_BUILTIN \
 __acpp_##type __acpp_sscp_sub_group_exclusive_scan_##type(__acpp_sscp_algorithm_op op, __acpp_##type x, __acpp_##type init){ \

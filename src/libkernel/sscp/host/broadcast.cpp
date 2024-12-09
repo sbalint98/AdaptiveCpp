@@ -26,6 +26,8 @@
  */
 
 #include "hipSYCL/sycl/libkernel/sscp/builtins/broadcast.hpp"
+#include<cstring>
+#define ACPP_SSCP_OMP_LIBKERNEL
 
 template<>
 __acpp_int8 __acpp_sscp_sub_group_broadcast<__acpp_int8>(__acpp_int8 value, __acpp_int32 id){
@@ -47,15 +49,39 @@ __acpp_int64 __acpp_sscp_sub_group_broadcast<__acpp_int64>(__acpp_int64 value, _
   return __acpp_sscp_sub_group_broadcast_i64(value, id);
 }
 
+template<typename T> 
+T __acpp_sscp_work_group_broadcast_host_impl(__acpp_int32 sender, 
+                                                     T x){        
+     volatile thread_local int shrd_mem;
+     float thread_id = __acpp_sscp_typed_get_local_linear_id<1, int>();
+     int result;
+     std::memcpy(&result, &thread_id, sizeof(float));
+     if(sender == __acpp_sscp_typed_get_local_linear_id<1, int>()){ 
+        shrd_mem = x; 
+     }; 
+    __acpp_sscp_work_group_barrier(__acpp_sscp_memory_scope::work_group, __acpp_sscp_memory_order::relaxed); 
+    x = shrd_mem; 
+    __acpp_sscp_work_group_barrier(__acpp_sscp_memory_scope::work_group, __acpp_sscp_memory_order::relaxed); 
+    return result; 
+    } 
+
+#define HOST_GROUP_BCAST(fn_suffix,input_type) \
+HIPSYCL_SSCP_CONVERGENT_BUILTIN \
+__acpp_##input_type __acpp_sscp_work_group_broadcast_##fn_suffix(__acpp_int32 sender, \
+                                                     __acpp_##input_type x){ \
+      return __acpp_sscp_work_group_broadcast_host_impl(sender, x); \
+    } \
+
+
 TEMPLATE_DEFINITION_WG_BROADCAST(8)
 TEMPLATE_DEFINITION_WG_BROADCAST(16)
 TEMPLATE_DEFINITION_WG_BROADCAST(32)
 TEMPLATE_DEFINITION_WG_BROADCAST(64)
 
-GROUP_BCAST(i8,int8)
-GROUP_BCAST(i16,int16)
-GROUP_BCAST(i32,int32)
-GROUP_BCAST(i64,int64)
+HOST_GROUP_BCAST(i8,int8)
+HOST_GROUP_BCAST(i16,int16)
+HOST_GROUP_BCAST(i32,int32)
+HOST_GROUP_BCAST(i64,int64)
 
 SUBGROUP_BCAST(i8,int8)
 SUBGROUP_BCAST(i16,int16)
