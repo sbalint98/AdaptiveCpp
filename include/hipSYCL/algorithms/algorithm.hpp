@@ -80,10 +80,11 @@ inline bool should_use_memset(const sycl::device& dev) {
 
 template <class ForwardIt, class UnaryFunction2>
 sycl::event for_each(sycl::queue &q, ForwardIt first, ForwardIt last,
-                     UnaryFunction2 f) {
+                     UnaryFunction2 f,
+                     const std::vector<sycl::event> &deps = {}) {
   if(first == last)
     return sycl::event{};
-  return q.parallel_for(sycl::range{std::distance(first, last)},
+  return q.parallel_for(sycl::range{std::distance(first, last)}, deps,
                         [=](sycl::id<1> id) {
                           auto it = first;
                           std::advance(it, id[0]);
@@ -91,15 +92,16 @@ sycl::event for_each(sycl::queue &q, ForwardIt first, ForwardIt last,
                         });
 }
 
-template<class ForwardIt, class Size, class UnaryFunction2>
-sycl::event for_each_n(sycl::queue& q,
-                    ForwardIt first, Size n, UnaryFunction2 f) {
+template <class ForwardIt, class Size, class UnaryFunction2>
+sycl::event for_each_n(sycl::queue &q, ForwardIt first, Size n,
+                       UnaryFunction2 f,
+                       const std::vector<sycl::event> &deps = {}) {
   if(n <= 0)
     // sycl::event{} represents a no-op that is always finished.
     // This means it does not respect prior tasks in the task graph!
     // TODO Is this okay? Can we defer this responsibility to the user?
     return sycl::event{};
-  return q.parallel_for(sycl::range{static_cast<size_t>(n)},
+  return q.parallel_for(sycl::range{static_cast<size_t>(n)}, deps,
                         [=](sycl::id<1> id) {
                           auto it = first;
                           std::advance(it, id[0]);
@@ -108,12 +110,12 @@ sycl::event for_each_n(sycl::queue& q,
 }
 
 template <class ForwardIt1, class ForwardIt2, class UnaryOperation>
-sycl::event transform(sycl::queue& q,
-                     ForwardIt1 first1, ForwardIt1 last1, ForwardIt2 d_first,
-                     UnaryOperation unary_op) {
+sycl::event transform(sycl::queue &q, ForwardIt1 first1, ForwardIt1 last1,
+                      ForwardIt2 d_first, UnaryOperation unary_op,
+                      const std::vector<sycl::event> &deps = {}) {
   if(first1 == last1)
     return sycl::event{};
-  return q.parallel_for(sycl::range{std::distance(first1, last1)},
+  return q.parallel_for(sycl::range{std::distance(first1, last1)}, deps,
                         [=](sycl::id<1> id) {
                           auto input = first1;
                           auto output = d_first;
@@ -127,10 +129,11 @@ template <class ForwardIt1, class ForwardIt2, class ForwardIt3,
           class BinaryOperation>
 sycl::event transform(sycl::queue &q, ForwardIt1 first1, ForwardIt1 last1,
                       ForwardIt2 first2, ForwardIt3 d_first,
-                      BinaryOperation binary_op) {
+                      BinaryOperation binary_op,
+                      const std::vector<sycl::event> &deps = {}) {
   if(first1 == last1)
     return sycl::event{};
-  return q.parallel_for(sycl::range{std::distance(first1, last1)},
+  return q.parallel_for(sycl::range{std::distance(first1, last1)}, deps,
                         [=](sycl::id<1> id) {
                           auto input1 = first1;
                           auto input2 = first2;
@@ -144,7 +147,7 @@ sycl::event transform(sycl::queue &q, ForwardIt1 first1, ForwardIt1 last1,
 
 template <class ForwardIt1, class ForwardIt2>
 sycl::event copy(sycl::queue &q, ForwardIt1 first, ForwardIt1 last,
-                 ForwardIt2 d_first) {
+                 ForwardIt2 d_first, const std::vector<sycl::event> &deps = {}) {
   
   auto size = std::distance(first, last);
   if(size == 0)
@@ -157,9 +160,9 @@ sycl::event copy(sycl::queue &q, ForwardIt1 first, ForwardIt1 last,
       std::is_same_v<value_type1, value_type2> &&
       util::is_contiguous<ForwardIt1>() && util::is_contiguous<ForwardIt2>() &&
       detail::should_use_memcpy(q.get_device())) {
-    return q.memcpy(&(*d_first), &(*first), size * sizeof(value_type1));
+    return q.memcpy(&(*d_first), &(*first), size * sizeof(value_type1), deps);
   } else {
-    return q.parallel_for(sycl::range{size},
+    return q.parallel_for(sycl::range{size}, deps,
                           [=](sycl::id<1> id) {
                             auto input = first;
                             auto output = d_first;
@@ -237,19 +240,21 @@ sycl::event copy_if(sycl::queue &q, util::allocation_group &scratch_allocations,
       ScanT{0}, generator, result_processor, deps);
 }
 
-template<class ForwardIt1, class Size, class ForwardIt2 >
-sycl::event copy_n(sycl::queue& q, ForwardIt1 first, Size count, ForwardIt2 result) {
+template <class ForwardIt1, class Size, class ForwardIt2>
+sycl::event copy_n(sycl::queue &q, ForwardIt1 first, Size count,
+                   ForwardIt2 result,
+                   const std::vector<sycl::event> &deps = {}) {
   if(count <= 0)
     return sycl::event{};
 
   auto last = first;
   std::advance(last, count);
-  return copy(q, first, last, result);
+  return copy(q, first, last, result, deps);
 }
 
 template <class ForwardIt, class T>
 sycl::event fill(sycl::queue &q, ForwardIt first, ForwardIt last,
-                 const T &value) {
+                 const T &value, const std::vector<sycl::event> &deps = {}) {
   auto size = std::distance(first, last);
   if(size == 0)
     return sycl::event{};
@@ -257,7 +262,7 @@ sycl::event fill(sycl::queue &q, ForwardIt first, ForwardIt last,
   using value_type = typename std::iterator_traits<ForwardIt>::value_type;
 
   auto invoke_kernel = [&]() -> sycl::event{
-    return q.parallel_for(sycl::range{size},
+    return q.parallel_for(sycl::range{size}, deps,
                         [=](sycl::id<1> id) {
                           auto it = first;
                           std::advance(it, id[0]);
@@ -272,7 +277,7 @@ sycl::event fill(sycl::queue &q, ForwardIt first, ForwardIt last,
     if (detail::all_bytes_equal(value, equal_byte) &&
         detail::should_use_memset(q.get_device())) {
       return q.memset(&(*first), static_cast<int>(equal_byte),
-                      size * sizeof(T));
+                      size * sizeof(T), deps);
     } else {
       return invoke_kernel();
     }
@@ -283,21 +288,22 @@ sycl::event fill(sycl::queue &q, ForwardIt first, ForwardIt last,
 
 template<class ForwardIt, class Size, class T >
 sycl::event fill_n(sycl::queue& q,
-                  ForwardIt first, Size count, const T& value ) {
+                  ForwardIt first, Size count, const T& value,
+                  const std::vector<sycl::event> &deps = {}) {
   if(count <= Size{0})
     return sycl::event{};
   
   auto last = first;
   std::advance(last, count);
-  return fill(q, first, last, value);
+  return fill(q, first, last, value, deps);
 }
 
-
-template<class ForwardIt, class Generator >
-sycl::event generate(sycl::queue& q, ForwardIt first, ForwardIt last, Generator g) {
+template <class ForwardIt, class Generator>
+sycl::event generate(sycl::queue &q, ForwardIt first, ForwardIt last,
+                     Generator g, const std::vector<sycl::event> &deps = {}) {
   if(first == last)
     return sycl::event{};
-  return q.parallel_for(sycl::range{std::distance(first, last)},
+  return q.parallel_for(sycl::range{std::distance(first, last)}, deps,
                         [=](sycl::id<1> id) {
                           auto it = first;
                           std::advance(it, id[0]);
@@ -305,12 +311,12 @@ sycl::event generate(sycl::queue& q, ForwardIt first, ForwardIt last, Generator 
                         });
 }
 
-template<class ForwardIt, class Size, class Generator >
-sycl::event generate_n(sycl::queue& q, ForwardIt first,
-                      Size count, Generator g) {
+template <class ForwardIt, class Size, class Generator>
+sycl::event generate_n(sycl::queue &q, ForwardIt first, Size count, Generator g,
+                       const std::vector<sycl::event> &deps = {}) {
   if(count <= 0)
     return sycl::event{};
-  return q.parallel_for(sycl::range{static_cast<size_t>(count)},
+  return q.parallel_for(sycl::range{static_cast<size_t>(count)}, deps,
                         [=](sycl::id<1> id) {
                           auto it = first;
                           std::advance(it, id[0]);
@@ -318,37 +324,38 @@ sycl::event generate_n(sycl::queue& q, ForwardIt first,
                         });
 }
 
-template<class ForwardIt, class T>
-sycl::event replace(sycl::queue& q, ForwardIt first, ForwardIt last,
-                    const T& old_value, const T& new_value) {
+template <class ForwardIt, class T>
+sycl::event replace(sycl::queue &q, ForwardIt first, ForwardIt last,
+                    const T &old_value, const T &new_value,
+                    const std::vector<sycl::event> &deps = {}) {
   if(first == last)
     return sycl::event{};
-  return for_each(q, first, last, [=](auto& x){
+  return for_each(q, first, last,[=](auto& x){
     if(x == old_value)
       x = new_value;
-  });
+  }, deps);
 }
 
-template<class ForwardIt,
-         class UnaryPredicate, class T >
-sycl::event replace_if(sycl::queue& q, ForwardIt first, ForwardIt last,
-                      UnaryPredicate p, const T& new_value) {
+template <class ForwardIt, class UnaryPredicate, class T>
+sycl::event replace_if(sycl::queue &q, ForwardIt first, ForwardIt last,
+                       UnaryPredicate p, const T &new_value,
+                       const std::vector<sycl::event> &deps = {}) {
   if(first == last)
     return sycl::event{};
   return for_each(q, first, last, [=](auto& x){
     if(p(x))
       x = new_value;
-  });
+  }, deps);
 }
 
-template <class ForwardIt1, class ForwardIt2,
-          class UnaryPredicate, class T>
-sycl::event replace_copy_if(
-    sycl::queue& q, ForwardIt1 first,
-    ForwardIt1 last, ForwardIt2 d_first, UnaryPredicate p, const T &new_value) {
+template <class ForwardIt1, class ForwardIt2, class UnaryPredicate, class T>
+sycl::event replace_copy_if(sycl::queue &q, ForwardIt1 first, ForwardIt1 last,
+                            ForwardIt2 d_first, UnaryPredicate p,
+                            const T &new_value,
+                            const std::vector<sycl::event> &deps = {}) {
   if (first == last)
     return sycl::event{};
-  return q.parallel_for(sycl::range{std::distance(first, last)},
+  return q.parallel_for(sycl::range{std::distance(first, last)}, deps,
                         [=](sycl::id<1> id) {
                           auto input = first;
                           auto output = d_first;
@@ -363,27 +370,27 @@ sycl::event replace_copy_if(
 }
 
 template <class ForwardIt1, class ForwardIt2, class T>
-sycl::event
-replace_copy(sycl::queue& q,
-             ForwardIt1 first, ForwardIt1 last, ForwardIt2 d_first,
-             const T &old_value, const T &new_value) {
+sycl::event replace_copy(sycl::queue &q, ForwardIt1 first, ForwardIt1 last,
+                         ForwardIt2 d_first, const T &old_value,
+                         const T &new_value,
+                         const std::vector<sycl::event> &deps = {}) {
   if (first == last)
     return sycl::event{};
   return replace_copy_if(
       q, first, last, d_first, [=](const auto &x) { return x == old_value; },
-      new_value);
+      new_value, deps);
 }
 
 // Need transform_reduce functionality for find etc, so forward
 // declare here.
-template <class ForwardIt, class T, class BinaryReductionOp,
+/*template <class ForwardIt, class T, class BinaryReductionOp,
           class UnaryTransformOp>
 sycl::event
 transform_reduce(sycl::queue &q, util::allocation_group &scratch_allocations,
                  ForwardIt first, ForwardIt last, T* out, T init,
-                 BinaryReductionOp reduce, UnaryTransformOp transform);
+                 BinaryReductionOp reduce, UnaryTransformOp transform,
+                 const std::vector<sycl::event> &deps);
 
-/*
 // Need transform_reduce functionality for find etc, so forward
 // declare here.
 template <class ForwardIt, class T, class BinaryReductionOp,
@@ -419,7 +426,8 @@ using early_exit_flag_t = int;
 template <class Predicate>
 sycl::event early_exit_for_each(sycl::queue &q, std::size_t problem_size,
                                 early_exit_flag_t *output_has_exited_early,
-                                Predicate should_exit) {
+                                Predicate should_exit,
+                                const std::vector<sycl::event> &deps = {}) {
   
   std::size_t group_size = 128;
 
@@ -451,7 +459,7 @@ sycl::event early_exit_for_each(sycl::queue &q, std::size_t problem_size,
       });
     };
 
-  auto evt = q.single_task([=](){*output_has_exited_early = false;});
+  auto evt = q.single_task(deps, [=](){*output_has_exited_early = false;});
   return q.parallel_for(sycl::nd_range<1>{dispatched_global_size, group_size}, evt,
                         kernel);
 }
@@ -461,7 +469,7 @@ sycl::event early_exit_for_each(sycl::queue &q, std::size_t problem_size,
 template <class ForwardIt, class UnaryPredicate>
 sycl::event all_of(sycl::queue &q,
                    ForwardIt first, ForwardIt last, detail::early_exit_flag_t* out,
-                   UnaryPredicate p) {
+                   UnaryPredicate p, const std::vector<sycl::event>& deps = {}) {
   std::size_t problem_size = std::distance(first, last);
   if(problem_size == 0)
     return sycl::event{};
@@ -470,7 +478,7 @@ sycl::event all_of(sycl::queue &q,
                                        auto it = first;
                                        std::advance(it, idx[0]);
                                        return !p(*it);
-                                     });
+                                     }, deps);
   return q.single_task(evt, [=](){
     *out = static_cast<detail::early_exit_flag_t>(!(*out));
   });
@@ -479,7 +487,7 @@ sycl::event all_of(sycl::queue &q,
 template <class ForwardIt, class UnaryPredicate>
 sycl::event any_of(sycl::queue &q,
                    ForwardIt first, ForwardIt last, detail::early_exit_flag_t* out,
-                   UnaryPredicate p) {
+                   UnaryPredicate p, const std::vector<sycl::event>& deps = {}) {
   std::size_t problem_size = std::distance(first, last);
   if(problem_size == 0)
     return sycl::event{};
@@ -488,18 +496,18 @@ sycl::event any_of(sycl::queue &q,
                                        auto it = first;
                                        std::advance(it, idx[0]);
                                        return p(*it);
-                                     });
+                                     }, deps);
 }
 
 template <class ForwardIt, class UnaryPredicate>
 sycl::event none_of(sycl::queue &q,
                    ForwardIt first, ForwardIt last, detail::early_exit_flag_t* out,
-                   UnaryPredicate p) {
+                   UnaryPredicate p, const std::vector<sycl::event>& deps = {}) {
   std::size_t problem_size = std::distance(first, last);
   if(problem_size == 0)
     return sycl::event{};
   
-  auto evt = any_of(q, first, last, out, p);
+  auto evt = any_of(q, first, last, out, p, deps);
   return q.single_task(evt, [=](){
     *out = static_cast<detail::early_exit_flag_t>(!(*out));
   });
@@ -507,12 +515,13 @@ sycl::event none_of(sycl::queue &q,
 
 template <class RandomIt, class Compare>
 sycl::event sort(sycl::queue &q, RandomIt first, RandomIt last,
-                 Compare comp = std::less<>{}) {
+                 Compare comp = std::less<>{},
+                 const std::vector<sycl::event>& deps = {}) {
   std::size_t problem_size = std::distance(first, last);
   if(problem_size == 0)
     return sycl::event{};
-  
-  return sorting::bitonic_sort(q, first, last, comp);
+
+  return sorting::bitonic_sort(q, first, last, comp, deps);
 }
 
 template< class ForwardIt1, class ForwardIt2,
@@ -538,10 +547,11 @@ sycl::event merge(sycl::queue& q,
 
   if (q.get_device().get_backend() == sycl::backend::omp)
     return merging::segmented_merge(q, first1, last1, first2, last2, d_first,
-                                    comp);
+                                    comp, 128, deps);
   else
-    return merging::hierarchical_hybrid_merge(
-        q, scratch_allocations, first1, last1, first2, last2, d_first, comp);
+    return merging::hierarchical_hybrid_merge(q, scratch_allocations, first1,
+                                              last1, first2, last2, d_first,
+                                              comp, 128, deps);
 }
 
 }
