@@ -50,11 +50,14 @@ __acpp_int64 __acpp_sscp_sub_group_broadcast<__acpp_int64>(__acpp_int64 value, _
   return __acpp_sscp_sub_group_broadcast_i64(value, id);
 }
 
+
+
 template<typename T> 
 T __acpp_sscp_work_group_broadcast_host_impl(__acpp_int32 sender, 
                                                      T x){        
      static int shrd_mem;
-     if(sender == __acpp_sscp_typed_get_local_linear_id<1, int>()){ 
+     #pragma omp threadprivate(shrd_mem)
+     if(sender == __acpp_sscp_typed_get_local_linear_id<3, int>()){ 
         shrd_mem = x; 
      }; 
     __acpp_sscp_work_group_barrier(__acpp_sscp_memory_scope::work_group, __acpp_sscp_memory_order::relaxed); 
@@ -71,6 +74,7 @@ __acpp_##input_type __acpp_sscp_work_group_broadcast_##fn_suffix(__acpp_int32 se
       return __acpp_sscp_work_group_broadcas_impl(sender, x); \
     } \
 
+//__acpp_sscp_work_group_broadcas_impl
 
 TEMPLATE_DEFINITION_WG_BROADCAST(8)
 TEMPLATE_DEFINITION_WG_BROADCAST(16)

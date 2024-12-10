@@ -13,7 +13,7 @@
 #ifndef ACPP_SSCP_OMP_LIBKERNEL
 #define  ACPP_SHMEM_ATTRIBUTE static __attribute__((loader_uninitialized))  __attribute__((address_space(3)))
 #else
-#define ACPP_SHMEM_ATTRIBUTE volatile thread_local
+#define ACPP_SHMEM_ATTRIBUTE static
 #endif
 
 #ifndef HIPSYCL_SSCP_UTILS_BUILTINS_HPP

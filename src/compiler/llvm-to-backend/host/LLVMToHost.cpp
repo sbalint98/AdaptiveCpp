@@ -152,6 +152,7 @@ bool LLVMToHostTranslator::translateToBackendFormat(llvm::Module &FlavoredModule
                                                     "-shared",
                                                     "-Wno-pass-failed",
                                                     "-fPIC",
+                                                    "-fopenmp",
                                                     "-o",
                                                     OutputFilename,
                                                     InputFile->TmpName};

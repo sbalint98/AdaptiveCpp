@@ -88,17 +88,21 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(group_reduce, T, test_types) {
                          << " at position " << j << " instead of "
                          << detail::type_to_string(expected) << " for group " << i
                          << " for local_size " << local_size << " sub group size: " << subgroup_size << " and case: no init");
-          // if (!detail::compare_type(expected, computed))
-          //   break;
+          if (!detail::compare_type(expected, computed)){
+            std::cout << "Input: " << std::endl;
+            std::copy(vOrig.begin(), vOrig.end(), std::ostream_iterator<T>(std::cout, " "));
+            std::cout << "computed: " << std::endl;
+            std::copy(vIn.begin(), vIn.end(), std::ostream_iterator<T>(std::cout, " "));
+            break;
+          }
         }
       }
     };
 
     test_nd_group_function_1d<__LINE__, T>(elements_per_thread, data_generator,
                                            tested_function, validation_function);
-    std::cout << "Starting tests with 2D functions" << std::endl;
-    // test_nd_group_function_2d<__LINE__, T>(elements_per_thread, data_generator,
-    //                                        tested_function, validation_function);
+    test_nd_group_function_2d<__LINE__, T>(elements_per_thread, data_generator,
+                                           tested_function, validation_function);
   }
 
   {
