@@ -12,7 +12,13 @@
 #ifndef ACPP_NAMESPACE_COMPAT
 #define ACPP_NAMESPACE_COMPAT
 
+#ifndef ACPP_NO_SHORT_NAMESPACE
 namespace acpp {
+  using namespace hipsycl;
+}
+#endif
+
+namespace adaptivecpp {
   using namespace hipsycl;
 }
 
