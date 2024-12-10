@@ -95,7 +95,7 @@ template<typename T>
 T __acpp_sscp_work_group_broadcas_impl(__acpp_int32 sender, 
                                                      T x){        
      ACPP_SHMEM_ATTRIBUTE int shrd_x;
-     if(sender == __acpp_sscp_typed_get_local_linear_id<1, int>()){ 
+     if(sender == __acpp_sscp_typed_get_local_linear_id<3, int>()){ 
         shrd_x = x; 
      }; 
      __acpp_sscp_work_group_barrier(__acpp_sscp_memory_scope::work_group, __acpp_sscp_memory_order::relaxed); 
