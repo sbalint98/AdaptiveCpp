@@ -24,12 +24,12 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+#define ACPP_SSCP_OMP_LIBKERNEL
 
  #include "hipSYCL/sycl/libkernel/sscp/builtins/collpredicate.hpp"
  #include "hipSYCL/sycl/libkernel/sscp/builtins/reduction.hpp"
  #include "hipSYCL/sycl/libkernel/sscp/builtins/amdgpu/ockl.hpp"
 
-#define ACPP_SSCP_OMP_LIBKERNEL
 
 HIPSYCL_SSCP_CONVERGENT_BUILTIN
 bool __acpp_sscp_work_group_any(bool pred){

@@ -102,7 +102,7 @@ T __acpp_sscp_work_group_broadcas_impl(__acpp_int32 sender,
      x = shrd_x; 
     __acpp_sscp_work_group_barrier(__acpp_sscp_memory_scope::work_group, __acpp_sscp_memory_order::relaxed); 
     return x; 
-    } 
+  } 
 
 #define GROUP_BCAST(fn_suffix,input_type) \
 HIPSYCL_SSCP_CONVERGENT_BUILTIN \
