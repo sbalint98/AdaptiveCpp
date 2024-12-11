@@ -758,7 +758,6 @@ OutPtr __acpp_joint_inclusive_scan(Group g, InPtr first, InPtr last, OutPtr resu
   const size_t lrange            = g.get_local_range().size();
   const size_t num_elements      = last - first;
   const size_t lid               = g.get_local_linear_id();
-  const size_t elements_per_item = num_elements/lrange + (lid < (num_elements%lrange));
   using value_type = std::remove_reference_t<decltype(*first)>;
 
   if(num_elements == 0)
@@ -768,7 +767,7 @@ OutPtr __acpp_joint_inclusive_scan(Group g, InPtr first, InPtr last, OutPtr resu
     *result = *first;
     return result;
   }
-  
+
   //Ptr start_ptr = first + lid;
   using type = decltype(*first);
   auto identity = sscp_binary_operation_identity<std::decay_t<type>, sscp_binary_operation_v<BinaryOperation>>::get();
@@ -783,12 +782,15 @@ OutPtr __acpp_joint_inclusive_scan(Group g, InPtr first, InPtr last, OutPtr resu
       if(element_idx < num_elements){
          result[element_idx] = segment_result;
       }
+    __acpp_group_barrier(g);
+
     if(segment > 0){
       auto update_value = result[segment*lrange-1];
       if(element_idx < num_elements){
         result[element_idx] = binary_op(update_value, result[element_idx]);
       }
     }
+    __acpp_group_barrier(g);
   }
   return result;
 }
