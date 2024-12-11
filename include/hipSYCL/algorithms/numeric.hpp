@@ -21,6 +21,7 @@
 #include "hipSYCL/sycl/libkernel/functional.hpp"
 #include "hipSYCL/sycl/event.hpp"
 #include "hipSYCL/sycl/queue.hpp"
+#include "hipSYCL/sycl/detail/namespace_compat.hpp"
 #include "hipSYCL/algorithms/reduction/reduction_descriptor.hpp"
 #include "hipSYCL/algorithms/reduction/reduction_engine.hpp"
 #include "hipSYCL/algorithms/scan/scan.hpp"
