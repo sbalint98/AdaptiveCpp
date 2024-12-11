@@ -157,8 +157,9 @@ OutType __acpp_reduce_over_work_group_impl(OutType x,BinaryOperation op){
 
   // Now we are filled up shared memory with the results of all the subgroups
   // We reduce in shared memory until it fits into one sg
+  size_t elements_in_shmem = num_subgroups < shmem_array_length ? num_subgroups : shmem_array_length;
   for(int i = shmem_array_length/2; i >= first_sg_size; i /= 2){
-    if(wg_lid < i && wg_lid + i < wg_size){
+    if(wg_lid < i && wg_lid + i < elements_in_shmem){
       shrd_mem[wg_lid] = op(shrd_mem[wg_lid+i],shrd_mem[wg_lid]) ;
     }
     __acpp_sscp_work_group_barrier(__acpp_sscp_memory_scope::work_group, __acpp_sscp_memory_order::relaxed);
@@ -170,7 +171,7 @@ OutType __acpp_reduce_over_work_group_impl(OutType x,BinaryOperation op){
     int active_threads = num_subgroups < first_sg_size ? num_subgroups : first_sg_size;
     local_reduce_result =  __acpp_reduce_over_subgroup_impl(local_reduce_result, op, active_threads);
   }
-  
+
   // Do a final broadcast
   using internal_type = typename integer_type<OutType>::type;
   static_assert(sizeof(internal_type) == sizeof(OutType));
