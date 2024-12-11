@@ -69,15 +69,14 @@ __acpp_group_barrier(sub_group g,
 
 // broadcast
 
-template <int Dim, typename T>
+template <int Dim, typename T, std::enable_if_t<sizeof(T) <= 8, int> = 0 >
 HIPSYCL_BUILTIN 
-T __acpp_group_broadcast(
+ T __acpp_group_broadcast(
     group<Dim> g, T x,
     typename group<Dim>::linear_id_type local_linear_id = 0) {
-
   
   if constexpr(sizeof(T) == 1) {
-    return maybe_bit_cast<T>(__acpp_sscp_work_group_broadcast_i8(
+    return maybe_bit_cast<T>(__acpp_sscp_work_group_broadcast_i8(    
         static_cast<__acpp_int32>(local_linear_id),
         maybe_bit_cast<__acpp_int8>(x)));
   } else if constexpr(sizeof(T) == 2) {
@@ -95,16 +94,7 @@ T __acpp_group_broadcast(
   }
 }
 
-template <int Dim, typename T>
-HIPSYCL_BUILTIN T __acpp_group_broadcast(
-    group<Dim> g, T x, typename group<Dim>::id_type local_id) {
-
-  const auto sender_lid = linear_id<g.dimensions>::get(
-      local_id, g.get_local_range());
-  return __acpp_group_broadcast(g, x, static_cast<int>(sender_lid));
-}
-
-template <typename T>
+template <typename T, std::enable_if_t<sizeof(T) <= 8, int> = 0 >
 HIPSYCL_BUILTIN T __acpp_group_broadcast(
     sub_group g, T x, typename sub_group::linear_id_type local_linear_id = 0) {
 
@@ -140,12 +130,13 @@ T __acpp_group_broadcast(sub_group g, T x,
   return __acpp_group_broadcast(g, x, static_cast<int>(local_id[0]));
 }
 
-template <class Group, typename T, int N>
+
+template<typename T, int N, int Dim>
 HIPSYCL_BUILTIN
-std::enable_if_t<(sizeof(vec<T, N>) > 8), vec<T,N>> 
+vec<T,N>
 __acpp_group_broadcast(
-    Group g, vec<T, N> x,
-    typename Group::linear_id_type local_linear_id = 0) {
+    group<Dim> g, vec<T,N> x,
+    typename group<Dim>::linear_id_type local_linear_id = 0) {
   vec<T, N> result;
   for (int i = 0; i < N; ++i) {
     result[i] = __acpp_group_broadcast(g, x[i], local_linear_id);
@@ -153,12 +144,12 @@ __acpp_group_broadcast(
   return result;
 }
 
-template <class Group, typename T, int N>
+template<typename T, int N, int Dim>
 HIPSYCL_BUILTIN
-std::enable_if_t<(sizeof(marray<T, N>) > 8), marray<T,N>>
+marray<T,N>
 __acpp_group_broadcast(
-    Group g, marray<T, N> x,
-    typename Group::linear_id_type local_linear_id = 0) {
+    group<Dim> g, marray<T,N> x,
+    typename group<Dim>::linear_id_type local_linear_id = 0) {
   marray<T, N> result;
   for (int i = 0; i < N; ++i) {
     result[i] = __acpp_group_broadcast(g, x[i], local_linear_id);
@@ -166,6 +157,14 @@ __acpp_group_broadcast(
   return result;
 }
 
+template <int Dim, typename T>
+HIPSYCL_BUILTIN T __acpp_group_broadcast(
+    group<Dim> g, T x, typename group<Dim>::id_type local_id) {
+
+  const auto sender_lid = linear_id<g.dimensions>::get(
+      local_id, g.get_local_range());
+  return __acpp_group_broadcast(g, x, static_cast<int>(sender_lid));
+}
 
 // any_of
 
@@ -340,7 +339,7 @@ HIPSYCL_SSCP_MAP_GROUP_BINARY_IDENTITY(__acpp_sscp_algorithm_op::logical_or, T{0
 template <
     typename T, typename BinaryOperation,
     std::enable_if_t<(std::is_integral_v<T> && std::is_signed_v<T>), int> = 0>
-HIPSYCL_BUILTIN T __acpp_reduce_over_group(sub_group g, T x,
+HIPSYCL_BUILTIN std::enable_if_t<(sizeof(T) <= 8), T> __acpp_reduce_over_group(sub_group g, T x,
                                               BinaryOperation binary_op) {
   if constexpr(sizeof(T) == 1) {
     return maybe_bit_cast<T>(__acpp_sscp_sub_group_reduce_i8(
@@ -364,7 +363,7 @@ HIPSYCL_BUILTIN T __acpp_reduce_over_group(sub_group g, T x,
 template <
     typename T, typename BinaryOperation,
     std::enable_if_t<(std::is_integral_v<T> && !std::is_signed_v<T>), int> = 0>
-HIPSYCL_BUILTIN T __acpp_reduce_over_group(sub_group g, T x,
+HIPSYCL_BUILTIN std::enable_if_t<(sizeof(T) <= 8), T> __acpp_reduce_over_group(sub_group g, T x,
                                               BinaryOperation binary_op) {
   if constexpr(sizeof(T) == 1) {
     return maybe_bit_cast<T>(__acpp_sscp_sub_group_reduce_u8(
@@ -432,7 +431,7 @@ template <
     typename T, int Dim, typename BinaryOperation,
     std::enable_if_t<(std::is_integral_v<T> && std::is_signed_v<T>), int> = 0>
 HIPSYCL_BUILTIN
-T __acpp_reduce_over_group(group<Dim> g, T x, BinaryOperation binary_op) {
+std::enable_if_t<(sizeof(T) <= 8), T> __acpp_reduce_over_group(group<Dim> g, T x, BinaryOperation binary_op) {
   if constexpr(sizeof(T) == 1) {
     return maybe_bit_cast<T>(__acpp_sscp_work_group_reduce_i8(
         sscp_binary_operation_v<BinaryOperation>,
@@ -455,7 +454,7 @@ T __acpp_reduce_over_group(group<Dim> g, T x, BinaryOperation binary_op) {
 template <
     typename T, int Dim, typename BinaryOperation,
     std::enable_if_t<(std::is_integral_v<T> && !std::is_signed_v<T>), int> = 0>
-HIPSYCL_BUILTIN T __acpp_reduce_over_group(group<Dim> g, T x,
+HIPSYCL_BUILTIN std::enable_if_t<(sizeof(T) <= 8), T> __acpp_reduce_over_group(group<Dim> g, T x,
                                               BinaryOperation binary_op) {
   if constexpr(sizeof(T) == 1) {
     return maybe_bit_cast<T>(__acpp_sscp_work_group_reduce_u8(
@@ -564,7 +563,7 @@ T __acpp_joint_reduce(Group g, Ptr first, Ptr last, T init,
 template <
     typename T, typename BinaryOperation,
     std::enable_if_t<(std::is_integral_v<T> && std::is_signed_v<T>), int> = 0>
-HIPSYCL_BUILTIN T __acpp_inclusive_scan_over_group(sub_group g, T x,
+HIPSYCL_BUILTIN std::enable_if_t<(sizeof(T) <= 8), T> __acpp_inclusive_scan_over_group(sub_group g, T x,
                                               BinaryOperation binary_op) {
   if constexpr(sizeof(T) == 1) {
     return maybe_bit_cast<T>(__acpp_sscp_sub_group_inclusive_scan_i8(
@@ -588,7 +587,7 @@ HIPSYCL_BUILTIN T __acpp_inclusive_scan_over_group(sub_group g, T x,
 template <
     typename T, typename BinaryOperation,
     std::enable_if_t<(std::is_integral_v<T> && !std::is_signed_v<T>), int> = 0>
-HIPSYCL_BUILTIN T __acpp_inclusive_scan_over_group(sub_group g, T x,
+HIPSYCL_BUILTIN std::enable_if_t<(sizeof(T) <= 8), T> __acpp_inclusive_scan_over_group(sub_group g, T x,
                                               BinaryOperation binary_op) {
   if constexpr(sizeof(T) == 1) {
     return maybe_bit_cast<T>(__acpp_sscp_sub_group_inclusive_scan_u8(
@@ -656,7 +655,7 @@ template <
     typename T, int Dim, typename BinaryOperation,
     std::enable_if_t<(std::is_integral_v<T> && std::is_signed_v<T>), int> = 0>
 HIPSYCL_BUILTIN
-T __acpp_inclusive_scan_over_group(group<Dim> g, T x, BinaryOperation binary_op) {
+std::enable_if_t<(sizeof(T) <= 8), T> __acpp_inclusive_scan_over_group(group<Dim> g, T x, BinaryOperation binary_op) {
   if constexpr(sizeof(T) == 1) {
     return maybe_bit_cast<T>(__acpp_sscp_work_group_inclusive_scan_i8(
         sscp_binary_operation_v<BinaryOperation>,
@@ -679,7 +678,7 @@ T __acpp_inclusive_scan_over_group(group<Dim> g, T x, BinaryOperation binary_op)
 template <
     typename T, int Dim, typename BinaryOperation,
     std::enable_if_t<(std::is_integral_v<T> && !std::is_signed_v<T>), int> = 0>
-HIPSYCL_BUILTIN T __acpp_inclusive_scan_over_group(group<Dim> g, T x,
+HIPSYCL_BUILTIN std::enable_if_t<(sizeof(T) <= 8), T> __acpp_inclusive_scan_over_group(group<Dim> g, T x,
                                               BinaryOperation binary_op) {
   if constexpr(sizeof(T) == 1) {
     return maybe_bit_cast<T>(__acpp_sscp_work_group_inclusive_scan_u8(
@@ -821,7 +820,7 @@ OutPtr __acpp_joint_inclusive_scan(Group g, InPtr first, InPtr last, OutPtr resu
 template <
     typename T, typename BinaryOperation,
     std::enable_if_t<(std::is_integral_v<T> && std::is_signed_v<T>), int> = 0>
-HIPSYCL_BUILTIN T __acpp_exclusive_scan_over_group(sub_group g, T x,
+HIPSYCL_BUILTIN std::enable_if_t<(sizeof(T) <= 8), T> __acpp_exclusive_scan_over_group(sub_group g, T x,
                                               BinaryOperation binary_op) {
   auto identity = sscp_binary_operation_identity<std::decay_t<T>, sscp_binary_operation_v<BinaryOperation>>::get();
   if constexpr(sizeof(T) == 1) {
@@ -846,7 +845,7 @@ HIPSYCL_BUILTIN T __acpp_exclusive_scan_over_group(sub_group g, T x,
 template <
     typename T, typename BinaryOperation,
     std::enable_if_t<(std::is_integral_v<T> && !std::is_signed_v<T>), int> = 0>
-HIPSYCL_BUILTIN T __acpp_exclusive_scan_over_group(sub_group g, T x,
+HIPSYCL_BUILTIN std::enable_if_t<(sizeof(T) <= 8), T> __acpp_exclusive_scan_over_group(sub_group g, T x,
                                               BinaryOperation binary_op) {
   auto identity = sscp_binary_operation_identity<std::decay_t<T>, sscp_binary_operation_v<BinaryOperation>>::get();
   if constexpr(sizeof(T) == 1) {
@@ -884,13 +883,22 @@ float __acpp_exclusive_scan_over_group(sub_group g, float x, BinaryOperation bin
       sscp_binary_operation_v<BinaryOperation>, x, identity);
 }
 
+template<typename BinaryOperation>
+HIPSYCL_BUILTIN
+float __acpp_exclusive_scan_over_group(sub_group g, double x, BinaryOperation binary_op) {
+  auto identity = sscp_binary_operation_identity<std::decay_t<double>, sscp_binary_operation_v<BinaryOperation>>::get();
+  return __acpp_sscp_sub_group_exclusive_scan_f64(
+      sscp_binary_operation_v<BinaryOperation>, x, identity);
+}
+
+
 // // exclusive scan group
                                
 template <
     typename T, int Dim, typename BinaryOperation,
     std::enable_if_t<(std::is_integral_v<T> && std::is_signed_v<T>), int> = 0>
 HIPSYCL_BUILTIN
-T __acpp_exclusive_scan_over_group(group<Dim> g, T x, BinaryOperation binary_op) {
+std::enable_if_t<(sizeof(T) <= 8), T> __acpp_exclusive_scan_over_group(group<Dim> g, T x, BinaryOperation binary_op) {
   auto identity = sscp_binary_operation_identity<std::decay_t<T>, sscp_binary_operation_v<BinaryOperation>>::get();
   if constexpr(sizeof(T) == 1) {
     return maybe_bit_cast<T>(__acpp_sscp_work_group_exclusive_scan_i8(
@@ -914,7 +922,7 @@ T __acpp_exclusive_scan_over_group(group<Dim> g, T x, BinaryOperation binary_op)
 template <
     typename T, int Dim, typename BinaryOperation,
     std::enable_if_t<(std::is_integral_v<T> && !std::is_signed_v<T>), int> = 0>
-HIPSYCL_BUILTIN T __acpp_exclusive_scan_over_group(group<Dim> g, T x,
+HIPSYCL_BUILTIN std::enable_if_t<(sizeof(T) <= 8), T> __acpp_exclusive_scan_over_group(group<Dim> g, T x,
                                               BinaryOperation binary_op) {
   auto identity = sscp_binary_operation_identity<std::decay_t<T>, sscp_binary_operation_v<BinaryOperation>>::get();
   if constexpr(sizeof(T) == 1) {
@@ -961,9 +969,9 @@ double __acpp_exclusive_scan_over_group(group<Dim> g, double x, BinaryOperation 
 }
 
 
-template<typename T, int N, int Dim, typename BinaryOperation>
+template<typename T, int N, int Dim, typename BinaryOperation, class Group>
 HIPSYCL_BUILTIN
-vec<T,N> __acpp_exclusive_scan_over_group(group<Dim> g, vec<T,N> x, BinaryOperation binary_op) {
+vec<T,N> __acpp_exclusive_scan_over_group(Group g, vec<T,N> x, BinaryOperation binary_op) {
   vec<T,N> result;
   for(int i = 0; i < N; ++i) {
     result[i] = __acpp_exclusive_scan_over_group(g, x[i], binary_op);
@@ -971,9 +979,9 @@ vec<T,N> __acpp_exclusive_scan_over_group(group<Dim> g, vec<T,N> x, BinaryOperat
   return result;
 }
 
-template<typename T, int N, int Dim, typename BinaryOperation>
+template<typename T, int N, int Dim, typename BinaryOperation, class Group>
 HIPSYCL_BUILTIN
-marray<T,N> __acpp_exclusive_scan_over_group(group<Dim> g, marray<T,N> x, BinaryOperation binary_op) {
+marray<T,N> __acpp_exclusive_scan_over_group(Group g, marray<T,N> x, BinaryOperation binary_op) {
   marray<T,N> result;
   for(int i = 0; i < N; ++i) {
     result[i] = __acpp_exclusive_scan_over_group(g, x[i], binary_op);
@@ -994,6 +1002,14 @@ T __acpp_exclusive_scan_over_group(Group g, V x, T init, BinaryOperation binary_
     x = init;
   }
   return x;
+}
+
+template<class Group, typename T, typename BinaryOperation>
+HIPSYCL_BUILTIN
+T __acpp_exclusive_scan_over_group(Group g, T x, BinaryOperation binary_op) {
+  const size_t lid               = g.get_local_linear_id();
+  auto identity = sscp_binary_operation_identity<std::decay_t<T>, sscp_binary_operation_v<BinaryOperation>>::get();
+  return __acpp_exclusive_scan_over_group(g, x, identity, binary_op);
 }
 
 template <typename Group, typename InPtr, typename OutPtr,
@@ -1038,7 +1054,7 @@ OutPtr __acpp_joint_exclusive_scan(Group g, InPtr first, InPtr last, OutPtr resu
 // shift_left
 template <int Dim, typename T>
 HIPSYCL_BUILTIN
-T __acpp_shift_group_left(
+std::enable_if_t<(sizeof(T) <= 8), T> __acpp_shift_group_left(
     group<Dim> g, T x, typename group<Dim>::linear_id_type delta = 1) {
 
   if constexpr(sizeof(T) == 1) {
@@ -1057,7 +1073,7 @@ T __acpp_shift_group_left(
 }
 
 template <typename T>
-HIPSYCL_BUILTIN T __acpp_shift_group_left(
+HIPSYCL_BUILTIN std::enable_if_t<(sizeof(T) <= 8), T> __acpp_shift_group_left(
     sub_group g, T x, typename sub_group::linear_id_type delta = 1) {
 
   if constexpr(sizeof(T) == 1) {
@@ -1099,7 +1115,7 @@ __acpp_shift_group_left(Group g, marray<T,N> x, typename Group::linear_id_type d
 
 // shift_right
 template <int Dim, typename T>
-HIPSYCL_BUILTIN T __acpp_shift_group_right(
+HIPSYCL_BUILTIN std::enable_if_t<(sizeof(T) <= 8), T> __acpp_shift_group_right(
     group<Dim> g, T x, typename group<Dim>::linear_id_type delta = 1) {
   if constexpr(sizeof(T) == 1) {
     return maybe_bit_cast<T>(__acpp_sscp_work_group_shr_i8(
@@ -1117,7 +1133,7 @@ HIPSYCL_BUILTIN T __acpp_shift_group_right(
 }
 
 template <typename T>
-HIPSYCL_BUILTIN T __acpp_shift_group_right(
+HIPSYCL_BUILTIN std::enable_if_t<(sizeof(T) <= 8), T> __acpp_shift_group_right(
     sub_group g, T x, typename sub_group::linear_id_type delta = 1) {
   if constexpr(sizeof(T) == 1) {
     return maybe_bit_cast<T>(__acpp_sscp_sub_group_shr_i8(
@@ -1159,7 +1175,7 @@ __acpp_shift_group_right(Group g, marray<T,N> x, typename Group::linear_id_type 
 
 // permute_group_by_xor
 template <int Dim, typename T>
-HIPSYCL_BUILTIN T __acpp_permute_group_by_xor(
+HIPSYCL_BUILTIN std::enable_if_t<(sizeof(T) <= 8), T> __acpp_permute_group_by_xor(
     group<Dim> g, T x, typename group<Dim>::linear_id_type mask) {
   if constexpr(sizeof(T) == 1) {
     return maybe_bit_cast<T>(__acpp_sscp_work_group_permute_i8(
@@ -1177,7 +1193,7 @@ HIPSYCL_BUILTIN T __acpp_permute_group_by_xor(
 }
 
 template <typename T>
-HIPSYCL_BUILTIN T __acpp_permute_group_by_xor(
+HIPSYCL_BUILTIN std::enable_if_t<(sizeof(T) <= 8), T> __acpp_permute_group_by_xor(
     sub_group g, T x, typename sub_group::linear_id_type mask) {
   if constexpr(sizeof(T) == 1) {
     return maybe_bit_cast<T>(__acpp_sscp_sub_group_permute_i8(
@@ -1218,7 +1234,7 @@ __acpp_permute_group_by_xor(Group g, marray<T,N> x, typename Group::linear_id_ty
 
 // select_from_group
 template <int Dim, typename T>
-HIPSYCL_BUILTIN T __acpp_select_from_group(
+HIPSYCL_BUILTIN std::enable_if_t<(sizeof(T) <= 8), T> __acpp_select_from_group(
     group<Dim> g, T x, typename group<Dim>::id_type remote_local_id) {
 
   __acpp_int32 linear_id = static_cast<__acpp_int32>(
@@ -1240,7 +1256,7 @@ HIPSYCL_BUILTIN T __acpp_select_from_group(
 }
 
 template <typename T>
-HIPSYCL_BUILTIN T __acpp_select_from_group(
+HIPSYCL_BUILTIN std::enable_if_t<(sizeof(T) <= 8), T> __acpp_select_from_group(
     sub_group g, T x, typename sub_group::id_type remote_local_id) {
 
   __acpp_int32 linear_id = static_cast<__acpp_int32>(remote_local_id[0]);
