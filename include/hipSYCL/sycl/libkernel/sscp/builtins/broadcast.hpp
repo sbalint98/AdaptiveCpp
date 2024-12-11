@@ -95,9 +95,9 @@ template<typename T>
 T __acpp_sscp_work_group_broadcas_impl(__acpp_int32 sender, 
                                                      T x){
       #ifndef ACPP_SSCP_OMP_LIBKERNEL
-      ACPP_CUDALIKE_SHMEM_ATTRIBUTE int shrd_x[1];
+      ACPP_CUDALIKE_SHMEM_ATTRIBUTE T shrd_x[1];
       #else
-      int* shrd_x = static_cast<int*>(__acpp_sscp_host_get_internal_local_memory());
+      T* shrd_x = static_cast<T*>(__acpp_sscp_host_get_internal_local_memory());
       #endif
      
 
