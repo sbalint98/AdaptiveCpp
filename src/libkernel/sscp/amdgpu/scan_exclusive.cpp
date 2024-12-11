@@ -92,13 +92,13 @@ __acpp_##type __acpp_sscp_work_group_exclusive_scan_##type(__acpp_sscp_algorithm
     switch(op) \
     { \
         case __acpp_sscp_algorithm_op::plus: \
-            return __acpp_group_exclusive_scan_impl(x, plus{}, init); \
+            return __acpp_group_exclusive_scan_cudalike_impl(x, plus{}, init); \
         case __acpp_sscp_algorithm_op::multiply: \
-            return __acpp_group_exclusive_scan_impl(x, multiply{}, init); \
+            return __acpp_group_exclusive_scan_cudalike_impl(x, multiply{}, init); \
         case __acpp_sscp_algorithm_op::min: \
-            return __acpp_group_exclusive_scan_impl(x, min{}, init); \
+            return __acpp_group_exclusive_scan_cudalike_impl(x, min{}, init); \
         case __acpp_sscp_algorithm_op::max: \
-            return __acpp_group_exclusive_scan_impl(x, max{}, init); \
+            return __acpp_group_exclusive_scan_cudalike_impl(x, max{}, init); \
         default: \
             return __acpp_##type{}; \
     } \
@@ -114,23 +114,23 @@ __acpp_##type __acpp_sscp_work_group_exclusive_scan_##fn_suffix(__acpp_sscp_algo
     switch(op) \
     { \
         case __acpp_sscp_algorithm_op::plus: \
-            return __acpp_group_exclusive_scan_impl(x, plus{}, init); \
+            return __acpp_group_exclusive_scan_cudalike_impl(x, plus{}, init); \
         case __acpp_sscp_algorithm_op::multiply: \
-            return __acpp_group_exclusive_scan_impl(x, multiply{}, init); \
+            return __acpp_group_exclusive_scan_cudalike_impl(x, multiply{}, init); \
         case __acpp_sscp_algorithm_op::min: \
-            return __acpp_group_exclusive_scan_impl(x, min{}, init); \
+            return __acpp_group_exclusive_scan_cudalike_impl(x, min{}, init); \
         case __acpp_sscp_algorithm_op::max: \
-            return __acpp_group_exclusive_scan_impl(x, max{}, init); \
+            return __acpp_group_exclusive_scan_cudalike_impl(x, max{}, init); \
         case __acpp_sscp_algorithm_op::bit_and: \
-            return __acpp_group_exclusive_scan_impl(x, bit_and{}, init); \
+            return __acpp_group_exclusive_scan_cudalike_impl(x, bit_and{}, init); \
         case __acpp_sscp_algorithm_op::bit_or: \
-            return __acpp_group_exclusive_scan_impl(x, bit_or{}, init); \
+            return __acpp_group_exclusive_scan_cudalike_impl(x, bit_or{}, init); \
         case __acpp_sscp_algorithm_op::bit_xor: \
-            return __acpp_group_exclusive_scan_impl(x, bit_xor{}, init); \
+            return __acpp_group_exclusive_scan_cudalike_impl(x, bit_xor{}, init); \
         case __acpp_sscp_algorithm_op::logical_and: \
-            return __acpp_group_exclusive_scan_impl(x, logical_and{}, init); \
+            return __acpp_group_exclusive_scan_cudalike_impl(x, logical_and{}, init); \
         case __acpp_sscp_algorithm_op::logical_or: \
-            return __acpp_group_exclusive_scan_impl(x, logical_or{}, init); \
+            return __acpp_group_exclusive_scan_cudalike_impl(x, logical_or{}, init); \
         default: \
             return __acpp_##type{}; \
     } \

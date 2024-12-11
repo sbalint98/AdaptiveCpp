@@ -118,8 +118,11 @@ OutType __acpp_reduce_over_subgroup(OutType x) {
 template <typename OutType, typename BinaryOperation> 
 OutType __acpp_reduce_over_work_group_impl(OutType x,BinaryOperation op){
   const constexpr __acpp_uint32 shmem_array_length = 32;
-  ACPP_SHMEM_ATTRIBUTE OutType  shrd_mem[shmem_array_length];
-  #pragma omp threadprivate(shrd_mem)
+  #ifndef ACPP_SSCP_OMP_LIBKERNEL
+  ACPP_CUDALIKE_SHMEM_ATTRIBUTE OutType  shrd_mem[shmem_array_length];
+  #else
+  OutType* shrd_mem = static_cast<OutType*>(__acpp_sscp_host_get_internal_local_memory());
+  #endif
 
 
   const __acpp_uint32       wg_lid     = __acpp_sscp_typed_get_local_linear_id<3, int>();
@@ -145,7 +148,7 @@ OutType __acpp_reduce_over_work_group_impl(OutType x,BinaryOperation op){
 
   for(int i = shmem_array_length; i < num_subgroups; i+=shmem_array_length){
     if(subgroup_id >= i && subgroup_id < i+shmem_array_length){
-         shrd_mem[subgroup_id%shmem_array_length] +=local_reduce_result;
+         shrd_mem[subgroup_id%shmem_array_length] = op(local_reduce_result, shrd_mem[subgroup_id%shmem_array_length]);
     }
     __acpp_sscp_work_group_barrier(__acpp_sscp_memory_scope::work_group, __acpp_sscp_memory_order::relaxed);
   }
@@ -156,7 +159,7 @@ OutType __acpp_reduce_over_work_group_impl(OutType x,BinaryOperation op){
   // We reduce in shared memory until it fits into one sg
   for(int i = shmem_array_length/2; i >= first_sg_size; i /= 2){
     if(wg_lid < i && wg_lid + i < wg_size){
-      shrd_mem[wg_lid] += shrd_mem[wg_lid+i];
+      shrd_mem[wg_lid] = op(shrd_mem[wg_lid+i],shrd_mem[wg_lid]) ;
     }
     __acpp_sscp_work_group_barrier(__acpp_sscp_memory_scope::work_group, __acpp_sscp_memory_order::relaxed);
   }

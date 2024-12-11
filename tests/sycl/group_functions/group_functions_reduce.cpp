@@ -39,14 +39,19 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(group_reduce_mul, T, test_types) {
 
         for (size_t j = 0; j < local_size; ++j) {
           T computed = vIn[i * local_size + j];
-          BOOST_TEST_REQUIRE(detail::compare_type(expected, computed),
+          BOOST_TEST(detail::compare_type(expected, computed),
                      detail::type_to_string(computed)
                          << " at position " << j << " instead of "
                          << detail::type_to_string(expected) << " for group " << i
                          << " for local_size " << local_size
                          << " and case: no init multiplication");
-          if (!detail::compare_type(expected, computed))
+          if (!detail::compare_type(expected, computed)){
+            std::cout << "Input: " << std::endl;
+            std::copy(vOrig.begin(), vOrig.end(), std::ostream_iterator<T>(std::cout, " "));
+            std::cout << "computed: " << std::endl;
+            std::copy(vIn.begin(), vIn.end(), std::ostream_iterator<T>(std::cout, " "));
             break;
+          }
         }
       }
     };

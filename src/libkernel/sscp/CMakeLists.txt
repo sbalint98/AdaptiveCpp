@@ -24,7 +24,7 @@ function(libkernel_generate_bitcode_library)
 
   add_custom_command(
       OUTPUT ${target_output_file}
-      COMMAND ${CLANG_EXECUTABLE_PATH} -MD -MF ${taregt_output_file}.d -target ${triple} "$<${ACPPX8664TARGET}:${ACPPOMPFLAG}>" -fPIC -fno-exceptions -fno-rtti -O3 -emit-llvm -std=c++17 -DHIPSYCL_SSCP_LIBKERNEL_LIBRARY
+      COMMAND ${CLANG_EXECUTABLE_PATH} -MD -MF .d -target ${triple} "$<${ACPPX8664TARGET}:${ACPPOMPFLAG}>" -fPIC -fno-exceptions -fno-rtti -O3 -emit-llvm -std=c++17 -DHIPSYCL_SSCP_LIBKERNEL_LIBRARY
                     -I ${HIPSYCL_SOURCE_DIR}/include ${additional} -o ${target_output_file} -c ${CMAKE_CURRENT_SOURCE_DIR}/${source}
       DEPFILE ${CMAKE_CURRENT_SOURCE_DIR}/${taregt_output_file}.d
       VERBATIM)

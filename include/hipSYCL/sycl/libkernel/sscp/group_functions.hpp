@@ -778,8 +778,11 @@ OutPtr __acpp_joint_inclusive_scan(Group g, InPtr first, InPtr last, OutPtr resu
   // for (Ptr p = start_ptr + lrange; p < last; p += lrange){
   for(size_t segment = 0; segment < num_segments; segment++){
     size_t element_idx = segment*lrange+lid;
-    auto local_element = element_idx < num_elements ? first[element_idx] : identity;
-    result[element_idx] = __acpp_inclusive_scan_over_group(g, local_element, binary_op);
+      auto local_element = element_idx < num_elements ? first[element_idx] : identity;
+      auto segment_result = __acpp_inclusive_scan_over_group(g, local_element, binary_op);
+      if(element_idx < num_elements){
+         result[element_idx] = segment_result;
+      }
     if(segment > 0){
       auto update_value = result[segment*lrange-1];
       if(element_idx < num_elements){
@@ -1005,6 +1008,8 @@ OutPtr __acpp_joint_exclusive_scan(Group g, InPtr first, InPtr last, OutPtr resu
   if(lid == 0){
     result[0] = identity;
   }
+  __acpp_group_barrier(g);
+
   return result;
 }
 

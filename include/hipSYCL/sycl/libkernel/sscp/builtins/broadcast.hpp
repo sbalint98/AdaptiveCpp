@@ -93,15 +93,19 @@ __acpp_##input_type __acpp_sscp_sub_group_broadcast_##fn_suffix(__acpp_int32 sen
 
 template<typename T> 
 T __acpp_sscp_work_group_broadcas_impl(__acpp_int32 sender, 
-                                                     T x){        
-     ACPP_SHMEM_ATTRIBUTE int shrd_x;
-     #pragma omp threadprivate(shrd_x)
+                                                     T x){
+      #ifndef ACPP_SSCP_OMP_LIBKERNEL
+      ACPP_CUDALIKE_SHMEM_ATTRIBUTE int shrd_x[1];
+      #else
+      int* shrd_x = static_cast<int*>(__acpp_sscp_host_get_internal_local_memory());
+      #endif
+     
 
      if(sender == __acpp_sscp_typed_get_local_linear_id<3, int>()){ 
-        shrd_x = x; 
+        shrd_x[0] = x; 
      }; 
      __acpp_sscp_work_group_barrier(__acpp_sscp_memory_scope::work_group, __acpp_sscp_memory_order::relaxed); 
-     x = shrd_x; 
+     x = shrd_x[0]; 
     __acpp_sscp_work_group_barrier(__acpp_sscp_memory_scope::work_group, __acpp_sscp_memory_order::relaxed); 
     return x; 
   } 

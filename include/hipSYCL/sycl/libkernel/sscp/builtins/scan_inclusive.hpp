@@ -107,11 +107,72 @@ T __acpp_subgroup_inclusive_scan_impl(T x, BinaryOperation binary_op) {
 
 
 
+template <typename OutType, typename BinaryOperation> 
+OutType __acpp_group_inclusive_scan_cudalike_impl(OutType x,BinaryOperation op){
+  ACPP_CUDALIKE_SHMEM_ATTRIBUTE OutType  shrd_mem[32];
+  const __acpp_uint32       wg_lid     = __acpp_sscp_typed_get_local_linear_id<3, int>();
+  const __acpp_uint32       max_sg_size = __acpp_sscp_get_subgroup_max_size();
+  const __acpp_int32        sg_size = __acpp_sscp_get_subgroup_size();
+  const __acpp_uint32       subgroup_id = wg_lid/max_sg_size;
+  const bool                last_item_in_sg = (wg_lid%sg_size) == (sg_size-1);
+
+  OutType sg_scan_result = __acpp_subgroup_inclusive_scan_impl(x, op);
+
+  if(last_item_in_sg){
+    shrd_mem[subgroup_id] = sg_scan_result;
+  }
+  __acpp_sscp_work_group_barrier(__acpp_sscp_memory_scope::work_group, __acpp_sscp_memory_order::relaxed);
+  if(subgroup_id == 0){
+    shrd_mem[wg_lid] = __acpp_subgroup_inclusive_scan_impl(shrd_mem[wg_lid], op);
+  }
+  __acpp_sscp_work_group_barrier(__acpp_sscp_memory_scope::work_group, __acpp_sscp_memory_order::relaxed);
+  return subgroup_id > 0 ? op(shrd_mem[subgroup_id-1], sg_scan_result) : sg_scan_result;
+}
+
+
+template <typename OutType, typename BinaryOperation> 
+OutType __acpp_group_exclusive_scan_host_impl(OutType x,BinaryOperation op){
+
+  OutType* shrd_mem = static_cast<OutType*>(__acpp_sscp_host_get_internal_local_memory());
+
+  const __acpp_uint32       wg_lid     = __acpp_sscp_typed_get_local_linear_id<3, int>();
+  const __acpp_uint32       wg_size    = __acpp_sscp_typed_get_local_size<3, int>();
+  const __acpp_uint32       max_sg_size = __acpp_sscp_get_subgroup_max_size();
+  const __acpp_int32        sg_size = __acpp_sscp_get_subgroup_size();
+
+  const __acpp_uint32       num_subgroups = (wg_size+max_sg_size-1)/max_sg_size;
+  const __acpp_uint32       subgroup_id = wg_lid/max_sg_size;
+
+  const bool                last_item_in_sg = (wg_lid%sg_size) == (sg_size-1);
+  
+  shrd_mem[wg_lid] = x;
+
+  __acpp_sscp_work_group_barrier(__acpp_sscp_memory_scope::work_group, __acpp_sscp_memory_order::relaxed);
+  OutType local_x = x;
+  OutType other_x;
+  //TODO: Here we can just call the host inclusive scan
+  for (__acpp_int32 i = 1; i < wg_size; i *= 2) {  
+    __acpp_uint32 next_id = wg_lid -i;
+    bool is_nextid_valid = next_id >= 0 && i <= wg_lid;
+
+    if (is_nextid_valid){
+      other_x=shrd_mem[next_id]; 
+    }
+    __acpp_sscp_work_group_barrier(__acpp_sscp_memory_scope::work_group, __acpp_sscp_memory_order::relaxed);
+
+    if (is_nextid_valid){
+      local_x = op(local_x, other_x); 
+      shrd_mem[wg_lid] = local_x;
+    }
+    __acpp_sscp_work_group_barrier(__acpp_sscp_memory_scope::work_group, __acpp_sscp_memory_order::relaxed);
+  }
+  return local_x; 
+}
 
 template <typename OutType, typename BinaryOperation> 
 OutType __acpp_group_inclusive_scan_impl(OutType x,BinaryOperation op){
   const constexpr __acpp_uint32 shmem_array_length = 32;
-  ACPP_SHMEM_ATTRIBUTE OutType  shrd_mem[shmem_array_length+1];
+  ACPP_CUDALIKE_SHMEM_ATTRIBUTE OutType  shrd_mem[shmem_array_length+1];
 
   const __acpp_uint32       wg_lid     = __acpp_sscp_typed_get_local_linear_id<3, int>();
   const __acpp_uint32       wg_size    = __acpp_sscp_typed_get_local_size<3, int>();
