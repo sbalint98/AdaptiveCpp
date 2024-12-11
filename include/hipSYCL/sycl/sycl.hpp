@@ -64,6 +64,7 @@
 #include "version.hpp"
 #include "types.hpp"
 #include "exception.hpp"
+#include "is_device_copyable.hpp"
 #include "device_selector.hpp"
 #include "device.hpp"
 #include "platform.hpp"
