@@ -126,7 +126,11 @@ OutType __acpp_group_inclusive_scan_cudalike_impl(OutType x,BinaryOperation op){
     shrd_mem[wg_lid] = __acpp_subgroup_inclusive_scan_impl(shrd_mem[wg_lid], op);
   }
   __acpp_sscp_work_group_barrier(__acpp_sscp_memory_scope::work_group, __acpp_sscp_memory_order::relaxed);
-  return subgroup_id > 0 ? op(shrd_mem[subgroup_id-1], sg_scan_result) : sg_scan_result;
+  OutType result = subgroup_id > 0 ? op(shrd_mem[subgroup_id-1], sg_scan_result) : sg_scan_result;
+  //WAR dependency in case scan is called in a loop
+  __acpp_sscp_work_group_barrier(__acpp_sscp_memory_scope::work_group, __acpp_sscp_memory_order::relaxed);
+
+  return result;
 }
 
 

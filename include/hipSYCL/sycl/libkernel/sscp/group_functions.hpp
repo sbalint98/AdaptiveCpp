@@ -71,7 +71,7 @@ __acpp_group_barrier(sub_group g,
 
 template <int Dim, typename T, std::enable_if_t<sizeof(T) <= 8, int> = 0 >
 HIPSYCL_BUILTIN 
- T __acpp_group_broadcast(
+ std::enable_if_t<(sizeof(T) <= 8), T> __acpp_group_broadcast(
     group<Dim> g, T x,
     typename group<Dim>::linear_id_type local_linear_id = 0) {
   
@@ -95,7 +95,7 @@ HIPSYCL_BUILTIN
 }
 
 template <typename T, std::enable_if_t<sizeof(T) <= 8, int> = 0 >
-HIPSYCL_BUILTIN T __acpp_group_broadcast(
+HIPSYCL_BUILTIN std::enable_if_t<(sizeof(T) <= 8), T> __acpp_group_broadcast(
     sub_group g, T x, typename sub_group::linear_id_type local_linear_id = 0) {
 
   // Song recommendation: Leaves' Eyes - Angel and the Ghost
@@ -131,12 +131,12 @@ T __acpp_group_broadcast(sub_group g, T x,
 }
 
 
-template<typename T, int N, int Dim>
+template<typename T, int N, class Group>
 HIPSYCL_BUILTIN
-vec<T,N>
+std::enable_if_t<(sizeof(vec<T,N>) > 8), vec<T,N>>
 __acpp_group_broadcast(
-    group<Dim> g, vec<T,N> x,
-    typename group<Dim>::linear_id_type local_linear_id = 0) {
+    Group g, vec<T,N> x,
+    typename Group::linear_id_type local_linear_id = 0) {
   vec<T, N> result;
   for (int i = 0; i < N; ++i) {
     result[i] = __acpp_group_broadcast(g, x[i], local_linear_id);
@@ -144,12 +144,12 @@ __acpp_group_broadcast(
   return result;
 }
 
-template<typename T, int N, int Dim>
+template<typename T, int N, class Group>
 HIPSYCL_BUILTIN
-marray<T,N>
+std::enable_if_t<(sizeof(marray<T,N>) > 8), marray<T,N>>
 __acpp_group_broadcast(
-    group<Dim> g, marray<T,N> x,
-    typename group<Dim>::linear_id_type local_linear_id = 0) {
+    Group g, marray<T,N> x,
+    typename Group::linear_id_type local_linear_id = 0) {
   marray<T, N> result;
   for (int i = 0; i < N; ++i) {
     result[i] = __acpp_group_broadcast(g, x[i], local_linear_id);
@@ -969,7 +969,7 @@ double __acpp_exclusive_scan_over_group(group<Dim> g, double x, BinaryOperation 
 }
 
 
-template<typename T, int N, int Dim, typename BinaryOperation, class Group>
+template<typename T, int N, typename BinaryOperation, class Group>
 HIPSYCL_BUILTIN
 vec<T,N> __acpp_exclusive_scan_over_group(Group g, vec<T,N> x, BinaryOperation binary_op) {
   vec<T,N> result;
@@ -979,7 +979,7 @@ vec<T,N> __acpp_exclusive_scan_over_group(Group g, vec<T,N> x, BinaryOperation b
   return result;
 }
 
-template<typename T, int N, int Dim, typename BinaryOperation, class Group>
+template<typename T, int N, typename BinaryOperation, class Group>
 HIPSYCL_BUILTIN
 marray<T,N> __acpp_exclusive_scan_over_group(Group g, marray<T,N> x, BinaryOperation binary_op) {
   marray<T,N> result;
@@ -1004,13 +1004,6 @@ T __acpp_exclusive_scan_over_group(Group g, V x, T init, BinaryOperation binary_
   return x;
 }
 
-template<class Group, typename T, typename BinaryOperation>
-HIPSYCL_BUILTIN
-T __acpp_exclusive_scan_over_group(Group g, T x, BinaryOperation binary_op) {
-  const size_t lid               = g.get_local_linear_id();
-  auto identity = sscp_binary_operation_identity<std::decay_t<T>, sscp_binary_operation_v<BinaryOperation>>::get();
-  return __acpp_exclusive_scan_over_group(g, x, identity, binary_op);
-}
 
 template <typename Group, typename InPtr, typename OutPtr,
           typename BinaryOperation,
