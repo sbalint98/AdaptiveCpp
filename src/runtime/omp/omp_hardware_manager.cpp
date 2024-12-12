@@ -122,6 +122,8 @@ std::size_t
 omp_hardware_context::get_property(device_uint_property prop) const {
   switch (prop) {
   case device_uint_property::max_compute_units:
+    // Do not change this; heuristics in algorithms library
+    // use this.
     return omp_get_num_procs();
     break;
   case device_uint_property::max_global_size0:
@@ -293,6 +295,16 @@ std::string omp_hardware_context::get_driver_version() const { return "1.2"; }
 std::string omp_hardware_context::get_profile() const {
   return "FULL_PROFILE";
 }
+
+std::size_t omp_hardware_context::get_platform_index() const {
+  return 0;
+}
+
+std::size_t omp_hardware_manager::get_num_platforms() const {
+  return 1;
+}
+
+
 
 std::size_t omp_hardware_manager::get_num_devices() const { return 1; }
 

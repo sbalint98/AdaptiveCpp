@@ -415,6 +415,9 @@ bool LLVMToBackendTranslator::prepareIR(llvm::Module &M) {
     }
 
     enableModuleStateDumping(M, "backend_flavoring", getCompilationIdentifier());
+    // Run again to resolve reflection inside builtins
+    S2RP.run(M, MAM);
+    enableModuleStateDumping(M, "builtin_reflection", getCompilationIdentifier());
 
     // Inline again to handle builtin definitions pulled in by backend flavors
     InliningPass.run(M, MAM);

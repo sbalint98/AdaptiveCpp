@@ -186,14 +186,36 @@ std::size_t get_page_size() {
 #endif
 }
 
+void *resize_and_align(std::vector<char> &data, std::size_t size,
+                       std::size_t alignment) {
+  data.resize(size + alignment);
+  return reinterpret_cast<void*>(
+        next_multiple_of(reinterpret_cast<std::uint64_t>(data.data()),
+                         alignment));
+}
+
+void *resize_and_strongly_align(std::vector<char> &data, std::size_t size) {
+  // compiler/libkernel builtins assume alignment of at least
+  // 512 byte boundaries
+  std::size_t alignment = std::max(std::size_t{512}, get_page_size());
+  return resize_and_align(data, size, alignment);
+}
+
 result
 launch_kernel_from_so(omp_sscp_executable_object::omp_sscp_kernel *kernel,
                       const rt::range<3> &num_groups,
                       const rt::range<3> &local_size, unsigned shared_memory,
                       void **kernel_args) {
   if (num_groups.size() == 1 && shared_memory == 0) {
+    // still need to be able to support group algorithms
+    // make thread-local in case we have multiple threads submitting.
+    static thread_local std::vector<char> internal_local_memory;
+    auto aligned_internal_local_memory = resize_and_strongly_align(
+        internal_local_memory, local_size.size() * sizeof(uint64_t));
+
     omp_sscp_executable_object::work_group_info info{
-        num_groups, rt::id<3>{0, 0, 0}, local_size, nullptr};
+        num_groups, rt::id<3>{0, 0, 0}, local_size, nullptr,
+        aligned_internal_local_memory};
     kernel(&info, kernel_args);
     return make_success();
   }
@@ -210,15 +232,11 @@ launch_kernel_from_so(omp_sscp_executable_object::omp_sscp_kernel *kernel,
   {
     // get page aligned local memory from heap
     static thread_local std::vector<char> local_memory;
-
-    // compiler/libkernel builtins assume that local mem is aligned to at least
-    // 512 byte boundaries
-    const auto local_mem_alignment = std::max(std::size_t{512}, get_page_size());
-    local_memory.resize(shared_memory + local_mem_alignment);
-    auto aligned_local_memory = reinterpret_cast<void *>(
-        next_multiple_of(reinterpret_cast<std::uint64_t>(local_memory.data()),
-                         local_mem_alignment));
-
+    static thread_local std::vector<char> internal_local_memory;
+    auto aligned_local_memory =
+        resize_and_strongly_align(local_memory, shared_memory);
+    auto aligned_internal_local_memory = resize_and_strongly_align(
+        internal_local_memory, local_size.size() * sizeof(uint64_t));
 #ifdef _OPENMP
 #pragma omp for collapse(3)
 #endif
@@ -226,7 +244,8 @@ launch_kernel_from_so(omp_sscp_executable_object::omp_sscp_kernel *kernel,
       for (std::size_t j = 0; j < num_groups.get(1); ++j) {
         for (std::size_t i = 0; i < num_groups.get(0); ++i) {
           omp_sscp_executable_object::work_group_info info{
-              num_groups, rt::id<3>{i, j, k}, local_size, aligned_local_memory};
+              num_groups, rt::id<3>{i, j, k}, local_size, aligned_local_memory,
+              aligned_internal_local_memory};
           kernel(&info, kernel_args);
         }
       }

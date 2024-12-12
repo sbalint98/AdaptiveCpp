@@ -108,6 +108,13 @@ device_id hip_hardware_manager::get_device_id(std::size_t index) const {
                    static_cast<int>(index)};
 }
 
+std::size_t hip_hardware_manager::get_num_platforms() const {
+  return 1;
+}
+
+std::size_t hip_hardware_context::get_platform_index() const {
+  return 0;
+}
 
 hip_hardware_context::hip_hardware_context(int dev) : _dev{dev} {
   _properties = std::make_unique<hipDeviceProp_t>();
