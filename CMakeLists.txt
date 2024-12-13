@@ -282,7 +282,7 @@ if(BUILD_CLANG_PLUGIN)
   if(LLVM_DIR_OLD AND NOT ("${LLVM_DIR_OLD}" STREQUAL "${LLVM_DIR}"))
     message(WARNING "Could not find LLVM in the requested location LLVM_DIR=${LLVM_DIR_OLD}; using ${LLVM_DIR}.")
   endif()
-  message(STATUS "Building hipSYCL against LLVM configured from ${LLVM_DIR}")
+  message(STATUS "Building AdaptiveCpp against LLVM configured from ${LLVM_DIR}")
   #find_package(Clang REQUIRED)
 
   find_program(CLANG_EXECUTABLE_PATH NAMES clang++-${LLVM_VERSION_MAJOR} clang++-${LLVM_VERSION_MAJOR}.${LLVM_VERSION_MINOR} clang++ HINTS ${LLVM_TOOLS_BINARY_DIR} NO_DEFAULT_PATH CACHE STRING)
