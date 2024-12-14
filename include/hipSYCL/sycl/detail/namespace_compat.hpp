@@ -8,10 +8,18 @@
  * See file LICENSE in the project root for full license details.
  */
 // SPDX-License-Identifier: BSD-2-Clause
-#include "hipSYCL/sycl/libkernel/sscp/builtins/print.hpp"
 
-#include <cstdio>
+#ifndef ACPP_NAMESPACE_COMPAT
+#define ACPP_NAMESPACE_COMPAT
 
-void __acpp_sscp_print(const char* msg) {
-  puts(msg);
+#ifndef ACPP_NO_SHORT_NAMESPACE
+namespace acpp {
+  using namespace hipsycl;
 }
+#endif
+
+namespace adaptivecpp {
+  using namespace hipsycl;
+}
+
+#endif

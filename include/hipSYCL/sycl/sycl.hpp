@@ -64,6 +64,7 @@
 #include "version.hpp"
 #include "types.hpp"
 #include "exception.hpp"
+#include "is_device_copyable.hpp"
 #include "device_selector.hpp"
 #include "device.hpp"
 #include "platform.hpp"
@@ -78,6 +79,7 @@
 #include "buffer_explicit_behavior.hpp"
 #include "specialized.hpp"
 #include "jit.hpp"
+#include "detail/namespace_compat.hpp"
 
 // Support SYCL_EXTERNAL for SSCP - we cannot have SYCL_EXTERNAL if accelerated CPU
 // is active at the same time :(
