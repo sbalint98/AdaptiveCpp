@@ -38,4 +38,13 @@ if(WITH_LLVM_TO_AMDGPU_AMDHSA)
         SOURCES 
         atomic_gfx90a_fallback.cpp 
         ADDITIONAL_ARGS -nogpulib)
+
+    # There seems to be no way to specifiy target-features for clang
+    # So we just select an arch that has dpp instructions
+    libkernel_generate_bitcode_target(
+        TARGETNAME amdgpu-amdhsa-dpp_builtins 
+        TRIPLE amdgcn-amd-amdhsa
+        SOURCES 
+        dpp_builtins.cpp 
+        ADDITIONAL_ARGS -nogpulib -mcpu=gfx90c)
 endif()

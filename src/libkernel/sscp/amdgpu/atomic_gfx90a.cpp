@@ -10,6 +10,7 @@
 // SPDX-License-Identifier: BSD-2-Clause
 #include "hipSYCL/sycl/libkernel/sscp/builtins/atomic.hpp"
 #include "hipSYCL/sycl/libkernel/sscp/builtins/builtin_config.hpp"
+#include "hipSYCL/sycl/libkernel/sscp/amd_builtins.hpp"
 
 
 HIPSYCL_SSCP_BUILTIN __acpp_f32 __acpp_sscp_unsafe_atomic_fetch_add_f32(
@@ -23,4 +24,3 @@ HIPSYCL_SSCP_BUILTIN __acpp_f64 __acpp_sscp_unsafe_atomic_fetch_add_f64(
   __acpp_sscp_memory_scope scope, __acpp_f64 *ptr, __acpp_f64 x) {
   return __builtin_amdgcn_global_atomic_fadd_f32(ptr, x);
 }
-
