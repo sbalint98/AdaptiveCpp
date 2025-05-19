@@ -10,8 +10,6 @@
 // SPDX-License-Identifier: BSD-2-Clause
 #include "hipSYCL/sycl/libkernel/sscp/builtins/atomic.hpp"
 #include "hipSYCL/sycl/libkernel/sscp/builtins/builtin_config.hpp"
-#include "hipSYCL/sycl/libkernel/sscp/amd_builtins.hpp"
-
 
 HIPSYCL_SSCP_BUILTIN __acpp_f32 __acpp_sscp_unsafe_atomic_fetch_add_f32(
   __acpp_sscp_address_space as, __acpp_sscp_memory_order order,
