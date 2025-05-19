@@ -21,6 +21,7 @@ if(WITH_LLVM_TO_AMDGPU_AMDHSA)
       broadcast.cpp
       scan_inclusive.cpp
       scan_exclusive.cpp
+      general_builtins.cpp 
       ADDITIONAL_ARGS -nogpulib)
     
     #TODO These will generate bc files with the full prefix as well.
@@ -48,4 +49,5 @@ if(WITH_LLVM_TO_AMDGPU_AMDHSA)
         SOURCES 
         dpp_builtins.cpp 
         ADDITIONAL_ARGS -nogpulib -mcpu=gfx90c)
+
 endif()

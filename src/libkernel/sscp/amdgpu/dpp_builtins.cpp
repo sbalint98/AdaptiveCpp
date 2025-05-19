@@ -10,6 +10,7 @@
 // SPDX-License-Identifier: BSD-2-Clause
 
 #include "hipSYCL/sycl/libkernel/sscp/builtins/builtin_config.hpp"
+#include "hipSYCL/sycl/libkernel/sscp/builtins/amdgpu_dpp.hpp"
 
 
 #define DEFINE_DPP_BUILTIN_WITH_CTRL(dpp_ctrl)                        \
