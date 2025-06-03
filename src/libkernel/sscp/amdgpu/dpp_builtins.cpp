@@ -19,6 +19,13 @@
     return __builtin_amdgcn_mov_dpp(input, dpp_ctrl, 0xf, 0xf, true); \
   }                                                                   \
 
+// Needed for gmx
+DEFINE_DPP_BUILTIN_WITH_CTRL(0x101)
+DEFINE_DPP_BUILTIN_WITH_CTRL(0x102)
+DEFINE_DPP_BUILTIN_WITH_CTRL(0x104)
+DEFINE_DPP_BUILTIN_WITH_CTRL(0x111)
+DEFINE_DPP_BUILTIN_WITH_CTRL(0x112)
+
 DEFINE_DPP_BUILTIN_WITH_CTRL(0x121)
 DEFINE_DPP_BUILTIN_WITH_CTRL(0x122)
 DEFINE_DPP_BUILTIN_WITH_CTRL(0x123)
