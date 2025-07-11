@@ -213,8 +213,15 @@ HIPSYCL_SSCP_BUILTIN double __acpp_sscp_rootn_f64(double x, __acpp_int32 y) {
   return __ocml_rootn_f64(x, y);
 }
 
+                                                              
+  HIPSYCL_SSCP_BUILTIN float __acpp_sscp_rsqrt_f32(float x) {      
+    return __builtin_amdgcn_rsqf(x);                                       
+  }                                                                   
+  HIPSYCL_SSCP_BUILTIN double __acpp_sscp_rsqrt_f64(double x) {    
+    return __ocml_rsqrt_f64(x);                                        
+  }
+
 HIPSYCL_SSCP_MAP_OCML_FLOAT_BUILTIN(round, __ocml_round)
-HIPSYCL_SSCP_MAP_OCML_FLOAT_BUILTIN(rsqrt, __ocml_rsqrt)
 HIPSYCL_SSCP_MAP_OCML_FLOAT_BUILTIN(sqrt, __ocml_sqrt)
 HIPSYCL_SSCP_MAP_OCML_FLOAT_BUILTIN(sin, __ocml_sin)
 HIPSYCL_SSCP_MAP_OCML_FLOAT_BUILTIN(sinh, __ocml_sinh)
