@@ -51,11 +51,11 @@ inline constexpr int builtin_memory_order(__acpp_sscp_memory_order o) noexcept {
 inline constexpr int builtin_memory_scope(__acpp_sscp_memory_scope s) noexcept {
   switch(s) {
     case __acpp_sscp_memory_scope::work_item:
-      return __HIP_MEMORY_SCOPE_SINGLETHREAD;
+      return __HIP_MEMORY_SCOPE_AGENT;
     case __acpp_sscp_memory_scope::sub_group:
-      return __HIP_MEMORY_SCOPE_WAVEFRONT;
+      return __HIP_MEMORY_SCOPE_AGENT;
     case __acpp_sscp_memory_scope::work_group:
-      return __HIP_MEMORY_SCOPE_WORKGROUP;
+      return __HIP_MEMORY_SCOPE_AGENT;
     case __acpp_sscp_memory_scope::device:
       return __HIP_MEMORY_SCOPE_AGENT;
     case __acpp_sscp_memory_scope::system:
