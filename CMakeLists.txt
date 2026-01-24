@@ -365,7 +365,7 @@ if(BUILD_CLANG_PLUGIN)
         message(STATUS "Found ROCm clang: ${ROCM_CLANG_PATH}")
         execute_process(COMMAND ${ROCM_CLANG_PATH} "--version"
           OUTPUT_VARIABLE ROCM_CLANG_VERBOSE_OUTPUT)
-        string(REGEX MATCH "clang version ([0-9]+).([0-9]+).([0-9]+)" ROCM_CLANG_VERSION ${ROCM_CLANG_VERBOSE_OUTPUT})
+        string(REGEX MATCH "clang version ([0-9]+).([0-9]+).([0-9]+)" ROCM_CLANG_VERSION "${ROCM_CLANG_VERBOSE_OUTPUT}")
         if(ROCM_CLANG_VERSION)
           set(ROCM_LLVM_MAJOR ${CMAKE_MATCH_1})
           set(ROCM_LLVM_MINOR ${CMAKE_MATCH_2})
