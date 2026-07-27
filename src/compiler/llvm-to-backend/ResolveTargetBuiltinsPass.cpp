@@ -14,6 +14,7 @@
 #include <llvm/IR/Instructions.h>
 #include <llvm/IR/Constants.h>
 #include <llvm/IR/IRBuilder.h>
+#include "hipSYCL/compiler/utils/LLVMUtils.hpp"
 
 namespace hipsycl {
 namespace compiler {
@@ -21,12 +22,12 @@ namespace compiler {
 llvm::PreservedAnalyses ResolveTargetBuiltinsPass::run(llvm::Module &M, llvm::ModuleAnalysisManager &MAM) {
   bool Changed = false;
   for (auto &F : M) {
-    if (F.getName().starts_with("__acpp___builtin_")) {
+    if (llvmutils::starts_with(F.getName(), "__acpp___builtin_")) {
       for (auto &BB : F) {
         for (auto &I : BB) {
           if (auto *Call = llvm::dyn_cast<llvm::CallInst>(&I)) {
             if (llvm::Function *CalledF = Call->getCalledFunction()) {
-              if (CalledF->getName().starts_with("llvm.")) {
+              if (llvmutils::starts_with(CalledF->getName(), "llvm.")) {
                 for (unsigned i = 0; i < Call->arg_size(); ++i) {
                   if (llvm::isa<llvm::Constant>(Call->getArgOperand(i)) && i < F.arg_size()) {
                     llvm::Argument *WrapperArg = F.getArg(i);
