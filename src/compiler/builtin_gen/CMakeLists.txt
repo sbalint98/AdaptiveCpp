@@ -9,8 +9,22 @@ if(NOT WIN32 AND NOT ACPP_LLVM_COMPONENT)
   find_library(LLVM_LIB NAMES LLVM PATHS ${LLVM_LIBRARY_DIR} NO_DEFAULT_PATH)
 
   if (NOT CLANG_CPP_LIB)
-    set(CLANG_CPP_LIB clang-cpp)
+    # If clang-cpp dynamic library is missing, try to find Clang CMake package for static targets
+    find_package(Clang QUIET HINTS "${LLVM_LIBRARY_DIR}/cmake/clang" "${LLVM_DIR}/../clang")
+    if (TARGET clangTooling)
+      set(CLANG_CPP_LIB clangTooling)
+    else()
+      # Manual fallback to static libraries with start/end group for circular deps
+      set(CLANG_CPP_LIB
+        -Wl,--start-group
+        clangTooling clangFrontend clangParse clangSerialization clangSema 
+        clangEdit clangAnalysis clangASTMatchers clangAST clangLex clangBasic clangDriver
+        -Wl,--end-group
+      )
+      target_link_directories(acpp-amdgpu-builtin-gen PRIVATE ${LLVM_LIBRARY_DIR})
+    endif()
   endif()
+  
   if (NOT LLVM_LIB)
     set(LLVM_LIB LLVM)
   endif()
