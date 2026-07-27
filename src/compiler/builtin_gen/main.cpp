@@ -129,7 +129,7 @@ public:
     });
 
     for (unsigned ID : BuiltinIDs) {
-      std::string Name = Ctx.BuiltinInfo.getName(ID);
+      std::string Name(Ctx.BuiltinInfo.getName(ID));
       const char* Features = Ctx.BuiltinInfo.getRequiredFeatures(ID);
       
       if (Name.find("atomic_inc") != std::string::npos ||
