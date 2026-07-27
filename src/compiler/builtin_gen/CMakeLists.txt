@@ -2,6 +2,13 @@ add_executable(acpp-amdgpu-builtin-gen main.cpp)
 
 configure_target(TARGET acpp-amdgpu-builtin-gen)
 
+if(NOT LLVM_ENABLE_EH)
+  target_compile_options(acpp-amdgpu-builtin-gen PRIVATE -fno-exceptions)
+endif()
+if(NOT LLVM_ENABLE_RTTI)
+  target_compile_options(acpp-amdgpu-builtin-gen PRIVATE -fno-rtti)
+endif()
+
 if(NOT WIN32 AND NOT ACPP_LLVM_COMPONENT)
   # On Unix, we need to explicitly link the clang-cpp and LLVM shared libraries
   # since configure_target is tailored for plugins and doesn't link them automatically.
