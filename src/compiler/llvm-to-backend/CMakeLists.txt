@@ -162,6 +162,7 @@ if(WITH_SSCP_COMPILER)
       GlobalInliningAttributorPass.cpp
       DeadArgumentEliminationPass.cpp
       ProcessS2ReflectionPass.cpp
+      ResolveTargetBuiltinsPass.cpp
       ../sscp/KernelOutliningPass.cpp
       Utils.cpp
       )
