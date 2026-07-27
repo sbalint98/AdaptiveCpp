@@ -38,7 +38,13 @@ if(NOT WIN32 AND NOT ACPP_LLVM_COMPONENT)
 endif()
 
 if(ACPP_LLVM_COMPONENT)
-  # When building in-tree with LLVM, we need to explicitly include the Clang headers
+  # When building in-tree with LLVM, the Clang targets are directly available.
+  target_link_libraries(acpp-amdgpu-builtin-gen PRIVATE
+    clangTooling clangFrontend clangParse clangSerialization clangSema
+    clangEdit clangAnalysis clangASTMatchers clangAST clangLex clangBasic clangDriver
+  )
+
+  # We need to explicitly include the Clang headers
   # because LLVM_INCLUDE_DIRS only covers LLVM, not Clang.
   target_include_directories(acpp-amdgpu-builtin-gen PRIVATE
     ${LLVM_MAIN_SRC_DIR}/../clang/include
