@@ -33,13 +33,23 @@ public:
       if (endPos != std::string::npos) {
         std::string num = T.substr(pos + 32, endPos - (pos + 32));
         std::string base = T.substr(0, pos);
-        // clean base type, e.g., "unsigned int" -> "uint"
+        
+        std::string suffix = "";
+        while (base.length() > 0 && (base.back() == '*' || base.back() == ' ')) {
+            suffix = base.back() + suffix;
+            base.pop_back();
+        }
+        if (base.length() > 6 && base.substr(base.length() - 6) == " const") {
+            suffix = " const" + suffix;
+            base = base.substr(0, base.length() - 6);
+        }
+
         std::string baseName = base;
         while((pos = baseName.find(" ")) != std::string::npos) {
            baseName.replace(pos, 1, "_");
         }
         std::string newType = "__acpp_vec_" + baseName + "_" + num;
-        T = newType + T.substr(endPos + 3);
+        T = newType + suffix + T.substr(endPos + 3);
       }
     }
     return T;
@@ -98,11 +108,41 @@ public:
             << "typedef __fp16 __acpp_vec___fp16_8 __attribute__((ext_vector_type(8)));\n"
             << "typedef __fp16 __acpp_vec___fp16_16 __attribute__((ext_vector_type(16)));\n"
             << "typedef __fp16 __acpp_vec___fp16_32 __attribute__((ext_vector_type(32)));\n"
+            << "typedef long __acpp_vec_long_2 __attribute__((ext_vector_type(2)));\n"
+            << "typedef long __acpp_vec_long_3 __attribute__((ext_vector_type(3)));\n"
+            << "typedef long __acpp_vec_long_4 __attribute__((ext_vector_type(4)));\n"
+            << "typedef long __acpp_vec_long_8 __attribute__((ext_vector_type(8)));\n"
+            << "typedef long __acpp_vec_long_16 __attribute__((ext_vector_type(16)));\n"
             << "typedef long long __acpp_vec_long_long_2 __attribute__((ext_vector_type(2)));\n"
             << "typedef long long __acpp_vec_long_long_3 __attribute__((ext_vector_type(3)));\n"
             << "typedef long long __acpp_vec_long_long_4 __attribute__((ext_vector_type(4)));\n"
             << "typedef long long __acpp_vec_long_long_8 __attribute__((ext_vector_type(8)));\n"
             << "typedef long long __acpp_vec_long_long_16 __attribute__((ext_vector_type(16)));\n"
+            << "typedef char __acpp_vec_char_2 __attribute__((ext_vector_type(2)));\n"
+            << "typedef char __acpp_vec_char_3 __attribute__((ext_vector_type(3)));\n"
+            << "typedef char __acpp_vec_char_4 __attribute__((ext_vector_type(4)));\n"
+            << "typedef char __acpp_vec_char_8 __attribute__((ext_vector_type(8)));\n"
+            << "typedef char __acpp_vec_char_16 __attribute__((ext_vector_type(16)));\n"
+            << "typedef signed char __acpp_vec_signed_char_2 __attribute__((ext_vector_type(2)));\n"
+            << "typedef signed char __acpp_vec_signed_char_3 __attribute__((ext_vector_type(3)));\n"
+            << "typedef signed char __acpp_vec_signed_char_4 __attribute__((ext_vector_type(4)));\n"
+            << "typedef signed char __acpp_vec_signed_char_8 __attribute__((ext_vector_type(8)));\n"
+            << "typedef signed char __acpp_vec_signed_char_16 __attribute__((ext_vector_type(16)));\n"
+            << "typedef unsigned char __acpp_vec_unsigned_char_2 __attribute__((ext_vector_type(2)));\n"
+            << "typedef unsigned char __acpp_vec_unsigned_char_3 __attribute__((ext_vector_type(3)));\n"
+            << "typedef unsigned char __acpp_vec_unsigned_char_4 __attribute__((ext_vector_type(4)));\n"
+            << "typedef unsigned char __acpp_vec_unsigned_char_8 __attribute__((ext_vector_type(8)));\n"
+            << "typedef unsigned char __acpp_vec_unsigned_char_16 __attribute__((ext_vector_type(16)));\n"
+            << "typedef unsigned long __acpp_vec_unsigned_long_2 __attribute__((ext_vector_type(2)));\n"
+            << "typedef unsigned long __acpp_vec_unsigned_long_3 __attribute__((ext_vector_type(3)));\n"
+            << "typedef unsigned long __acpp_vec_unsigned_long_4 __attribute__((ext_vector_type(4)));\n"
+            << "typedef unsigned long __acpp_vec_unsigned_long_8 __attribute__((ext_vector_type(8)));\n"
+            << "typedef unsigned long __acpp_vec_unsigned_long_16 __attribute__((ext_vector_type(16)));\n"
+            << "typedef unsigned long long __acpp_vec_unsigned_long_long_2 __attribute__((ext_vector_type(2)));\n"
+            << "typedef unsigned long long __acpp_vec_unsigned_long_long_3 __attribute__((ext_vector_type(3)));\n"
+            << "typedef unsigned long long __acpp_vec_unsigned_long_long_4 __attribute__((ext_vector_type(4)));\n"
+            << "typedef unsigned long long __acpp_vec_unsigned_long_long_8 __attribute__((ext_vector_type(8)));\n"
+            << "typedef unsigned long long __acpp_vec_unsigned_long_long_16 __attribute__((ext_vector_type(16)));\n"
             << "extern \"C\" {\n";
 
     CppFile << "// Auto-generated Builtins Implementations\n\n"
@@ -112,6 +152,7 @@ public:
       CppFile << "#include \"hipSYCL/sycl/libkernel/sscp/builtins/amdgpu_auto_builtins.hpp\"\n\n";
     } else if (Arch == "ptx") {
       CppFile << "#include \"hipSYCL/sycl/libkernel/sscp/builtins/ptx_auto_builtins.hpp\"\n\n";
+      CppFile << "#pragma clang attribute push (__attribute__((target(\"sm_70,sm_72,sm_75,sm_80,sm_86,sm_87,sm_89,sm_90,sm_90a,sm_100,sm_100a,sm_101,sm_101a,sm_120,sm_120a,ptx62,ptx63,ptx64,ptx65,ptx70,ptx71,ptx72,ptx73,ptx74,ptx75,ptx76,ptx77,ptx78,ptx80,ptx81,ptx82,ptx83,ptx84,ptx85,ptx86,ptx87\"))), apply_to=function)\n";
     }
     CppFile << "extern \"C\" {\n";
 
@@ -125,7 +166,7 @@ public:
         std::string Name = it->getKey().str();
         if (Arch == "amdgpu" && (Name.find("amdgcn") != std::string::npos || Name.find("amdgpu") != std::string::npos)) {
           BuiltinIDs.push_back(ID);
-        } else if (Arch == "ptx" && (Name.find("nvvm") != std::string::npos || Name.find("ptx") != std::string::npos)) {
+        } else if (Arch == "ptx" && Name.find("nvvm") != std::string::npos && Name.find("__builtin_ptx_") == std::string::npos && Name.find("__nvvm_compiler_") == std::string::npos && Name.find("__nvvm_mem") == std::string::npos) {
           BuiltinIDs.push_back(ID);
         }
       }
@@ -189,10 +230,6 @@ public:
 
         // Write definition to .cpp
         CppFile << "__attribute__((always_inline))\n";
-        if (Features && Features[0] != '\0') {
-            CppFile << llvm::formatv("__attribute__((target(\"{0}\")))\n", Features);
-        }
-        
         CppFile << llvm::formatv("{0} {\n  {1}{2}({3});\n}\n\n",
             Sig,
             FPT->getReturnType()->isVoidType() ? "" : "return ",
@@ -202,7 +239,11 @@ public:
     }
     
     HppFile << "}\n#pragma clang diagnostic pop\n";
-    CppFile << "}\n#pragma clang diagnostic pop\n";
+    CppFile << "}\n";
+    if (Arch == "ptx") {
+      CppFile << "#pragma clang attribute pop\n";
+    }
+    CppFile << "#pragma clang diagnostic pop\n";
   }
 };
 
