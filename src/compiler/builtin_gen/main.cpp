@@ -17,10 +17,11 @@ using namespace clang;
 
 
 class BuiltinGenConsumer : public ASTConsumer {
+  std::string Arch;
   std::string HppPath;
   std::string CppPath;
 public:
-  BuiltinGenConsumer(std::string Hpp, std::string Cpp) : HppPath(Hpp), CppPath(Cpp) {}
+  BuiltinGenConsumer(std::string Arch, std::string Hpp, std::string Cpp) : Arch(Arch), HppPath(Hpp), CppPath(Cpp) {}
 
   std::string sanitizeType(std::string T) {
     size_t pos;
@@ -54,7 +55,7 @@ public:
       return;
     }
 
-    HppFile << "// Auto-generated AMDGPU Builtins Declarations\n"
+    HppFile << "// Auto-generated Builtins Declarations\n"
             << "#pragma once\n\n"
             << "#pragma clang diagnostic push\n"
             << "#pragma clang diagnostic ignored \"-Wreturn-type-c-linkage\"\n\n"
@@ -104,11 +105,15 @@ public:
             << "typedef long long __acpp_vec_long_long_16 __attribute__((ext_vector_type(16)));\n"
             << "extern \"C\" {\n";
 
-    CppFile << "// Auto-generated AMDGPU Builtins Implementations\n\n"
+    CppFile << "// Auto-generated Builtins Implementations\n\n"
             << "#pragma clang diagnostic push\n"
-            << "#pragma clang diagnostic ignored \"-Wreturn-type-c-linkage\"\n\n"
-            << "#include \"hipSYCL/sycl/libkernel/sscp/builtins/amdgpu_auto_builtins.hpp\"\n\n"
-            << "extern \"C\" {\n";
+            << "#pragma clang diagnostic ignored \"-Wreturn-type-c-linkage\"\n\n";
+    if (Arch == "amdgpu") {
+      CppFile << "#include \"hipSYCL/sycl/libkernel/sscp/builtins/amdgpu_auto_builtins.hpp\"\n\n";
+    } else if (Arch == "ptx") {
+      CppFile << "#include \"hipSYCL/sycl/libkernel/sscp/builtins/ptx_auto_builtins.hpp\"\n\n";
+    }
+    CppFile << "extern \"C\" {\n";
 
     // Initialize builtins so they populate the IdentifierTable
     Ctx.BuiltinInfo.initializeBuiltins(Ctx.Idents, Ctx.getLangOpts());
@@ -118,7 +123,9 @@ public:
       unsigned ID = it->getValue()->getBuiltinID();
       if (ID >= Builtin::FirstTSBuiltin) {
         std::string Name = it->getKey().str();
-        if (Name.find("amdgcn") != std::string::npos || Name.find("amdgpu") != std::string::npos) {
+        if (Arch == "amdgpu" && (Name.find("amdgcn") != std::string::npos || Name.find("amdgpu") != std::string::npos)) {
+          BuiltinIDs.push_back(ID);
+        } else if (Arch == "ptx" && (Name.find("nvvm") != std::string::npos || Name.find("ptx") != std::string::npos)) {
           BuiltinIDs.push_back(ID);
         }
       }
@@ -200,27 +207,34 @@ public:
 };
 
 class BuiltinGenAction : public ASTFrontendAction {
+  std::string Arch;
   std::string HppPath;
   std::string CppPath;
 public:
-  BuiltinGenAction(std::string Hpp, std::string Cpp) : HppPath(Hpp), CppPath(Cpp) {}
+  BuiltinGenAction(std::string Arch, std::string Hpp, std::string Cpp) : Arch(Arch), HppPath(Hpp), CppPath(Cpp) {}
 
   std::unique_ptr<ASTConsumer> CreateASTConsumer(CompilerInstance &CI, StringRef file) override {
-    return std::make_unique<BuiltinGenConsumer>(HppPath, CppPath);
+    return std::make_unique<BuiltinGenConsumer>(Arch, HppPath, CppPath);
   }
 };
 
 int main(int argc, char** argv) {
-  if (argc != 3) {
-    std::cerr << "Usage: " << argv[0] << " <output_hpp_path> <output_cpp_path>\n";
+  if (argc != 4) {
+    std::cerr << "Usage: " << argv[0] << " <arch(amdgpu|ptx)> <output_hpp_path> <output_cpp_path>\n";
     return 1;
   }
   
-  std::string HppPath = argv[1];
-  std::string CppPath = argv[2];
+  std::string Arch = argv[1];
+  std::string HppPath = argv[2];
+  std::string CppPath = argv[3];
 
-  std::vector<std::string> args = {"-target", "amdgcn-amd-amdhsa", "-nogpulib", "-fsyntax-only"};
-  bool success = tooling::runToolOnCodeWithArgs(std::make_unique<BuiltinGenAction>(HppPath, CppPath), "void dummy(){}", args);
+  std::string TargetTriple = "amdgcn-amd-amdhsa";
+  if (Arch == "ptx") {
+    TargetTriple = "nvptx64-nvidia-cuda";
+  }
+
+  std::vector<std::string> args = {"-target", TargetTriple, "-nogpulib", "-fsyntax-only"};
+  bool success = tooling::runToolOnCodeWithArgs(std::make_unique<BuiltinGenAction>(Arch, HppPath, CppPath), "void dummy(){}", args);
   if (!success) {
     std::cerr << "runToolOnCodeWithArgs failed!\n";
     return 1;

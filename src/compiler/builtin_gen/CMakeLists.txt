@@ -1,12 +1,12 @@
-add_executable(acpp-amdgpu-builtin-gen main.cpp)
+add_executable(acpp-builtin-gen main.cpp)
 
-configure_target(TARGET acpp-amdgpu-builtin-gen)
+configure_target(TARGET acpp-builtin-gen)
 
 if(NOT LLVM_ENABLE_EH)
-  target_compile_options(acpp-amdgpu-builtin-gen PRIVATE -fno-exceptions)
+  target_compile_options(acpp-builtin-gen PRIVATE -fno-exceptions)
 endif()
 if(NOT LLVM_ENABLE_RTTI)
-  target_compile_options(acpp-amdgpu-builtin-gen PRIVATE -fno-rtti)
+  target_compile_options(acpp-builtin-gen PRIVATE -fno-rtti)
 endif()
 
 if(NOT WIN32 AND NOT ACPP_LLVM_COMPONENT)
@@ -28,7 +28,7 @@ if(NOT WIN32 AND NOT ACPP_LLVM_COMPONENT)
         clangEdit clangAnalysis clangASTMatchers clangAST clangLex clangBasic clangDriver
         -Wl,--end-group
       )
-      target_link_directories(acpp-amdgpu-builtin-gen PRIVATE ${LLVM_LIBRARY_DIR})
+      target_link_directories(acpp-builtin-gen PRIVATE ${LLVM_LIBRARY_DIR})
     endif()
   endif()
   
@@ -36,9 +36,9 @@ if(NOT WIN32 AND NOT ACPP_LLVM_COMPONENT)
     set(LLVM_LIB LLVM)
   endif()
 
-  target_link_options(acpp-amdgpu-builtin-gen PRIVATE "-Wl,-rpath,${LLVM_LIBRARY_DIR}")
+  target_link_options(acpp-builtin-gen PRIVATE "-Wl,-rpath,${LLVM_LIBRARY_DIR}")
 
-  target_link_libraries(acpp-amdgpu-builtin-gen PRIVATE
+  target_link_libraries(acpp-builtin-gen PRIVATE
     ${CLANG_CPP_LIB}
     ${LLVM_LIB}
   )
@@ -46,19 +46,19 @@ endif()
 
 if(ACPP_LLVM_COMPONENT)
   # When building in-tree with LLVM, the Clang targets are directly available.
-  target_link_libraries(acpp-amdgpu-builtin-gen PRIVATE
+  target_link_libraries(acpp-builtin-gen PRIVATE
     clangTooling clangFrontend clangParse clangSerialization clangSema
     clangEdit clangAnalysis clangASTMatchers clangAST clangLex clangBasic clangDriver
   )
 
   # We need to explicitly include the Clang headers
   # because LLVM_INCLUDE_DIRS only covers LLVM, not Clang.
-  target_include_directories(acpp-amdgpu-builtin-gen PRIVATE
+  target_include_directories(acpp-builtin-gen PRIVATE
     ${LLVM_MAIN_SRC_DIR}/../clang/include
     ${LLVM_BINARY_DIR}/tools/clang/include
   )
 endif()
 
 # Optional: ensure we compile with C++17 or whatever AdaptiveCpp uses
-set_property(TARGET acpp-amdgpu-builtin-gen PROPERTY CXX_STANDARD 17)
+set_property(TARGET acpp-builtin-gen PROPERTY CXX_STANDARD 17)
 

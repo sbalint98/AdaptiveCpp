@@ -11,8 +11,8 @@ if(WITH_LLVM_TO_AMDGPU_AMDHSA)
 
   add_custom_command(
       OUTPUT ${GENERATED_HPP} ${GENERATED_CPP}
-      COMMAND acpp-amdgpu-builtin-gen ${GENERATED_HPP} ${GENERATED_CPP}
-      DEPENDS acpp-amdgpu-builtin-gen
+      COMMAND acpp-builtin-gen amdgpu ${GENERATED_HPP} ${GENERATED_CPP}
+      DEPENDS acpp-builtin-gen
       COMMENT "Auto-generating AMDGPU builtin wrappers via LibTooling..."
   )
 
