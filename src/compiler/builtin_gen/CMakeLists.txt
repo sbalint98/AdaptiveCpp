@@ -2,12 +2,10 @@ add_executable(acpp-builtin-gen main.cpp)
 
 configure_target(TARGET acpp-builtin-gen)
 
-if(NOT LLVM_ENABLE_EH)
-  target_compile_options(acpp-builtin-gen PRIVATE -fno-exceptions)
-endif()
-if(NOT LLVM_ENABLE_RTTI)
-  target_compile_options(acpp-builtin-gen PRIVATE -fno-rtti)
-endif()
+# Unconditionally disable RTTI and Exceptions for this tool.
+# We don't use them, and if Clang/LLVM were built without them, failing to pass
+# these flags will result in undefined references to typeinfo for ASTFrontendAction.
+target_compile_options(acpp-builtin-gen PRIVATE -fno-exceptions -fno-rtti)
 
 if(NOT WIN32 AND NOT ACPP_LLVM_COMPONENT)
   # On Unix, we need to explicitly link the clang-cpp and LLVM shared libraries
