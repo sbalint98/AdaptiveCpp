@@ -274,6 +274,7 @@ bool LLVMToPtxTranslator::applyBuildOption(const std::string &Option, const std:
     return true;
   } else if(Option == "ptx-target-device") {
     this->PtxTarget = std::stoi(Value);
+    this->setReflectionField("target_arch", this->PtxTarget);
     return true;
   }
 

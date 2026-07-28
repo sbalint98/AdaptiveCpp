@@ -21,6 +21,13 @@ if os.path.isfile(llvm_to_amdgpu_tool):
 else:
   config.substitutions.append(('%llvm-to-amdgpu', 'false # llvm-to-amdgpu-tool not available'))
 
+llvm_to_ptx_tool = os.path.join(os.path.dirname(config.acpp_compiler), 'hipSYCL/llvm-to-backend/llvm-to-ptx-tool')
+if os.path.isfile(llvm_to_ptx_tool):
+  config.available_features.add('ptx-backend-tools')
+  config.substitutions.append(('%llvm-to-ptx', llvm_to_ptx_tool))
+else:
+  config.substitutions.append(('%llvm-to-ptx', 'false # llvm-to-ptx-tool not available'))
+
 config.substitutions.append(('%llvm-dis', 'llvm-dis'))
 config.substitutions.append(('%clangxx', 'clang++'))
 

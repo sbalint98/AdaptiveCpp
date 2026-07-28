@@ -152,7 +152,6 @@ public:
       CppFile << "#include \"hipSYCL/sycl/libkernel/sscp/builtins/amdgpu_auto_builtins.hpp\"\n\n";
     } else if (Arch == "ptx") {
       CppFile << "#include \"hipSYCL/sycl/libkernel/sscp/builtins/ptx_auto_builtins.hpp\"\n\n";
-      CppFile << "#pragma clang attribute push (__attribute__((target(\"sm_70,sm_72,sm_75,sm_80,sm_86,sm_87,sm_89,sm_90,sm_90a,sm_100,sm_100a,sm_101,sm_101a,sm_120,sm_120a,ptx62,ptx63,ptx64,ptx65,ptx70,ptx71,ptx72,ptx73,ptx74,ptx75,ptx76,ptx77,ptx78,ptx80,ptx81,ptx82,ptx83,ptx84,ptx85,ptx86,ptx87\"))), apply_to=function)\n";
     }
     CppFile << "extern \"C\" {\n";
 
@@ -230,6 +229,9 @@ public:
 
         // Write definition to .cpp
         CppFile << "__attribute__((always_inline))\n";
+        if (Arch != "ptx" && Features && Features[0] != '\0') {
+            CppFile << llvm::formatv("__attribute__((target(\"{0}\")))\n", Features);
+        }
         CppFile << llvm::formatv("{0} {\n  {1}{2}({3});\n}\n\n",
             Sig,
             FPT->getReturnType()->isVoidType() ? "" : "return ",
@@ -240,9 +242,6 @@ public:
     
     HppFile << "}\n#pragma clang diagnostic pop\n";
     CppFile << "}\n";
-    if (Arch == "ptx") {
-      CppFile << "#pragma clang attribute pop\n";
-    }
     CppFile << "#pragma clang diagnostic pop\n";
   }
 };
