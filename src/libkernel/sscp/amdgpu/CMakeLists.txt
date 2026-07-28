@@ -6,8 +6,8 @@ if(WITH_LLVM_TO_AMDGPU_AMDHSA)
         -Xclang -fwchar-type=short)
   endif()
 
-  set(GENERATED_HPP "${PROJECT_SOURCE_DIR}/include/hipSYCL/sycl/libkernel/sscp/builtins/amdgpu_auto_builtins.hpp")
-  set(GENERATED_CPP "${PROJECT_SOURCE_DIR}/src/libkernel/sscp/amdgpu/amdgpu_auto_builtins.cpp")
+  set(GENERATED_HPP "${HIPSYCL_SOURCE_DIR}/include/hipSYCL/sycl/libkernel/sscp/builtins/amdgpu_auto_builtins.hpp")
+  set(GENERATED_CPP "${CMAKE_CURRENT_SOURCE_DIR}/amdgpu_auto_builtins.cpp")
 
   add_custom_command(
       OUTPUT ${GENERATED_HPP} ${GENERATED_CPP}
