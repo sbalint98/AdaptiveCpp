@@ -17,7 +17,7 @@ jobs:
         clang: [15, 16, 17, 18, 19, 20, 21]
         os: [ubuntu-22.04]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           submodules: 'recursive'
           fetch-depth: 20
@@ -51,7 +51,7 @@ jobs:
       run:
         shell: bash
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           submodules: 'recursive'
       - name: ccache
@@ -107,7 +107,7 @@ jobs:
       run:
         shell: bash
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           submodules: 'recursive'
       - name: ccache
