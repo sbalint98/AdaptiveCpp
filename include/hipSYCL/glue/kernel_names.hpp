@@ -11,6 +11,9 @@
 #ifndef HIPSYCL_GLUE_KERNEL_NAMES_HPP
 #define HIPSYCL_GLUE_KERNEL_NAMES_HPP
 
+
+
+
 #include <utility>
 struct __acpp_unnamed_kernel {};
 
