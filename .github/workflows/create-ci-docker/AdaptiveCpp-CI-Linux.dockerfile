@@ -78,9 +78,21 @@ RUN <<EOF
     set -e
     # skip if ROCM_VERSION empty
     if [ -z "${ROCM_VERSION}" ]; then exit 0; fi
-    wget -q -O - https://repo.radeon.com/rocm/rocm.gpg.key | apt-key add -
-    echo "deb [arch=amd64] https://repo.radeon.com/rocm/apt/${ROCM_VERSION} jammy main" | tee /etc/apt/sources.list.d/rocm.list
-    printf 'Package: *\nPin: release o=repo.radeon.com\nPin-Priority: 600' | tee /etc/apt/preferences.d/rocm-pin-600
+    mkdir --parents --mode=0755 /etc/apt/keyrings
+    wget -q -O - https://stable.repo.amd.com/rocm/gpg/packages.gpg | \
+        gpg --dearmor | tee /etc/apt/keyrings/amdrocm.gpg > /dev/null
+
+    cat << EOROCM > /etc/apt/sources.list.d/amdrocm-stable.sources
+X-Repo-Id: amdrocm-stable
+Types: deb
+URIs: https://stable.repo.amd.com/rocm/core/packages/ubuntu2404/
+Suites: stable
+Components: main
+Architectures: amd64
+Signed-By: /etc/apt/keyrings/amdrocm.gpg
+Enabled: yes
+EOROCM
+
     apt-get update
     apt-get install -y rocm-dev
     rm -rf /var/lib/apt/lists/*
