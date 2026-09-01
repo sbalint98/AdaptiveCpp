@@ -32,7 +32,7 @@ jobs:
             cuda_major_version: 11
             cuda_minor_version: 0
             cuda_patch_version: 2
-            rocm: 10.0
+            rocm: "10.0"
     steps:
       - uses: actions/checkout@v4
         with:
