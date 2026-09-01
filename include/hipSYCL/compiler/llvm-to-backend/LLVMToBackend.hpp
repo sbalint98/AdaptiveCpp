@@ -55,34 +55,34 @@ public:
 
   virtual ~LLVMToBackendTranslator() {}
 
-  void setNoAliasKernelParam(const std::string& KernelName, int ParamIndex);
-  void setNoAliasIfNoIndirectAccessKernelParam(const std::string &KernelName, int ParamIndex);
-  void specializeKernelArgument(const std::string &KernelName, int ParamIndex,
+  virtual void setNoAliasKernelParam(const std::string& KernelName, int ParamIndex);
+  virtual void setNoAliasIfNoIndirectAccessKernelParam(const std::string &KernelName, int ParamIndex);
+  virtual void specializeKernelArgument(const std::string &KernelName, int ParamIndex,
                                 const void *ValueBuffer);
-  void specializeFunctionCalls(const std::string &FuncName,
+  virtual void specializeFunctionCalls(const std::string &FuncName,
                              const std::vector<std::string> &ReplacementCalls,
                              bool OverrideOnlyUndefined=true);
 
-  void setKnownPtrParamAlignment(const std::string &FunctionName, int ParamIndex, int Alignment);
+  virtual void setKnownPtrParamAlignment(const std::string &FunctionName, int ParamIndex, int Alignment);
 
-  bool setBuildFlag(const std::string &Flag);
-  bool setBuildOption(const std::string &Option, const std::string &Value);
-  bool setBuildToolArguments(const std::string &ToolName, const std::vector<std::string> &Args);
+  virtual bool setBuildFlag(const std::string &Flag);
+  virtual bool setBuildOption(const std::string &Option, const std::string &Value);
+  virtual bool setBuildToolArguments(const std::string &ToolName, const std::vector<std::string> &Args);
 
   template<class T>
   bool setBuildOption(const std::string& Option, const T& Value) {
     return setBuildOption(Option, std::to_string(Value));
   }
 
-  void setReflectionField(const std::string& name, uint64_t value);
+  virtual void setReflectionField(const std::string& name, uint64_t value);
 
   // Does partial transformation to backend-flavored LLVM IR
-  bool partialTransformation(const std::string& LLVMIR, std::string& out);
+  virtual bool partialTransformation(const std::string& LLVMIR, std::string& out);
 
   // Does full transformation to backend specific format
-  bool fullTransformation(const std::string& LLVMIR, std::string& out);
-  bool prepareIR(llvm::Module& M);
-  bool translatePreparedIR(llvm::Module& FlavoredModule, std::string& out);
+  virtual bool fullTransformation(const std::string& LLVMIR, std::string& out);
+  virtual bool prepareIR(llvm::Module& M);
+  virtual bool translatePreparedIR(llvm::Module& FlavoredModule, std::string& out);
 
   const std::vector<std::string>& getErrorLog() const {
     return Errors;
@@ -157,12 +157,12 @@ public:
     SymbolListType ImportedSymbols;
   };
 
-  void provideExternalSymbolResolver(ExternalSymbolResolver Resolver);
+  virtual void provideExternalSymbolResolver(ExternalSymbolResolver Resolver);
 
   // Enable dead argument elimination. If non-null, RetainedArgumentIndices will be filled
   // with the indices of the parameters that were not removed in ascending order.
-  void enableDeadArgumentElminiation(const std::string &FunctionName,
-                                     std::vector<int> *RetainedArgumentIndices = nullptr);
+  virtual void enableDeadArgumentElminiation(const std::string &FunctionName,
+                                             std::vector<int> *RetainedArgumentIndices = nullptr);
 
   const std::vector<std::pair<std::string, std::vector<int>*>>& getDeadArgumentEliminationConfig() const;
 protected:

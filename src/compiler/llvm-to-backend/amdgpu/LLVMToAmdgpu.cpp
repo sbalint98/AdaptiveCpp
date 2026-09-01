@@ -679,3 +679,16 @@ createLLVMToAmdgpuTranslator(const std::vector<std::string> &KernelNames) {
 
 }
 }
+
+// C-linkage factory function for dlsym-based lazy loading.
+// This allows librt-backend-hip.so to load libllvm-to-amdgpu.so via
+// dlopen(RTLD_LOCAL | RTLD_DEEPBIND), isolating system LLVM symbols
+// from ROCm's bundled LLVM to prevent ABI conflicts.
+extern "C" {
+  hipsycl::compiler::LLVMToBackendTranslator *
+  acpp_create_amdgpu_translator(const char *const *kernel_names,
+                                int num_names) {
+    std::vector<std::string> names(kernel_names, kernel_names + num_names);
+    return hipsycl::compiler::createLLVMToAmdgpuTranslator(names).release();
+  }
+}

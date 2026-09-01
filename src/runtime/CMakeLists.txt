@@ -171,7 +171,9 @@ if(WITH_ROCM_BACKEND)
   if(ENABLE_ROCM_UNIFIED_MEMORY_API)
     target_compile_definitions(rt-backend-hip PRIVATE HIPSYCL_RT_HIP_SUPPORTS_UNIFIED_MEMORY=1)
   endif()
-  target_include_directories(rt-backend-hip PRIVATE ${HIPSYCL_SOURCE_DIR}/include)
+  target_include_directories(rt-backend-hip PRIVATE
+    ${HIPSYCL_SOURCE_DIR}/include
+    ${ACPP_BINARY_ROOT}/include)
   if(NOT HIP_FOUND)
     target_include_directories(rt-backend-hip PRIVATE ${ROCM_PATH}/include)
     target_link_libraries(rt-backend-hip PRIVATE ${ROCM_LIBS})
@@ -186,7 +188,7 @@ if(WITH_ROCM_BACKEND)
 
   if(WITH_SSCP_COMPILER)
     target_compile_definitions(rt-backend-hip PRIVATE -DHIPSYCL_WITH_SSCP_COMPILER)
-    target_link_libraries(rt-backend-hip PRIVATE llvm-to-amdgpu)
+    add_dependencies(rt-backend-hip llvm-to-amdgpu)
   endif()
 
   if(is_ipo_supported)

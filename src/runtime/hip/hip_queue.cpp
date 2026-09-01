@@ -26,8 +26,15 @@
 
 #ifdef HIPSYCL_WITH_SSCP_COMPILER
 
-#include "hipSYCL/compiler/llvm-to-backend/amdgpu/LLVMToAmdgpuFactory.hpp"
 #include "hipSYCL/glue/llvm-sscp/jit.hpp"
+#include "hipSYCL/common/config.hpp"
+#include "hipSYCL/common/filesystem.hpp"
+#include HIPSYCL_CXX_FILESYSTEM_HEADER
+
+#include <dlfcn.h>
+#include <mutex>
+
+namespace fs = HIPSYCL_CXX_FILESYSTEM_NAMESPACE;
 
 #endif
 
@@ -154,6 +161,84 @@ result launch_kernel_from_module(ihipModule_t *module,
 
   return make_success();
 }
+
+#ifdef HIPSYCL_WITH_SSCP_COMPILER
+std::unique_ptr<compiler::LLVMToBackendTranslator>
+load_amdgpu_translator(const std::vector<std::string> &kernel_names) {
+  using translator_factory_fn =
+      compiler::LLVMToBackendTranslator *(*)(const char *const *, int);
+  static void *handle = nullptr;
+  static translator_factory_fn factory_fn = nullptr;
+  static std::mutex load_mutex;
+
+  std::lock_guard<std::mutex> lock{load_mutex};
+  if (!factory_fn) {
+    std::vector<std::string> candidate_paths;
+#ifndef _WIN32
+    Dl_info info;
+    if (dladdr(reinterpret_cast<void *>(&load_amdgpu_translator), &info)) {
+      auto p = fs::path{info.dli_fname}.parent_path() /
+               "llvm-to-backend" / "libllvm-to-amdgpu.so";
+      candidate_paths.push_back(p.string());
+    }
+#endif
+    if (auto install_dir = hipsycl::common::filesystem::get_install_directory();
+        !install_dir.empty()) {
+      auto p = fs::path{install_dir} / "lib" / "hipSYCL" /
+               "llvm-to-backend" / "libllvm-to-amdgpu.so";
+      candidate_paths.push_back(p.string());
+    }
+    candidate_paths.push_back("libllvm-to-amdgpu.so");
+
+    for (const auto &path : candidate_paths) {
+#ifndef _WIN32
+      handle = dlopen(path.c_str(), RTLD_NOW | RTLD_DEEPBIND | RTLD_LOCAL);
+#else
+      handle = LoadLibraryA(path.c_str());
+#endif
+      if (handle) {
+        HIPSYCL_DEBUG_INFO
+            << "hip_queue: Successfully loaded amdgpu translator library: "
+            << path << std::endl;
+        break;
+      }
+    }
+
+    if (!handle) {
+      HIPSYCL_DEBUG_ERROR << "hip_queue: Could not load libllvm-to-amdgpu library"
+#ifndef _WIN32
+                          << " (" << (dlerror() ? dlerror() : "unknown error") << ")"
+#endif
+                          << std::endl;
+      return nullptr;
+    }
+
+#ifndef _WIN32
+    factory_fn = reinterpret_cast<translator_factory_fn>(
+        dlsym(handle, "acpp_create_amdgpu_translator"));
+#else
+    factory_fn = reinterpret_cast<translator_factory_fn>(
+        GetProcAddress(static_cast<HMODULE>(handle), "acpp_create_amdgpu_translator"));
+#endif
+    if (!factory_fn) {
+      HIPSYCL_DEBUG_ERROR
+          << "hip_queue: Could not find symbol acpp_create_amdgpu_translator"
+          << std::endl;
+      return nullptr;
+    }
+  }
+
+  std::vector<const char *> c_strs;
+  c_strs.reserve(kernel_names.size());
+  for (const auto &k : kernel_names)
+    c_strs.push_back(k.c_str());
+
+  compiler::LLVMToBackendTranslator *raw_translator =
+      factory_fn(c_strs.data(), static_cast<int>(c_strs.size()));
+  return std::unique_ptr<compiler::LLVMToBackendTranslator>(raw_translator);
+}
+#endif
+
 }
 
 
@@ -640,7 +725,13 @@ result hip_queue::submit_sscp_kernel_from_code_object(
 
     // Construct amdgpu translator to compile the specified kernels
     std::unique_ptr<compiler::LLVMToBackendTranslator> translator = 
-      compiler::createLLVMToAmdgpuTranslator(kernel_names);
+      load_amdgpu_translator(kernel_names);
+
+    if(!translator) {
+      register_error(make_error(__acpp_here(),
+        error_info{"hip_queue: Could not load amdgpu translator"}));
+      return false;
+    }
 
     // Lower kernels
     bool enable_dead_arg_elimination = kernel_names.size() == 1;
