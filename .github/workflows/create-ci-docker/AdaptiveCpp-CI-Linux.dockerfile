@@ -109,9 +109,11 @@ EOROCM
     rm -rf /var/lib/apt/lists/*
 EOF
 
+COPY llvm.sh ./
+COPY llvm-snapshot.gpg.key /etc/apt/trusted.gpg.d/apt.llvm.org.asc
+
 RUN <<EOF
     set -e
-    wget -q https://apt.llvm.org/llvm.sh
     chmod +x llvm.sh
     success=0
     for i in 1 2 3 4 5; do
@@ -129,6 +131,7 @@ RUN <<EOF
     apt-get install -y libclang-${LLVM_VERSION}-dev clang-tools-${LLVM_VERSION} libomp-${LLVM_VERSION}-dev llvm-${LLVM_VERSION}-dev
     apt-get install -y -o DPkg::options::="--force-overwrite" libclang-rt-${LLVM_VERSION}-dev
     rm -rf /var/lib/apt/lists/*
+    rm -f llvm.sh llvm-snapshot.gpg.key
     python3 -m pip install lit==18.1.8
     ln -s /usr/bin/FileCheck-${LLVM_VERSION} /usr/bin/FileCheck
 EOF
