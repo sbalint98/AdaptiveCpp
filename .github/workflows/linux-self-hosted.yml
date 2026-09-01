@@ -105,7 +105,7 @@ jobs:
     runs-on: [self-hosted, gpu-amd]
     strategy:
       matrix:
-        clang_version: ['18']
+        clang_version: ['22']
         cuda: ['11.0'] # Just to be able to build the backend for explicit multipass
     steps:
     - uses: actions/checkout@v4
