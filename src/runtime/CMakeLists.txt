@@ -285,8 +285,8 @@ if(WITH_OPENCL_BACKEND)
 
   find_working_git_url(OCL_HEADERS_URL
   URLS
-    https://github.com/KhronosGroup/OpenCL-Headers
     git@github.com:KhronosGroup/OpenCL-Headers.git
+    https://github.com/KhronosGroup/OpenCL-Headers
   )
 
   FetchContent_Declare(ocl-headers
@@ -301,8 +301,8 @@ if(WITH_OPENCL_BACKEND)
 
   find_working_git_url(OCL_CXX_HEADERS_URL
   URLS
-    https://github.com/KhronosGroup/OpenCL-CLHPP
     git@github.com:KhronosGroup/OpenCL-HPP.git
+    https://github.com/KhronosGroup/OpenCL-CLHPP
   )
 
   FetchContent_Declare(ocl-cxx-headers
