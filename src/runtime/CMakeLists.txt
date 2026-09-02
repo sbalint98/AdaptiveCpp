@@ -281,8 +281,16 @@ endif() # WITH_VULKAN_BACKEND
 
 if(WITH_OPENCL_BACKEND)
   include(FetchContent)
+  include(FindWorkingGitUrl)
+
+  find_working_git_url(OCL_HEADERS_URL
+  URLS
+    https://github.com/KhronosGroup/OpenCL-Headers
+    git@github.com:KhronosGroup/OpenCL-Headers.git
+  )
+
   FetchContent_Declare(ocl-headers
-    GIT_REPOSITORY https://github.com/KhronosGroup/OpenCL-Headers
+    GIT_REPOSITORY ${OCL_HEADERS_URL}
     GIT_TAG 265df85aec478d14a5c5880d7bb92d7dd52714ef
   )
 
@@ -291,8 +299,14 @@ if(WITH_OPENCL_BACKEND)
   add_library(ocl-headers INTERFACE)
   target_include_directories(ocl-headers INTERFACE ${ocl-headers_SOURCE_DIR})
 
+  find_working_git_url(OCL_CXX_HEADERS_URL
+  URLS
+    https://github.com/KhronosGroup/OpenCL-CLHPP
+    git@github.com:KhronosGroup/OpenCL-HPP.git
+  )
+
   FetchContent_Declare(ocl-cxx-headers
-    GIT_REPOSITORY https://github.com/KhronosGroup/OpenCL-CLHPP
+    GIT_REPOSITORY ${OCL_CXX_HEADERS_URL}
     GIT_TAG 67d100e70612341707725b6648ccca4c10b0dc31
   )
   FetchContent_MakeAvailable(ocl-cxx-headers)
