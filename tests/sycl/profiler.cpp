@@ -10,6 +10,7 @@
 // SPDX-License-Identifier: BSD-2-Clause
 
 #include "sycl_test_suite.hpp"
+#include <sycl/sycl.hpp>
 #include <boost/test/tools/old/interface.hpp>
 
 BOOST_FIXTURE_TEST_SUITE(profiler_tests, reset_device_fixture)
@@ -88,13 +89,13 @@ BOOST_AUTO_TEST_CASE(queue_profiling)
       auto acc = buf1.get_access<sycl::access::mode::discard_write>(cgh);
       cgh.single_task<class profile_single_task>([=]() { acc[0] = 42; });
     });
-
     auto t12 = evt1.get_profiling_info<
         sycl::info::event_profiling::command_start>();
     auto t11 = evt1.get_profiling_info<
         sycl::info::event_profiling::command_submit>();
     auto t13 =
         evt1.get_profiling_info<sycl::info::event_profiling::command_end>();
+    
     // We cannot test that submit time is <= command start time, since
     // in some backends (e.g. CUDA) time is only measured as elapsed time
     // between two points in low-precision float. Submission time on the other
@@ -102,7 +103,18 @@ BOOST_AUTO_TEST_CASE(queue_profiling)
     // t12 > t11.
     // The same thing could in principle happen when comparing submission time
     // with command end time, but hopefully this is less likely.
-    BOOST_CHECK(t11 <= t13 && t12 <= t13);
+    // Additionally there might be a drift between the device and host clocks
+    // We try to account for this by taking the first timestamp on this queue,
+    // and calculating an expected upper bound.
+    auto base_clock = t12;
+    auto clock_drift_upperbound = [base_clock]( uint64_t command_end){
+      auto diff = command_end-base_clock;
+      // Measurements show a drift of around 15ms per second.
+      double drift_constant = 0.000;
+      return command_end + static_cast<uint64_t>(diff*drift_constant);
+    };
+
+    BOOST_CHECK(t11 <= clock_drift_upperbound(t13) && t12 <= clock_drift_upperbound(t13));
 
     auto evt2 = queue.submit([&](sycl::handler &cgh) {
       auto acc = buf1.get_access<sycl::access::mode::discard_write>(cgh);
@@ -123,7 +135,7 @@ BOOST_AUTO_TEST_CASE(queue_profiling)
         sycl::info::event_profiling::command_start>();
     auto t23 =
         evt2.get_profiling_info<sycl::info::event_profiling::command_end>();
-    BOOST_CHECK(t21 <= t23 && t22 <= t23);
+    BOOST_CHECK(t21 <= clock_drift_upperbound(t23) && t22 <= clock_drift_upperbound(t23));
 
     auto t31 = evt3.get_profiling_info<
         sycl::info::event_profiling::command_submit>();
@@ -131,8 +143,8 @@ BOOST_AUTO_TEST_CASE(queue_profiling)
         sycl::info::event_profiling::command_start>();
     auto t33 =
         evt3.get_profiling_info<sycl::info::event_profiling::command_end>();
-    BOOST_CHECK(t31 <= t33 && t32 <= t33);
-    BOOST_CHECK(t21 <= t31 && t23 <= t32);
+    BOOST_CHECK(t31 <= clock_drift_upperbound(t33) && t32 <= clock_drift_upperbound(t33));
+    BOOST_CHECK(t21 <= clock_drift_upperbound(t31) && t23 <= clock_drift_upperbound(t32));
 
     auto evt4 = queue.submit([&](sycl::handler &cgh) {
       cgh.fill(buf1.get_access<sycl::access::mode::discard_write>(cgh), 1);
@@ -150,7 +162,7 @@ BOOST_AUTO_TEST_CASE(queue_profiling)
         sycl::info::event_profiling::command_start>();
     auto t53 =
         evt5.get_profiling_info<sycl::info::event_profiling::command_end>();
-    BOOST_CHECK(t51 <= t53 && t52 <= t53);
+    BOOST_CHECK(t51 <= clock_drift_upperbound(t53) && t52 <= clock_drift_upperbound(t53));
 
     // re-ordered
     auto t41 = evt4.get_profiling_info<
@@ -159,7 +171,7 @@ BOOST_AUTO_TEST_CASE(queue_profiling)
         sycl::info::event_profiling::command_start>();
     auto t43 =
         evt4.get_profiling_info<sycl::info::event_profiling::command_end>();
-    BOOST_CHECK(t41 <= t43 && t42 <= t43);
+    BOOST_CHECK(t41 <= clock_drift_upperbound(t43) && t42 <= clock_drift_upperbound(t43));
 
     // usm
     const bool use_shared_alloc =
@@ -168,6 +180,9 @@ BOOST_AUTO_TEST_CASE(queue_profiling)
                                  : sycl::malloc_device<int>(n, queue);
     auto *dest = use_shared_alloc ? sycl::malloc_shared<int>(n, queue)
                                   : sycl::malloc_device<int>(n, queue);
+
+    sleep(40);
+
     auto evt6 = queue.submit(
         [&](sycl::handler &cgh) { cgh.memset(src, 0, sizeof src); });
 
@@ -177,8 +192,10 @@ BOOST_AUTO_TEST_CASE(queue_profiling)
         sycl::info::event_profiling::command_start>();
     auto t63 =
         evt6.get_profiling_info<sycl::info::event_profiling::command_end>();
-    BOOST_CHECK(t61 <= t63 && t62 <= t63);
-
+    BOOST_CHECK(t61 <= clock_drift_upperbound(t63) && t62 <= clock_drift_upperbound(t63));
+    evt6.wait();
+    std::cout << "waiting now ------" << std::endl;
+    sleep(5);
     auto evt7 = queue.submit(
         [&](sycl::handler &cgh) { cgh.memcpy(dest, src, sizeof src); });
     auto t71 = evt7.get_profiling_info<
@@ -187,7 +204,11 @@ BOOST_AUTO_TEST_CASE(queue_profiling)
         sycl::info::event_profiling::command_start>();
     auto t73 =
         evt7.get_profiling_info<sycl::info::event_profiling::command_end>();
-    BOOST_CHECK(t71 <= t73 && t72 <= t73);
+    std::cout << "t71 " << t71 << " t72 " << t72 << " t73 " << t73 << std::endl;
+    std::cout << " " << static_cast<int64_t>(t73)-static_cast<int64_t>(t71) << "  " << t73-t72 << std::endl;
+
+    BOOST_CHECK(t71 <= clock_drift_upperbound(t73) && t72 <= clock_drift_upperbound(t73));
+    sleep(5);
 
     auto evt8 = queue.submit(
         [&](sycl::handler &cgh) { cgh.prefetch(dest, sizeof src); });
@@ -198,7 +219,9 @@ BOOST_AUTO_TEST_CASE(queue_profiling)
     auto t83 =
         evt8.get_profiling_info<sycl::info::event_profiling::command_end>();
     // run time may be zero if prefetching is a no-op
-    BOOST_CHECK(t81 <= t83 && t82 <= t83);
+    std::cout << "t81 " << t81 << " t82 " << t82 << " t83 " << t83 << std::endl;
+    std::cout << " " << static_cast<int64_t>(t83)-static_cast<int64_t>(t81) << "  " << t83-t82 << std::endl;
+    BOOST_CHECK(t81 <= clock_drift_upperbound(t83) && t82 <= clock_drift_upperbound(t83));
 
     sycl::free(src, queue);
     sycl::free(dest, queue);

@@ -71,7 +71,7 @@ public:
     if (_node->get_execution_hints()
             .has_hint<
                 rt::hints::request_instrumentation_submission_timestamp>()) {
-
+      std::cout << "getting submission timestamp" << std::endl;
       op.get_instrumentations()
           .add_instrumentation<instrumentations::submission_timestamp>(
             std::make_shared<hip_submission_timestamp>(profiler_clock::now()));
@@ -79,7 +79,7 @@ public:
 
     if (_node->get_execution_hints().has_hint<
                 rt::hints::request_instrumentation_start_timestamp>()) {
-
+      std::cout << "inserting new start event" << std::endl;
       _task_start = _queue->insert_event();
 
       op.get_instrumentations()
@@ -95,6 +95,7 @@ public:
 
     if (_node->get_execution_hints()
             .has_hint<rt::hints::request_instrumentation_finish_timestamp>()) {
+      std::cout << "inserting finish event" << std::endl;
       std::shared_ptr<dag_node_event> task_finish = _queue->insert_event();
 
       if(_task_start) {

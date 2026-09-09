@@ -29,6 +29,7 @@ hip_event_time_delta::operator()(const dag_node_event& t0,
   hipEvent_t t1_evt = cast<const hip_node_event>(&t1)->get_event();
   
   float ms = 0.0f;
+  std::cout << "calculating passed time " << std::endl;
   hipError_t err = hipEventElapsedTime(&ms, t0_evt, t1_evt);
 
   if (err != hipSuccess) {

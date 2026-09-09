@@ -147,7 +147,10 @@ public:
 class simple_submission_timestamp : public instrumentations::submission_timestamp {
 public:
   simple_submission_timestamp(profiler_clock::time_point submission_time)
-  : _time{submission_time} {}
+  : _time{submission_time} {
+        std::cout << "Host submission time: " << submission_time.time_since_epoch().count() << std::endl;
+
+  }
 
   virtual profiler_clock::time_point get_time_point() const override {
     return _time;

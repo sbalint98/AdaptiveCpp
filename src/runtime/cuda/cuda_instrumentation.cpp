@@ -31,6 +31,8 @@ cuda_event_time_delta::operator()(const dag_node_event& t0,
   
   float ms = 0.0f;
   cudaError_t err = cudaEventElapsedTime(&ms, t0_evt, t1_evt);
+  std::cout << "ellapsed_time: " << ms << std::endl;
+
 
   if (err != cudaSuccess) {
     register_error(

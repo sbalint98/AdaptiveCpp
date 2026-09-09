@@ -33,6 +33,7 @@
 #include "hipSYCL/runtime/serialization/serialization.hpp"
 #include "hipSYCL/runtime/util.hpp"
 #include "hipSYCL/runtime/queue_completion_event.hpp"
+#include <unistd.h>
 
 #ifdef HIPSYCL_WITH_SSCP_COMPILER
 
@@ -131,7 +132,7 @@ public:
     if (_node->get_execution_hints()
             .has_hint<
                 rt::hints::request_instrumentation_submission_timestamp>()) {
-
+      std::cout << "making submission timestamp" << std::endl;
       op.get_instrumentations()
           .add_instrumentation<instrumentations::submission_timestamp>(
             std::make_shared<cuda_submission_timestamp>(profiler_clock::now()));
@@ -156,6 +157,7 @@ public:
     if (_node->get_execution_hints()
             .has_hint<rt::hints::request_instrumentation_finish_timestamp>()) {
       std::shared_ptr<dag_node_event> task_finish = _queue->insert_event();
+
 
       if(_task_start) {
         _operation->get_instrumentations()

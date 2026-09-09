@@ -13,6 +13,7 @@
 
 #include "../event.hpp"
 #include "host_timestamped_event.hpp"
+#include <iostream>
 
 
 namespace hipsycl {
@@ -49,14 +50,15 @@ public:
 
     if(!_t1) {
       auto delta = td(*_t0.get_event(), *_event);
-    
+      std::cout << "single delta " << delta.count() << std::endl;
       return _t0.get_timestamp() + delta;
     } else {
       assert(_t1->is_complete());
-
       auto delta_t1_t0 = td(*_t0.get_event(), *_t1);
+      std::cout << "submit delta:  " << delta_t1_t0.count() << std::endl;
       auto delta_t2_t1 = td(*_t1, *_event);
-
+      std::cout << "compute delta:  " << delta_t2_t1.count() << std::endl;
+      std::cout << "base timestamp: "  << _t0.get_timestamp().time_since_epoch().count() << std::endl;
       return _t0.get_timestamp() + delta_t1_t0 + delta_t2_t1;
     }
   }
