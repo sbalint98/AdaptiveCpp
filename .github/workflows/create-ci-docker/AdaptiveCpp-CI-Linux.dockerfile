@@ -88,7 +88,15 @@ EOF
 
 RUN <<EOF
     set -e
-    wget -q https://apt.llvm.org/llvm.sh
+    success=0
+    for i in 1 2 3 4 5; do 
+        if wget -q https://apt.llvm.org/llvm.sh; then
+            success=1
+            break
+        fi
+        echo "download of llvm.sh faild attempt $1"
+        sleep 5
+    done
     chmod +x llvm.sh
     success=0
     for i in 1 2 3 4 5; do
