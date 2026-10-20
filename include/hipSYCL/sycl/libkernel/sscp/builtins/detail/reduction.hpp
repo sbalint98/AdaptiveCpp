@@ -21,6 +21,9 @@
 namespace hipsycl::libkernel::sscp {
 
 namespace {
+
+template <typename T> T remove_address_space(T);
+
 template <typename OutType, typename BinaryOperation>
 OutType sg_reduce_impl(OutType x, BinaryOperation binary_op, __acpp_int32 active_threads) {
   const __acpp_uint32 lrange = __acpp_sscp_get_subgroup_max_size();
@@ -48,6 +51,8 @@ template <__acpp_sscp_algorithm_op binary_op, typename OutType> OutType sg_reduc
 template <__acpp_uint64 shmem_array_length, typename OutType, typename MemoryType,
           typename BinaryOperation>
 OutType wg_reduce(OutType x, BinaryOperation op, MemoryType *shrd_mem) {
+  static_assert(__is_same(OutType, decltype(remove_address_space(shrd_mem[0]))),
+                    "shrd_memory element type must match T");
 
   const __acpp_uint32 wg_lid = __acpp_sscp_typed_get_local_linear_id<3, int>();
   const __acpp_uint32 wg_size = __acpp_sscp_typed_get_local_size<3, int>();
@@ -96,11 +101,7 @@ OutType wg_reduce(OutType x, BinaryOperation op, MemoryType *shrd_mem) {
   }
 
   // Do a final broadcast
-  using internal_type = typename integer_type<OutType>::type;
-  static_assert(sizeof(internal_type) == sizeof(OutType));
-  local_reduce_result = __builtin_bit_cast(
-      OutType,
-      wg_broadcast(0, __builtin_bit_cast(internal_type, local_reduce_result), &shrd_mem[0]));
+  local_reduce_result = wg_broadcast(0, local_reduce_result, &shrd_mem[0]);
   return local_reduce_result;
 }
 
