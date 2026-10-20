@@ -488,7 +488,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(group_reduce_bit_xor, T, test_types) {
   SKIP_IF_MOLTENVK(sycl::device{})
   if (sycl::device{}.get_backend() == sycl::backend::vk &&
       !std::is_scalar_v<T>) {
-    BOOST_TEST_MESSAGE("group functions not yet stable on VK backend");
+    BOOST_TEST_MESSAGE("group functions not yet stable on vk backend");
     return;
   }
 
@@ -527,6 +527,67 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(group_reduce_bit_xor, T, test_types) {
   } else {
     BOOST_TEST_MESSAGE("Skipping group_reduce_bit_xor for non-integer type");
   }
+}
+
+template <typename T, typename BinaryOperation>
+void test_joint_reduce_min_max() {
+  SKIP_IF_MOLTENVK(sycl::device{})
+  if constexpr (std::is_arithmetic_v<T>) {
+    sycl::queue q;
+
+    constexpr size_t group_size = 128;
+    constexpr size_t N          = 20; 
+
+    std::vector<T> host_in(N);
+    T *dev_in  = sycl::malloc_device<T>(N, q);
+    T *dev_out = sycl::malloc_device<T>(1, q);
+
+    auto run_and_check = [&](T expected) {
+      T host_out{};
+      q.copy(host_in.data(), dev_in, N).wait();
+      q.parallel_for(sycl::nd_range<1>{{group_size}, {group_size}},
+                     [=](sycl::nd_item<1> it) {
+                       *dev_out = sycl::joint_reduce(
+                           it.get_group(), dev_in, dev_in + N, BinaryOperation{});
+                     })
+          .wait_and_throw();
+      q.copy(dev_out, &host_out, 1).wait();
+      BOOST_TEST(host_out == expected);
+    };
+
+    for (size_t i = 0; i < N; ++i) {
+      T val      = static_cast<T>(i + 1);
+      host_in[i] = std::is_signed_v<T> ? -val : val;
+    }
+    run_and_check(std::accumulate(host_in.begin() + 1, host_in.end(),
+                                  host_in[0], BinaryOperation{}));
+
+    if constexpr (std::is_floating_point_v<T>) {
+      constexpr T inf = std::is_same_v<BinaryOperation, sycl::minimum<T>>
+                            ? std::numeric_limits<T>::infinity()
+                            : -std::numeric_limits<T>::infinity();
+      std::fill(host_in.begin(), host_in.end(), inf);
+      run_and_check(inf);
+    }
+    if constexpr (std::is_floating_point_v<T>) {
+      constexpr T extremum = std::is_same_v<BinaryOperation, sycl::minimum<T>>
+                            ? std::numeric_limits<T>::max()
+                            : -std::numeric_limits<T>::max();
+      std::fill(host_in.begin(), host_in.end(), extremum);
+      run_and_check(extremum);
+    }
+
+    sycl::free(dev_in, q);
+    sycl::free(dev_out, q);
+  }
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE(group_reduce_ptr_min, T, test_types) {
+  test_joint_reduce_min_max<T, sycl::minimum<T>>();
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE(group_reduce_ptr_max, T, test_types) {
+  test_joint_reduce_min_max<T, sycl::maximum<T>>();
 }
 
 BOOST_AUTO_TEST_SUITE_END()
