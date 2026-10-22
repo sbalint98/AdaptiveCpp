@@ -377,25 +377,25 @@ T getEnvironmentVariableOrDefault(const std::string& Name,
   return Default;
 }
 
-std::string getClangPath();
-std::string getLLCPath();
-std::string getLLDPath();
-std::string getOptPath();
-std::string getLibSvmlDir();
-std::string getLibSleefDir();
-std::string getLibAmathDir();
-std::string getLibMvecDir();
-std::string getBitcodePath();
-std::string getRedistPackageBitcodePath(const std::string& backend);
+ACPP_BACKEND_API_EXPORT std::string getClangPath();
+ACPP_BACKEND_API_EXPORT std::string getLLCPath();
+ACPP_BACKEND_API_EXPORT std::string getLLDPath();
+ACPP_BACKEND_API_EXPORT std::string getOptPath();
+ACPP_BACKEND_API_EXPORT std::string getLibSvmlDir();
+ACPP_BACKEND_API_EXPORT std::string getLibSleefDir();
+ACPP_BACKEND_API_EXPORT std::string getLibAmathDir();
+ACPP_BACKEND_API_EXPORT std::string getLibMvecDir();
+ACPP_BACKEND_API_EXPORT std::string getBitcodePath();
+ACPP_BACKEND_API_EXPORT std::string getRedistPackageBitcodePath(const std::string& backend);
 
 #if LLVM_VERSION_MAJOR >= 16
-int executeAndWait(
+ACPP_BACKEND_API_EXPORT int executeAndWait(
     llvm::StringRef Program,
     llvm::ArrayRef<llvm::StringRef> Args,
     std::optional<llvm::ArrayRef<llvm::StringRef>> Env = std::nullopt,
     llvm::ArrayRef<std::optional<llvm::StringRef>> Redirects = {});
 #else
-int executeAndWait(
+ACPP_BACKEND_API_EXPORT int executeAndWait(
     llvm::StringRef Program,
     llvm::ArrayRef<llvm::StringRef> Args,
     llvm::Optional<llvm::ArrayRef<llvm::StringRef>> Env = llvm::None,

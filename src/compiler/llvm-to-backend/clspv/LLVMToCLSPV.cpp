@@ -462,7 +462,7 @@ void LLVMToCLSPVTranslator::removeKernelProperties(llvm::Function *F) {
   F->clearMetadata();
 }
 
-std::unique_ptr<LLVMToBackendTranslator>
+ACPP_BACKEND_API_EXPORT std::unique_ptr<LLVMToBackendTranslator>
 createLLVMToCLSPVTranslator(const std::vector<std::string> &KernelNames) {
   return std::make_unique<LLVMToCLSPVTranslator>(KernelNames);
 }

@@ -20,7 +20,7 @@ namespace hipsycl {
 namespace compiler {
 
 std::unique_ptr<LLVMToBackendTranslator>
-createLLVMToSpirvTranslator(const std::vector<std::string> &KernelNames);
+ACPP_BACKEND_API_EXPORT createLLVMToSpirvTranslator(const std::vector<std::string> &KernelNames);
 
 }
 }

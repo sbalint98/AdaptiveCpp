@@ -12,7 +12,7 @@
 #define HIPSYCL_LLVM_TO_BACKEND_HPP
 
 #ifndef _WIN32
-#define ACPP_BACKEND_API_EXPORT
+#define ACPP_BACKEND_API_EXPORT __attribute__((visibility("default")))
 #else
 #define ACPP_BACKEND_API_EXPORT __declspec(dllexport)
 #endif
@@ -47,7 +47,7 @@ struct KernelStats {
   bool IsFreeOfIndirectAccess;
 };
 
-class LLVMToBackendTranslator {
+class ACPP_BACKEND_API_EXPORT LLVMToBackendTranslator {
 public:
   LLVMToBackendTranslator(int S2IRConstantCurrentBackendId,
     const std::vector<std::string>& OutliningEntrypoints,

@@ -18,7 +18,7 @@
 namespace hipsycl {
 namespace compiler {
 
-class LLVMToCLSPVTranslator : public LLVMToBackendTranslator {
+class ACPP_BACKEND_API_EXPORT LLVMToCLSPVTranslator : public LLVMToBackendTranslator {
 public:
   LLVMToCLSPVTranslator(const std::vector<std::string> &KernelNames);
 
