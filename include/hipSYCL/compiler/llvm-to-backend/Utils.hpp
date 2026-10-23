@@ -377,25 +377,25 @@ T getEnvironmentVariableOrDefault(const std::string& Name,
   return Default;
 }
 
-ACPP_BACKEND_API_EXPORT std::string getClangPath();
-ACPP_BACKEND_API_EXPORT std::string getLLCPath();
-ACPP_BACKEND_API_EXPORT std::string getLLDPath();
-ACPP_BACKEND_API_EXPORT std::string getOptPath();
-ACPP_BACKEND_API_EXPORT std::string getLibSvmlDir();
-ACPP_BACKEND_API_EXPORT std::string getLibSleefDir();
-ACPP_BACKEND_API_EXPORT std::string getLibAmathDir();
-ACPP_BACKEND_API_EXPORT std::string getLibMvecDir();
-ACPP_BACKEND_API_EXPORT std::string getBitcodePath();
-ACPP_BACKEND_API_EXPORT std::string getRedistPackageBitcodePath(const std::string& backend);
+ACPP_LLVM_TO_BACKEND_API std::string getClangPath();
+ACPP_LLVM_TO_BACKEND_API std::string getLLCPath();
+ACPP_LLVM_TO_BACKEND_API std::string getLLDPath();
+ACPP_LLVM_TO_BACKEND_API std::string getOptPath();
+ACPP_LLVM_TO_BACKEND_API std::string getLibSvmlDir();
+ACPP_LLVM_TO_BACKEND_API std::string getLibSleefDir();
+ACPP_LLVM_TO_BACKEND_API std::string getLibAmathDir();
+ACPP_LLVM_TO_BACKEND_API std::string getLibMvecDir();
+ACPP_LLVM_TO_BACKEND_API std::string getBitcodePath();
+ACPP_LLVM_TO_BACKEND_API std::string getRedistPackageBitcodePath(const std::string& backend);
 
 #if LLVM_VERSION_MAJOR >= 16
-ACPP_BACKEND_API_EXPORT int executeAndWait(
+ACPP_LLVM_TO_BACKEND_API int executeAndWait(
     llvm::StringRef Program,
     llvm::ArrayRef<llvm::StringRef> Args,
     std::optional<llvm::ArrayRef<llvm::StringRef>> Env = std::nullopt,
     llvm::ArrayRef<std::optional<llvm::StringRef>> Redirects = {});
 #else
-ACPP_BACKEND_API_EXPORT int executeAndWait(
+ACPP_LLVM_TO_BACKEND_API int executeAndWait(
     llvm::StringRef Program,
     llvm::ArrayRef<llvm::StringRef> Args,
     llvm::Optional<llvm::ArrayRef<llvm::StringRef>> Env = llvm::None,

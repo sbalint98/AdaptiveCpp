@@ -11,10 +11,18 @@
 #ifndef HIPSYCL_LLVM_TO_BACKEND_HPP
 #define HIPSYCL_LLVM_TO_BACKEND_HPP
 
+
+
 #ifndef _WIN32
-#define ACPP_BACKEND_API_EXPORT __attribute__((visibility("default")))
+  #define ACPP_LLVM_TO_BACKEND_API __attribute__((visibility("default")))
+  #define ACPP_BACKEND_API_EXPORT  __attribute__((visibility("default")))
 #else
-#define ACPP_BACKEND_API_EXPORT __declspec(dllexport)
+  #ifdef llvm_to_backend_EXPORTS
+    #define ACPP_LLVM_TO_BACKEND_API __declspec(dllexport)
+  #else
+    #define ACPP_LLVM_TO_BACKEND_API __declspec(dllimport)
+  #endif
+  #define ACPP_BACKEND_API_EXPORT __declspec(dllexport)   // factories only
 #endif
 
 // Note: This file should not include any LLVM headers or include
@@ -47,7 +55,7 @@ struct KernelStats {
   bool IsFreeOfIndirectAccess;
 };
 
-class ACPP_BACKEND_API_EXPORT LLVMToBackendTranslator {
+class ACPP_LLVM_TO_BACKEND_API LLVMToBackendTranslator {
 public:
   LLVMToBackendTranslator(int S2IRConstantCurrentBackendId,
     const std::vector<std::string>& OutliningEntrypoints,

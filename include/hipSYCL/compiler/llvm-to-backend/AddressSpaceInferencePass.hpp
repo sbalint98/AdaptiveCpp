@@ -18,7 +18,7 @@
 namespace hipsycl {
 namespace compiler {
 
-class ACPP_BACKEND_API_EXPORT AddressSpaceInferencePass : public llvm::PassInfoMixin<AddressSpaceInferencePass> {
+class ACPP_LLVM_TO_BACKEND_API AddressSpaceInferencePass : public llvm::PassInfoMixin<AddressSpaceInferencePass> {
 public:
   AddressSpaceInferencePass(const AddressSpaceMap& Map);
   llvm::PreservedAnalyses run(llvm::Module &M,
